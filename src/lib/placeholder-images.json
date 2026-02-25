@@ -1,3 +1,34 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "worker-1",
+      "description": "Professional plumber at work",
+      "imageUrl": "https://images.unsplash.com/photo-1635221798248-8a3452ad07cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwbHVtYmVyJTIwcHJvZmVzc2lvbmFsfGVufDB8fHx8MTc3MjAzMzQ2OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "plumber professional"
+    },
+    {
+      "id": "worker-2",
+      "description": "Expert electrician repairing a circuit",
+      "imageUrl": "https://images.unsplash.com/photo-1618090584176-7132b9911657?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZWxlY3RyaWNpYW4lMjB3b3JrZXJ8ZW58MHx8fHwxNzcyMDMzNDY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electrician worker"
+    },
+    {
+      "id": "worker-3",
+      "description": "Skilled carpenter building furniture",
+      "imageUrl": "https://images.unsplash.com/photo-1626081062126-d3b192c1fcb0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjYXJwZW50ZXIlMjB3b29kd29ya2luZ3xlbnwwfHx8fDE3NzIwMzM0Njh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "carpenter woodworking"
+    },
+    {
+      "id": "job-done-1",
+      "description": "Newly installed kitchen sink",
+      "imageUrl": "https://images.unsplash.com/photo-1657213077302-79e89564a042?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxraXRjaGVuJTIwcGx1bWJpbmd8ZW58MHx8fHwxNzcyMDMzNDY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kitchen plumbing"
+    },
+    {
+      "id": "job-done-2",
+      "description": "Freshly painted modern living room",
+      "imageUrl": "https://images.unsplash.com/photo-1679939153545-95201a01fe5d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxob3VzZSUyMHBhaW50aW5nfGVufDB8fHx8MTc3MjAyNzEwMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "house painting"
+    }
+  ]
 }
