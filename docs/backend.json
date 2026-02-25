@@ -1,0 +1,523 @@
+{
+  "entities": {
+    "WorkerProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WorkerProfile",
+      "type": "object",
+      "description": "Represents an informal worker's profile, containing personal and professional details, linked to an external authentication system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the WorkerProfile entity."
+        },
+        "externalAuthId": {
+          "type": "string",
+          "description": "Reference to the unique identifier from the external authentication system (e.g., Google ID, email service user ID)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the informal worker."
+        },
+        "tradeSkill": {
+          "type": "string",
+          "description": "The primary trade or skill of the worker (e.g., 'Plumber', 'Electrician', 'Gardener')."
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "URL to the worker's profile picture.",
+          "format": "uri"
+        },
+        "qrCodeUrl": {
+          "type": "string",
+          "description": "URL to a unique QR code associated with the worker, used for client job verification.",
+          "format": "uri"
+        },
+        "trustScore": {
+          "type": "number",
+          "description": "A real-time calculated score reflecting the worker's reputation based on verified jobs and ratings."
+        },
+        "publicReputationPageLink": {
+          "type": "string",
+          "description": "A shareable URL to the worker's public reputation page.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the worker profile was first created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the worker profile was last updated.",
+          "format": "date-time"
+        },
+        "badgeIds": {
+          "type": "array",
+          "description": "References to Badge entities awarded to this worker. (Relationship: WorkerProfile N:N Badge)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "externalAuthId",
+        "name",
+        "tradeSkill",
+        "profilePictureUrl",
+        "qrCodeUrl",
+        "trustScore",
+        "publicReputationPageLink",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Job": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Job",
+      "type": "object",
+      "description": "Details of a completed job performed by an informal worker.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Job entity."
+        },
+        "workerId": {
+          "type": "string",
+          "description": "Reference to the WorkerProfile who completed this job. (Relationship: WorkerProfile 1:N Job)"
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the work performed."
+        },
+        "dateCompleted": {
+          "type": "string",
+          "description": "The date when the job was completed.",
+          "format": "date-time"
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Optional URL to a photo demonstrating the completed work.",
+          "format": "uri"
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "A flag indicating whether the client has verified the job's completion."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the job record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the job record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "workerId",
+        "description",
+        "dateCompleted",
+        "isVerified",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientVerification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ClientVerification",
+      "type": "object",
+      "description": "Records the event of a client verifying a job's completion, typically via SMS or QR code.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ClientVerification entity."
+        },
+        "jobId": {
+          "type": "string",
+          "description": "Reference to the Job being verified. (Relationship: Job 1:N ClientVerification)"
+        },
+        "clientIdentifier": {
+          "type": "string",
+          "description": "The identifier used to contact the client for verification (e.g., phone number for SMS)."
+        },
+        "verificationToken": {
+          "type": "string",
+          "description": "The one-time token or link parameter sent to the client for verification."
+        },
+        "verifiedAt": {
+          "type": "string",
+          "description": "Timestamp when the job was successfully verified by the client.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the verification process (e.g., 'pending', 'sent', 'verified', 'declined')."
+        },
+        "method": {
+          "type": "string",
+          "description": "The method used for verification (e.g., 'SMS', 'QR_SCAN')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the verification request was initiated.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the verification record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "jobId",
+        "clientIdentifier",
+        "status",
+        "method",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Rating": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Rating",
+      "type": "object",
+      "description": "A client's rating and optional feedback for a completed and verified job.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Rating entity."
+        },
+        "jobId": {
+          "type": "string",
+          "description": "Reference to the Job that received this rating. (Relationship: Job 1:N Rating)"
+        },
+        "workerId": {
+          "type": "string",
+          "description": "Reference to the WorkerProfile who performed the job. (Relationship: WorkerProfile 1:N Rating)"
+        },
+        "clientVerificationId": {
+          "type": "string",
+          "description": "Reference to the ClientVerification record that enabled this rating, ensuring authenticity. (Relationship: ClientVerification 1:N Rating)"
+        },
+        "score": {
+          "type": "number",
+          "description": "The numerical rating given by the client (e.g., 1 to 5 stars)."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Optional text feedback or comment from the client."
+        },
+        "ratedAt": {
+          "type": "string",
+          "description": "Timestamp when the rating was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "jobId",
+        "workerId",
+        "clientVerificationId",
+        "score",
+        "ratedAt"
+      ]
+    },
+    "Badge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Badge",
+      "type": "object",
+      "description": "Represents an achievement or milestone that a worker can earn, contributing to their reputation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Badge entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the badge (e.g., 'Five Star Achiever', 'First 5 Jobs')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of what the badge represents and its significance."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to the icon or image representing the badge.",
+          "format": "uri"
+        },
+        "criteria": {
+          "type": "string",
+          "description": "A human-readable description of the conditions required to earn this badge (e.g., 'Awarded for completing 5 verified jobs with an average rating of 4.5 or higher')."
+        },
+        "type": {
+          "type": "string",
+          "description": "A categorical type for the badge (e.g., 'jobs_milestone', 'rating_threshold', 'community_contributor')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the badge definition was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the badge definition was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "imageUrl",
+        "criteria",
+        "type",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "An alert or message sent to a worker regarding their activities or profile updates.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Notification entity."
+        },
+        "workerId": {
+          "type": "string",
+          "description": "Reference to the WorkerProfile to whom the notification is addressed. (Relationship: WorkerProfile 1:N Notification)"
+        },
+        "type": {
+          "type": "string",
+          "description": "The category or type of notification (e.g., 'job_verified', 'new_rating', 'profile_update')."
+        },
+        "message": {
+          "type": "string",
+          "description": "The full text content of the notification message."
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "A flag indicating whether the worker has viewed or acknowledged the notification."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the notification was created.",
+          "format": "date-time"
+        },
+        "relatedJobId": {
+          "type": "string",
+          "description": "Optional reference to a Job entity if the notification is job-specific. (Relationship: Job 1:N Notification)"
+        },
+        "relatedRatingId": {
+          "type": "string",
+          "description": "Optional reference to a Rating entity if the notification is rating-specific. (Relationship: Rating 1:N Notification)"
+        }
+      },
+      "required": [
+        "id",
+        "workerId",
+        "type",
+        "message",
+        "isRead",
+        "createdAt"
+      ]
+    },
+    "AdminUser": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AdminUser",
+      "type": "object",
+      "description": "Represents an administrative user with access to the TrustLink dashboard for managing users and jobs.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AdminUser entity."
+        },
+        "externalAuthId": {
+          "type": "string",
+          "description": "Reference to the unique identifier from the external authentication system for the admin user."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the admin user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the admin user.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role or permissions level of the admin user (e.g., 'super_admin', 'moderator')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the admin user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the admin user account was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "externalAuthId",
+        "name",
+        "email",
+        "role",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/workerProfiles/{workerId}",
+        "definition": {
+          "entityName": "WorkerProfile",
+          "schema": {
+            "$ref": "#/backend/entities/WorkerProfile"
+          },
+          "description": "Root collection for informal worker profiles. The document ID `{workerId}` corresponds directly to the worker's Firebase Authentication UID (`request.auth.uid`) and the 'externalAuthId' field. Access is primarily restricted to the owner, with public read access to specific fields for reputation pages. The 'id' field within the document will also match '{workerId}' for consistency.",
+          "params": [
+            {
+              "name": "workerId",
+              "description": "The unique identifier of the worker, matching their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/workerProfiles/{workerId}/jobs/{jobId}",
+        "definition": {
+          "entityName": "Job",
+          "schema": {
+            "$ref": "#/backend/entities/Job"
+          },
+          "description": "Subcollection storing jobs completed by a specific worker. Each document includes the denormalized 'workerId' field, which matches the parent path's `{workerId}`. This ensures Authorization Independence, allowing rules to verify ownership directly from the document data. Access is restricted to the owning worker.",
+          "params": [
+            {
+              "name": "workerId",
+              "description": "The unique identifier of the worker who owns this job, matching their Firebase Authentication UID."
+            },
+            {
+              "name": "jobId",
+              "description": "The unique identifier for a specific job."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/workerProfiles/{workerId}/jobs/{jobId}/clientVerifications/{verificationId}",
+        "definition": {
+          "entityName": "ClientVerification",
+          "schema": {
+            "$ref": "#/backend/entities/ClientVerification"
+          },
+          "description": "Subcollection recording client verification events for a specific job. Documents include the denormalized 'workerId' and 'jobId' fields, matching the parent path's `{workerId}` and `{jobId}`. This is critical for Authorization Independence, enabling rules to confirm ownership without `get()` calls. Access for creating/updating is typically system-driven or client-initiated (via token), but reading/managing the records is restricted to the owning worker.",
+          "params": [
+            {
+              "name": "workerId",
+              "description": "The unique identifier of the worker associated with the job being verified."
+            },
+            {
+              "name": "jobId",
+              "description": "The unique identifier of the job being verified."
+            },
+            {
+              "name": "verificationId",
+              "description": "The unique identifier for a client verification record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/workerProfiles/{workerId}/ratings/{ratingId}",
+        "definition": {
+          "entityName": "Rating",
+          "schema": {
+            "$ref": "#/backend/entities/Rating"
+          },
+          "description": "Subcollection storing client ratings for a worker's jobs. Each document explicitly includes the 'workerId' and 'jobId' fields. The 'workerId' matches the parent path's `{workerId}`, ensuring Authorization Independence and efficient querying of all ratings for a given worker. Workers can read their own ratings; clients create them, typically linked to a verified job.",
+          "params": [
+            {
+              "name": "workerId",
+              "description": "The unique identifier of the worker who received this rating."
+            },
+            {
+              "name": "ratingId",
+              "description": "The unique identifier for a specific rating."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/workerProfiles/{workerId}/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": {
+            "$ref": "#/backend/entities/Notification"
+          },
+          "description": "Subcollection for worker-specific notifications. Each document includes the 'workerId' field, matching the parent path's `{workerId}`, ensuring Authorization Independence. Notifications are system-generated, but only the owning worker can read and mark them as read.",
+          "params": [
+            {
+              "name": "workerId",
+              "description": "The unique identifier of the worker to whom the notification is addressed."
+            },
+            {
+              "name": "notificationId",
+              "description": "The unique identifier for a specific notification."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/badges/{badgeId}",
+        "definition": {
+          "entityName": "Badge",
+          "schema": {
+            "$ref": "#/backend/entities/Badge"
+          },
+          "description": "Top-level collection for achievement badges. These badge definitions are globally readable (for display on public reputation pages) and managed only by administrators. No specific authorization denormalization needed beyond basic admin checks for write operations.",
+          "params": [
+            {
+              "name": "badgeId",
+              "description": "The unique identifier for a specific badge definition."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/adminUsers/{adminId}",
+        "definition": {
+          "entityName": "AdminUser",
+          "schema": {
+            "$ref": "#/backend/entities/AdminUser"
+          },
+          "description": "Top-level collection for administrative users. The document ID `{adminId}` corresponds directly to the admin's Firebase Authentication UID (`request.auth.uid`) and the 'externalAuthId' field. This provides a direct DBAC mechanism where the presence and 'role' within this document determine administrative privileges. Only authenticated administrators can read/update their own profile, and higher-level admins may manage others.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The unique identifier of the administrator, matching their Firebase Authentication UID."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure for TrustLink prioritizes security, scalability, and debuggability by adhering strictly to the core design principles, especially Authorization Independence and Structural Segregation.\n\n**Authorization Independence:** This is achieved primarily through pervasive denormalization of owner IDs. For all worker-specific subcollections (`jobs`, `clientVerifications`, `ratings`, `notifications`), the `workerId` (which corresponds to `request.auth.uid`) is explicitly included as a field within each document. For instance, a `Job` document under `/workerProfiles/{workerId}/jobs/{jobId}` will contain a `workerId` field, and a `ClientVerification` document under `/workerProfiles/{workerId}/jobs/{jobId}/clientVerifications/{verificationId}` will contain both `workerId` and `jobId`. This eliminates the need for `get()` calls in security rules to check parent document ownership or attributes, making rules atomic, faster, and easier to debug. Similarly, for `AdminUser` profiles, the `externalAuthId` (which is the admin's `request.auth.uid`) is used as the document ID, allowing direct authorization checks.\n\n**Structural Segregation and QAPs (Rules are not Filters):**\n1.  **Worker-Owned Data:** All data directly associated with a `WorkerProfile` (Jobs, ClientVerifications, Ratings, Notifications) is nested under `/workerProfiles/{workerId}/...`. This design ensures that security rules can use the path wildcard `{workerId}` to directly enforce ownership (`request.auth.uid == workerId`). This immediately satisfies the Query Access Patterns (QAPs) requirement, as any `list` operation on these subcollections (e.g., `/workerProfiles/{currentUid}/jobs`) is inherently filtered by the authenticated user's ID, preventing users from accidentally or maliciously querying data they don't own. The `workerId` denormalized within the document provides a secondary, robust check.\n2.  **Global Data:** Entities like `Badge` are global and publicly readable, residing in a top-level `/badges` collection. Their security posture is homogeneous (public read, admin write), simplifying rules and preventing mixed access requirements within a single collection.\n3.  **Admin Data:** `/adminUsers/{adminId}` serves as a dedicated collection for administrative profiles, where `adminId` is the `request.auth.uid` of the admin. This allows for clear DBAC implementation, where admin privileges are granted by the existence and role within this specific, secured collection, without relying on custom claims.\n\n**Consistency and Predictability:** Semantic naming conventions (`workerId`, `jobId`, `adminId`) are used for path wildcards and document fields. Explicit state modeling (e.g., `ClientVerification.status`) simplifies logic. This structured approach significantly reduces complexity, enhances clarity of intent in security rules, and promotes maintainability for a scalable and trustworthy application like TrustLink."
+  }
+}
