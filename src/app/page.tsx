@@ -1,27 +1,25 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShieldCheck, QrCode, TrendingUp, Award } from "lucide-react";
+import { ShieldCheck, QrCode, TrendingUp, Award, Sparkles } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="flex flex-col gap-12 py-6">
       <section className="flex flex-col items-center text-center gap-6">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-1.5 text-sm font-semibold text-primary">
-          <Award className="h-4 w-4" />
+          <Sparkles className="h-4 w-4" />
           <span>Portable Reputation for Skilled Workers</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
           Build Trust, <span className="text-primary">Verified.</span>
         </h1>
         <p className="max-w-[600px] text-lg text-muted-foreground">
-          TrustLink helps informal workers build a digital, evidence-based reputation that travels with them. Get verified, earn badges, and grow your business.
+          CareerGoMW helps informal workers build a digital, evidence-based reputation that travels with them. Get verified, earn badges, and grow your career.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Button size="lg" className="rounded-full px-8" asChild>
-            <Link href="/profile">Create Worker Profile</Link>
+            <Link href="/login">Get Started</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-8" asChild>
             <Link href="/search">Find Verified Workers</Link>
@@ -71,7 +69,7 @@ export default function Home() {
           <div className="flex flex-col gap-6">
             <h2 className="text-3xl font-bold sm:text-4xl">Ready to turn your hard work into a professional reputation?</h2>
             <p className="text-primary-foreground/80">
-              Join thousands of skilled workers—plumbers, electricians, cleaners, and more—who are using TrustLink to prove their skills and win more clients.
+              Join thousands of skilled workers—plumbers, electricians, cleaners, and more—who are using CareerGoMW to prove their skills and win more clients.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" className="rounded-full px-8" asChild>
@@ -81,8 +79,8 @@ export default function Home() {
           </div>
           <div className="relative aspect-square max-w-[400px] overflow-hidden rounded-2xl border-4 border-white/20 shadow-2xl">
             <img 
-              src="https://picsum.photos/seed/worker-happy/800/800" 
-              alt="Happy worker using TrustLink" 
+              src="https://picsum.photos/seed/careergomw-worker/800/800" 
+              alt="Happy worker using CareerGoMW" 
               className="h-full w-full object-cover"
               data-ai-hint="worker happy"
             />

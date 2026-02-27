@@ -1,11 +1,11 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'TrustLink | Evidence-Based Reputation for Informal Workers',
+  title: 'CareerGoMW | Evidence-Based Reputation for Informal Workers',
   description: 'Portable, verifiable trust for skilled workers in any trade.',
 };
 
@@ -23,11 +23,13 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
       </head>
       <body className="font-body antialiased bg-background">
-        <Navigation />
-        <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-24 pt-6 md:pb-6 md:pt-24">
-          {children}
-        </main>
-        <Toaster />
+        <FirebaseClientProvider>
+          <Navigation />
+          <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-24 pt-6 md:pb-6 md:pt-24">
+            {children}
+          </main>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );
