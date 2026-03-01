@@ -24,7 +24,7 @@ export function Navigation() {
       <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4">
         <Link href="/" className="hidden items-center gap-2 md:flex hover:opacity-90 transition-opacity">
           <ShieldCheck className="h-6 w-6 text-primary" />
-          <span className="text-xl font-bold text-primary">CareerGoMW</span>
+          <span className="text-xl font-bold text-primary">Globlync</span>
         </Link>
         
         <div className="flex w-full items-center justify-around md:w-auto md:justify-end md:gap-8">

@@ -55,7 +55,7 @@ export default function ProfilePage() {
     <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto">
       <header>
         <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <p className="text-muted-foreground">Manage your CareerGoMW professional presence.</p>
+        <p className="text-muted-foreground">Manage your Globlync professional presence.</p>
       </header>
 
       <div className="flex flex-col items-center gap-4 mb-6">

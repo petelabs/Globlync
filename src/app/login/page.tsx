@@ -67,7 +67,7 @@ export default function LoginPage() {
               <ShieldCheck className="h-10 w-10 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to CareerGoMW</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to Globlync</CardTitle>
           <CardDescription>
             {isSignUp ? "Create an account to build your reputation" : "Sign in to manage your worker profile"}
           </CardDescription>

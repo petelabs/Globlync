@@ -24,7 +24,7 @@ export async function generateProfessionalBio(input: GenerateBioInput): Promise<
     name: 'generateProfessionalBioPrompt',
     input: { schema: GenerateBioInputSchema },
     output: { schema: GenerateBioOutputSchema },
-    prompt: `You are a professional profile writer for CareerGoMW, a platform for skilled informal workers.
+    prompt: `You are a professional profile writer for Globlync, a platform for skilled informal workers.
     Generate a compelling, trustworthy professional bio for a worker with the following details:
     
     Trade: {{{trade}}}

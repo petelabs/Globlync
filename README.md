@@ -1,6 +1,6 @@
-# CareerGoMW - Portable Reputation for Skilled Workers
+# Globlync - Portable Reputation for Skilled Workers
 
-CareerGoMW is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation.
+Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation.
 
 ## 🚀 Deployment Instructions (Vercel)
 

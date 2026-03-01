@@ -15,7 +15,7 @@ export default function Home() {
           Build Trust, <span className="text-primary">Verified.</span>
         </h1>
         <p className="max-w-[600px] text-lg text-muted-foreground">
-          CareerGoMW helps informal workers build a digital, evidence-based reputation that travels with them. Get verified, earn badges, and grow your career.
+          Globlync helps informal workers build a digital, evidence-based reputation that travels with them. Get verified, earn badges, and grow your career.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Button size="lg" className="rounded-full px-8" asChild>
@@ -69,7 +69,7 @@ export default function Home() {
           <div className="flex flex-col gap-6">
             <h2 className="text-3xl font-bold sm:text-4xl">Ready to turn your hard work into a professional reputation?</h2>
             <p className="text-primary-foreground/80">
-              Join thousands of skilled workers—plumbers, electricians, cleaners, and more—who are using CareerGoMW to prove their skills and win more clients.
+              Join thousands of skilled workers—plumbers, electricians, cleaners, and more—who are using Globlync to prove their skills and win more clients.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" className="rounded-full px-8" asChild>
@@ -79,8 +79,8 @@ export default function Home() {
           </div>
           <div className="relative aspect-square max-w-[400px] overflow-hidden rounded-2xl border-4 border-white/20 shadow-2xl">
             <img 
-              src="https://picsum.photos/seed/careergomw-worker/800/800" 
-              alt="Happy worker using CareerGoMW" 
+              src="https://picsum.photos/seed/globlync-worker/800/800" 
+              alt="Happy worker using Globlync" 
               className="h-full w-full object-cover"
               data-ai-hint="worker happy"
             />

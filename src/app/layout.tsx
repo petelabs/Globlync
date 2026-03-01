@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'CareerGoMW | Evidence-Based Reputation for Informal Workers',
+  title: 'Globlync | Evidence-Based Reputation for Informal Workers',
   description: 'Portable, verifiable trust for skilled workers in any trade.',
 };
 
