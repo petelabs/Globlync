@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -10,10 +9,10 @@ import { Search, MapPin, Star, Filter, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 const MOCK_WORKERS = [
-  { id: 1, name: "Alice Smith", trade: "House Painter", location: "Brooklyn", rating: 4.8, jobs: 42, image: "https://picsum.photos/seed/alice/100/100", badges: ["Verified", "Top Rated"] },
-  { id: 2, name: "Bob Wilson", trade: "Electrician", location: "Queens", rating: 4.9, jobs: 120, image: "https://picsum.photos/seed/bob/100/100", badges: ["Verified", "Quick Response"] },
-  { id: 3, name: "Charlie Davis", trade: "Carpenter", location: "Manhattan", rating: 4.5, jobs: 18, image: "https://picsum.photos/seed/charlie/100/100", badges: ["Verified"] },
-  { id: 4, name: "Diana Prince", trade: "Plumber", location: "Bronx", rating: 5.0, jobs: 65, image: "https://picsum.photos/seed/diana/100/100", badges: ["Verified", "Gold Tier"] },
+  { id: "worker-1", name: "Alice Smith", trade: "House Painter", location: "Brooklyn", rating: 4.8, jobs: 42, image: "https://picsum.photos/seed/alice/100/100", badges: ["Verified", "Top Rated"] },
+  { id: "worker-2", name: "Bob Wilson", trade: "Electrician", location: "Queens", rating: 4.9, jobs: 120, image: "https://picsum.photos/seed/bob/100/100", badges: ["Verified", "Quick Response"] },
+  { id: "worker-3", name: "Charlie Davis", trade: "Carpenter", location: "Manhattan", rating: 4.5, jobs: 18, image: "https://picsum.photos/seed/charlie/100/100", badges: ["Verified"] },
+  { id: "worker-4", name: "Diana Prince", trade: "Plumber", location: "Bronx", rating: 5.0, jobs: 65, image: "https://picsum.photos/seed/diana/100/100", badges: ["Verified", "Gold Tier"] },
 ];
 
 export default function SearchPage() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,30 +10,79 @@ import { Textarea } from "@/components/ui/textarea";
 import { Camera, MapPin, Briefcase, Mail, Phone, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateProfessionalBio } from "@/ai/flows/generate-bio-flow";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
+import { doc, serverTimestamp } from "firebase/firestore";
 
 export default function ProfilePage() {
   const { user } = useUser();
+  const db = useFirestore();
   const { toast } = useToast();
-  const [trade, setTrade] = useState("Master Plumber");
-  const [bio, setBio] = useState("Over 10 years of experience in residential and commercial plumbing.");
+  
+  const workerRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "workerProfiles", user.uid);
+  }, [db, user?.uid]);
+
+  const { data: profile } = useDoc(workerRef);
+
+  const [trade, setTrade] = useState("");
+  const [bio, setBio] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setTrade(profile.tradeSkill || "");
+      setBio(profile.bio || "");
+    }
+  }, [profile]);
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!workerRef) return;
+
+    const data = {
+      name: user?.displayName || "Worker",
+      tradeSkill: trade,
+      bio: bio,
+      updatedAt: serverTimestamp(),
+    };
+
+    if (profile) {
+      updateDocumentNonBlocking(workerRef, data);
+    } else {
+      setDocumentNonBlocking(workerRef, {
+        ...data,
+        id: user?.uid,
+        externalAuthId: user?.uid,
+        trustScore: 0,
+        createdAt: serverTimestamp(),
+        profilePictureUrl: user?.photoURL || "",
+        qrCodeUrl: "",
+        publicReputationPageLink: `/public/${user?.uid}`,
+      }, { merge: true });
+    }
+
     toast({
       title: "Profile Updated",
-      description: "Your professional details have been saved.",
+      description: "Your professional details have been saved to Globlync.",
     });
   };
 
   const handleGenerateBio = async () => {
+    if (!trade) {
+      toast({
+        variant: "destructive",
+        title: "Trade Required",
+        description: "Please enter your trade before generating a bio.",
+      });
+      return;
+    }
     setIsGenerating(true);
     try {
       const result = await generateProfessionalBio({
         trade,
-        experienceYears: 10,
-        specialties: "Emergency repairs and bathroom installations"
+        experienceYears: 5,
+        specialties: "Expert service and client satisfaction"
       });
       setBio(result.bio);
       toast({
@@ -70,7 +119,7 @@ export default function ProfilePage() {
         </div>
         <div className="text-center">
           <h2 className="text-2xl font-bold">{user?.displayName || "Skilled Professional"}</h2>
-          <p className="text-muted-foreground">{trade}</p>
+          <p className="text-muted-foreground">{trade || "Specify your trade"}</p>
         </div>
       </div>
 
@@ -87,17 +136,11 @@ export default function ProfilePage() {
                 <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input 
                   id="trade" 
+                  placeholder="e.g. Master Plumber"
                   value={trade} 
                   onChange={(e) => setTrade(e.target.value)}
                   className="pl-10 h-12" 
                 />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="location">Base Location</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="location" defaultValue="New York, NY" className="pl-10 h-12" />
               </div>
             </div>
             <div className="grid gap-2">
@@ -117,6 +160,7 @@ export default function ProfilePage() {
               </div>
               <Textarea 
                 id="bio" 
+                placeholder="Tell clients about your experience..."
                 value={bio} 
                 onChange={(e) => setBio(e.target.value)}
                 className="min-h-[100px]" 
@@ -136,13 +180,6 @@ export default function ProfilePage() {
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input id="email" type="email" defaultValue={user?.email || ""} className="pl-10 h-12" readOnly />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="phone" type="tel" defaultValue="+1 234 567 8900" className="pl-10 h-12" />
               </div>
             </div>
           </CardContent>
