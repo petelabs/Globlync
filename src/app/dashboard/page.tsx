@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge as BadgeUI } from "@/components/ui/badge";
 import { 
   PlusCircle, 
   CheckCircle2, 
@@ -14,7 +13,8 @@ import {
   History, 
   Award,
   ChevronRight,
-  Loader2
+  Loader2,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
@@ -22,12 +22,19 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const chartConfig = {
   jobs: {
     label: "Verified Jobs",
     color: "hsl(var(--primary))",
   },
+};
+
+const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string }> = {
+  'first-job': { name: "First Verified Job", icon: Award, color: "text-blue-500" },
+  'reliable-worker': { name: "Reliable Pro", icon: Award, color: "text-primary" },
+  'perfect-streak': { name: "Customer Favorite", icon: Award, color: "text-secondary" },
 };
 
 export default function DashboardPage() {
@@ -69,15 +76,15 @@ export default function DashboardPage() {
       totalVerified: verifiedJobs.length,
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
-      tier: (profile?.trustScore || 0) > 100 ? "Platinum" : (profile?.trustScore || 0) > 50 ? "Gold" : "Bronze"
+      tier: (profile?.trustScore || 0) > 100 ? "Platinum" : (profile?.trustScore || 0) > 50 ? "Gold" : "Bronze",
+      badges: profile?.badgeIds || []
     };
   }, [allJobs, ratings, profile]);
 
-  // Mock data for chart - could be calculated from jobs dates
   const chartData = [
-    { month: "Jan", jobs: 4 },
-    { month: "Feb", jobs: 6 },
-    { month: "Mar", jobs: 8 },
+    { month: "Jan", jobs: 2 },
+    { month: "Feb", jobs: 4 },
+    { month: "Mar", jobs: 7 },
     { month: "Apr", jobs: stats.totalVerified },
   ];
 
@@ -87,8 +94,8 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6 py-4">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user.displayName?.split(' ')[0]}</h1>
-          <p className="text-muted-foreground">Your reputation is growing. {stats.totalVerified} verified jobs completed.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome, {user.displayName?.split(' ')[0]}</h1>
+          <p className="text-muted-foreground">Your reputation is growing. {stats.totalVerified} verified jobs logged.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full" asChild>
@@ -113,10 +120,8 @@ export default function DashboardPage() {
             <TrendingUp className="h-24 w-24" />
           </div>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Trust Score
-            </CardTitle>
-            <CardDescription className="text-primary-foreground/70">Evidence-based reputation</CardDescription>
+            <CardTitle className="flex items-center gap-2">Trust Score</CardTitle>
+            <CardDescription className="text-primary-foreground/70">Verified Reputation Level</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-6 text-center">
             <div className="relative flex h-32 w-32 items-center justify-center">
@@ -126,7 +131,7 @@ export default function DashboardPage() {
                   className="text-secondary" 
                   strokeWidth="8" 
                   strokeDasharray={251.2} 
-                  strokeDashoffset={251.2 * (1 - Math.min(stats.trustScore / 200, 1))} 
+                  strokeDashoffset={251.2 * (1 - Math.min(stats.trustScore / 250, 1))} 
                   strokeLinecap="round" 
                   stroke="currentColor" 
                   fill="transparent" 
@@ -147,23 +152,30 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Analytics Card */}
+        {/* Badges/Achievements Card */}
         <Card className="md:col-span-8 border-none shadow-sm">
           <CardHeader>
-            <CardTitle>Activity Insights</CardTitle>
-            <CardDescription>Verified jobs over time</CardDescription>
+            <CardTitle>Milestone Achievements</CardTitle>
+            <CardDescription>Earned based on verified work and client feedback</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="month" hide />
-                  <YAxis hide />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="jobs" fill="var(--color-jobs)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+          <CardContent className="flex flex-wrap gap-4">
+            {stats.badges.length > 0 ? (
+              stats.badges.map((badgeId) => {
+                const badge = MILESTONE_BADGES[badgeId];
+                if (!badge) return null;
+                const Icon = badge.icon;
+                return (
+                  <div key={badgeId} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted/30 border w-24 text-center">
+                    <Icon className={cn("h-8 w-8", badge.color)} />
+                    <span className="text-[10px] font-bold leading-tight">{badge.name}</span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="w-full text-center py-8 bg-muted/10 rounded-xl border border-dashed">
+                <p className="text-xs text-muted-foreground">Complete jobs to unlock your first achievement!</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -172,7 +184,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Verified Activity</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/jobs">View History <ChevronRight className="ml-1 h-4 w-4" /></Link>
+              <Link href="/jobs">Full History <ChevronRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -189,9 +201,16 @@ export default function DashboardPage() {
                       {job.isVerified ? <CheckCircle2 className="h-6 w-6" /> : <History className="h-6 w-6" />}
                     </div>
                     <div>
-                      <h4 className="font-bold">{job.title}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold">{job.title}</h4>
+                        {job.aiVerified && (
+                          <span className="flex items-center gap-0.5 text-[8px] bg-primary/10 text-primary px-1 rounded-full font-bold">
+                            <Sparkles className="h-2 w-2" /> AI
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
-                        {job.isVerified ? "Verified" : "Pending Verification"} • {format(new Date(job.dateCompleted), "MMM d")}
+                        {job.isVerified ? "Verified" : "Pending Client Review"} • {format(new Date(job.dateCompleted), "MMM d")}
                       </p>
                     </div>
                   </div>
