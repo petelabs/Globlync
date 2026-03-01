@@ -34,3 +34,4 @@ The app is pre-configured with the Firebase settings found in `src/firebase/conf
 - **Database/Auth**: Firebase Firestore & Authentication
 - **AI**: Genkit with Gemini 2.0 Flash
 - **Styling**: Tailwind CSS + ShadCN UI
+# Globlync
