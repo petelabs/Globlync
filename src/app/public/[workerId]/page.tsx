@@ -7,19 +7,26 @@ import { doc, collection, query, orderBy } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ShieldCheck, 
   Star, 
   CheckCircle2, 
   Calendar, 
-  Briefcase, 
   Award, 
-  Loader2, 
+  Briefcase,
   MapPin,
-  Sparkles
+  Clock,
+  Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+
+const BADGE_CONFIG: Record<string, { name: string; color: string; icon: any }> = {
+  'first-job': { name: "Pioneer", color: "bg-blue-100 text-blue-700", icon: Award },
+  'reliable-worker': { name: "Reliable Pro", color: "bg-primary/10 text-primary", icon: ShieldCheck },
+  'perfect-streak': { name: "5-Star Elite", color: "bg-secondary/20 text-secondary-foreground", icon: Star },
+};
 
 export default function PublicProfilePage() {
   const { workerId } = useParams() as { workerId: string };
@@ -35,15 +42,26 @@ export default function PublicProfilePage() {
     return collection(db, "workerProfiles", workerId, "jobs");
   }, [db, workerId]);
 
+  const ratingsRef = useMemoFirebase(() => {
+    if (!db || !workerId) return null;
+    return collection(db, "workerProfiles", workerId, "ratings");
+  }, [db, workerId]);
+
   const verifiedJobsQuery = useMemoFirebase(() => {
     if (!jobsRef) return null;
-    return query(jobsRef, orderBy("createdAt", "desc"));
+    return query(jobsRef, orderBy("dateCompleted", "desc"));
   }, [jobsRef]);
 
-  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
+  const { data: worker, isLoading: isWorkerLoading } = useDoc(workerRef);
   const { data: jobs, isLoading: isJobsLoading } = useCollection(verifiedJobsQuery);
+  const { data: ratings } = useCollection(ratingsRef);
 
-  if (isProfileLoading) {
+  const verifiedJobs = jobs?.filter(j => j.isVerified) || [];
+  const avgRating = ratings?.length 
+    ? (ratings.reduce((acc, r) => acc + (r.score || 0), 0) / ratings.length).toFixed(1)
+    : "5.0";
+
+  if (isWorkerLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -51,61 +69,54 @@ export default function PublicProfilePage() {
     );
   }
 
-  if (!profile) {
+  if (!worker) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-        <h1 className="text-2xl font-bold">Profile Not Found</h1>
-        <p className="text-muted-foreground">This worker profile may have been removed or is private.</p>
+        <h1 className="text-2xl font-bold">Worker Not Found</h1>
+        <p className="text-muted-foreground">The profile you are looking for does not exist or has been moved.</p>
       </div>
     );
   }
 
-  const verifiedJobs = jobs?.filter(j => j.isVerified) || [];
-
   return (
-    <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">
-      {/* Hero Section */}
-      <section className="relative rounded-3xl bg-primary px-6 py-12 text-primary-foreground overflow-hidden">
-        <div className="absolute top-0 right-0 opacity-10">
-          <ShieldCheck className="h-64 w-64 -mr-20 -mt-20" />
-        </div>
-        <div className="relative flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-          <Avatar className="h-32 w-32 border-4 border-white/20 shadow-2xl">
-            <AvatarImage src={profile.profilePictureUrl || `https://picsum.photos/seed/${workerId}/200/200`} />
-            <AvatarFallback className="text-primary text-4xl font-bold">{profile.name?.charAt(0)}</AvatarFallback>
+    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto px-4">
+      {/* Hero Header */}
+      <section className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+        <div className="relative">
+          <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
+            <AvatarImage src={worker.profilePictureUrl || `https://picsum.photos/seed/${workerId}/200/200`} />
+            <AvatarFallback>{worker.name?.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="flex-1 space-y-2">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-              <h1 className="text-4xl font-black">{profile.name}</h1>
-              <div className="flex items-center gap-1 bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                <ShieldCheck className="h-3 w-3" /> Score {profile.trustScore || 0}
-              </div>
-            </div>
-            <p className="text-xl font-medium text-primary-foreground/90 flex items-center justify-center md:justify-start gap-2">
-              <Briefcase className="h-5 w-5" /> {profile.tradeSkill}
-            </p>
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
-              <span className="flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full border border-white/10">
-                <MapPin className="h-4 w-4" /> Location Verified
-              </span>
-              <span className="flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full border border-white/10">
-                <CheckCircle2 className="h-4 w-4" /> {verifiedJobs.length} Verified Jobs
-              </span>
-            </div>
+          <div className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground p-1.5 rounded-full shadow-lg border-2 border-white">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+        </div>
+        
+        <div className="flex-1 space-y-2">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h1 className="text-3xl font-bold tracking-tight">{worker.name}</h1>
+            <Badge variant="secondary" className="w-fit mx-auto md:mx-0 bg-primary/10 text-primary font-bold">
+              Trust Score: {worker.trustScore || 0}
+            </Badge>
+          </div>
+          <p className="text-xl text-primary font-semibold">{worker.tradeSkill || "Skilled Professional"}</p>
+          <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-secondary text-secondary" /> {avgRating} Rating</span>
+            <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-primary" /> {verifiedJobs.length} Verified Jobs</span>
           </div>
         </div>
       </section>
 
       <div className="grid gap-8 md:grid-cols-3">
-        {/* Left Column: Bio and Badges */}
-        <div className="md:col-span-1 space-y-6">
-          <Card className="border-none shadow-sm">
+        {/* Sidebar: Bio & Badges */}
+        <div className="space-y-6">
+          <Card className="border-none shadow-sm bg-muted/20">
             <CardHeader>
-              <CardTitle className="text-lg">Professional Bio</CardTitle>
+              <CardTitle className="text-lg">About</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed text-muted-foreground italic">
-                "{profile.bio || "No professional bio provided yet."}"
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {worker.bio || "This professional hasn't added a bio yet, but their verified work history speaks for itself."}
               </p>
             </CardContent>
           </Card>
@@ -115,71 +126,103 @@ export default function PublicProfilePage() {
               <CardTitle className="text-lg">Achievements</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              {profile.badgeIds && profile.badgeIds.length > 0 ? (
-                profile.badgeIds.map((badgeId: string) => (
-                  <Badge key={badgeId} variant="secondary" className="px-3 py-1 capitalize">
-                    <Award className="mr-1 h-3 w-3" /> {badgeId.replace('-', ' ')}
-                  </Badge>
-                ))
+              {worker.badgeIds && worker.badgeIds.length > 0 ? (
+                worker.badgeIds.map((bid: string) => {
+                  const config = BADGE_CONFIG[bid];
+                  if (!config) return null;
+                  const Icon = config.icon;
+                  return (
+                    <div key={bid} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold", config.color)}>
+                      <Icon className="h-3.5 w-3.5" />
+                      {config.name}
+                    </div>
+                  );
+                })
               ) : (
-                <p className="text-xs text-muted-foreground italic">Working towards first milestone...</p>
+                <p className="text-xs text-muted-foreground italic">Building reputation...</p>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column: Work History */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Verified Work History</h2>
-            <Badge variant="outline" className="font-bold">{verifiedJobs.length} Jobs Found</Badge>
-          </div>
+        {/* Main Content: Tabs */}
+        <div className="md:col-span-2">
+          <Tabs defaultValue="work" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="work">Verified Work</TabsTrigger>
+              <TabsTrigger value="reviews">Client Reviews</TabsTrigger>
+            </TabsList>
 
-          <div className="grid gap-4">
-            {isJobsLoading ? (
-              <div className="flex justify-center py-10"><Loader2 className="animate-spin h-6 w-6 text-muted" /></div>
-            ) : verifiedJobs.length > 0 ? (
-              verifiedJobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all">
-                  <div className="flex flex-col sm:flex-row">
-                    <div className="relative aspect-video w-full sm:w-40 bg-muted shrink-0">
-                      <img 
-                        src={job.photoUrl || `https://picsum.photos/seed/${job.id}/400/300`} 
-                        alt={job.title} 
-                        className="h-full w-full object-cover"
-                      />
-                      {job.aiVerified && (
-                        <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                          <Sparkles className="h-2 w-2" /> AI Proof
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4 flex-1">
-                      <div className="flex items-start justify-between mb-2">
+            <TabsContent value="work" className="space-y-4">
+              {isJobsLoading ? (
+                <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted" /></div>
+              ) : verifiedJobs.length > 0 ? (
+                verifiedJobs.map((job) => (
+                  <Card key={job.id} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex flex-col sm:flex-row">
+                      <div className="relative aspect-video w-full sm:w-40 bg-muted shrink-0">
+                        <img 
+                          src={job.photoUrl || `https://picsum.photos/seed/${job.id}/400/300`} 
+                          alt={job.title} 
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4 flex flex-1 flex-col justify-between">
                         <div>
                           <h3 className="font-bold text-lg">{job.title}</h3>
                           <p className="text-sm text-muted-foreground line-clamp-2">{job.description}</p>
                         </div>
-                        <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      </div>
-                      <div className="mt-auto flex items-center justify-between text-[10px] text-muted-foreground">
-                        <span className="flex items-center gap-1 uppercase tracking-wider font-bold">
-                          <Calendar className="h-3 w-3" /> {format(new Date(job.dateCompleted), "MMM d, yyyy")}
-                        </span>
-                        <div className="flex items-center gap-1 text-secondary font-black">
-                          <Star className="h-3 w-3 fill-secondary" /> 5.0 RATING
+                        <div className="mt-4 flex items-center justify-between">
+                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground uppercase tracking-wider">
+                            <Calendar className="h-3 w-3" /> {format(new Date(job.dateCompleted), "MMM d, yyyy")}
+                          </span>
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-primary">
+                            <CheckCircle2 className="h-3 w-3" /> VERIFIED
+                          </div>
                         </div>
                       </div>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-20 bg-muted/10 rounded-2xl border-2 border-dashed">
+                  <p className="text-muted-foreground">No verified work logs yet.</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="reviews" className="space-y-4">
+              {ratings && ratings.length > 0 ? (
+                ratings.map((rating) => (
+                  <Card key={rating.id} className="border-none shadow-sm">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={cn(
+                                "h-4 w-4",
+                                i < rating.score ? "fill-secondary text-secondary" : "text-muted"
+                              )} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">
+                          {rating.ratedAt ? format(new Date(rating.ratedAt.seconds * 1000), "MMM yyyy") : "Recently"}
+                        </span>
+                      </div>
+                      <p className="text-sm italic">"{rating.comment || "Great work, very professional!"}"</p>
                     </CardContent>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
-                <p className="text-muted-foreground">No verified jobs yet. Check back soon!</p>
-              </div>
-            )}
-          </div>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-20 bg-muted/10 rounded-2xl border-2 border-dashed">
+                  <p className="text-muted-foreground">No client reviews yet.</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
