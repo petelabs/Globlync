@@ -1,3 +1,6 @@
+
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -8,11 +11,30 @@ import {
   Sparkles, 
   CheckCircle, 
   Users, 
-  Lock 
+  Lock,
+  Star,
+  Quote
 } from "lucide-react";
 import Link from "next/link";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
+  const db = useFirestore();
+
+  const appRatingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "appRatings");
+  }, [db]);
+
+  const appRatingsQuery = useMemoFirebase(() => {
+    if (!appRatingsRef) return null;
+    return query(appRatingsRef, orderBy("createdAt", "desc"), limit(6));
+  }, [appRatingsRef]);
+
+  const { data: testimonials } = useCollection(appRatingsQuery);
+
   return (
     <div className="flex flex-col gap-16 py-6">
       {/* Hero Section */}
@@ -46,6 +68,43 @@ export default function Home() {
           <div className="flex items-center gap-2 font-bold"><CheckCircle className="h-5 w-5" /> CLIENT APPROVED</div>
         </div>
       </section>
+
+      {/* Community Testimonials */}
+      {testimonials && testimonials.length > 0 && (
+        <section className="py-12 bg-accent/30 rounded-[3rem] px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-10 flex items-center justify-center gap-3">
+              Voices of Globlync Professionals
+              <Star className="h-6 w-6 text-secondary fill-secondary" />
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((t) => (
+                <Card key={t.id} className="border-none shadow-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex text-secondary">
+                      {[...Array(t.score)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-current" />
+                      ))}
+                    </div>
+                    <div className="relative">
+                      <Quote className="absolute -top-2 -left-2 h-4 w-4 text-primary/10" />
+                      <p className="text-sm italic text-muted-foreground leading-relaxed pl-4">
+                        {t.comment || "Globlync is changing how I find work!"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 border-t">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary uppercase">
+                        {t.workerName?.charAt(0)}
+                      </div>
+                      <span className="text-xs font-bold">{t.workerName}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* How it Works */}
       <section className="py-12">

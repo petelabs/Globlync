@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "WorkerProfile": {
@@ -124,6 +125,40 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "AppRating": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AppRating",
+      "type": "object",
+      "description": "A rating for the Globlync platform itself from a worker.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the app rating."
+        },
+        "workerId": {
+          "type": "string",
+          "description": "The worker who gave the rating."
+        },
+        "workerName": {
+          "type": "string",
+          "description": "The display name of the worker."
+        },
+        "score": {
+          "type": "number",
+          "description": "Rating score (1-5)."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Feedback comment, limited to 100 characters."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of the rating.",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "workerId", "score", "createdAt"]
     },
     "ClientVerification": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -386,17 +421,33 @@
   "firestore": {
     "structure": [
       {
+        "path": "/appRatings/{ratingId}",
+        "definition": {
+          "entityName": "AppRating",
+          "schema": {
+            "$ref": "#/backend/entities/AppRating"
+          },
+          "description": "Collection for general app feedback from workers.",
+          "params": [
+            {
+              "name": "ratingId",
+              "description": "The unique identifier for the app rating."
+            }
+          ]
+        }
+      },
+      {
         "path": "/workerProfiles/{workerId}",
         "definition": {
           "entityName": "WorkerProfile",
           "schema": {
             "$ref": "#/backend/entities/WorkerProfile"
           },
-          "description": "Root collection for informal worker profiles. The document ID `{workerId}` corresponds directly to the worker's Firebase Authentication UID (`request.auth.uid`) and the 'externalAuthId' field. Access is primarily restricted to the owner, with public read access to specific fields for reputation pages. The 'id' field within the document will also match '{workerId}' for consistency.",
+          "description": "Root collection for informal worker profiles.",
           "params": [
             {
               "name": "workerId",
-              "description": "The unique identifier of the worker, matching their Firebase Authentication UID."
+              "description": "The unique identifier of the worker."
             }
           ]
         }
@@ -408,39 +459,15 @@
           "schema": {
             "$ref": "#/backend/entities/Job"
           },
-          "description": "Subcollection storing jobs completed by a specific worker. Each document includes the denormalized 'workerId' field, which matches the parent path's `{workerId}`. This ensures Authorization Independence, allowing rules to verify ownership directly from the document data. Access is restricted to the owning worker.",
+          "description": "Subcollection storing jobs completed by a specific worker.",
           "params": [
             {
               "name": "workerId",
-              "description": "The unique identifier of the worker who owns this job, matching their Firebase Authentication UID."
+              "description": "Worker UID."
             },
             {
               "name": "jobId",
-              "description": "The unique identifier for a specific job."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/workerProfiles/{workerId}/jobs/{jobId}/clientVerifications/{verificationId}",
-        "definition": {
-          "entityName": "ClientVerification",
-          "schema": {
-            "$ref": "#/backend/entities/ClientVerification"
-          },
-          "description": "Subcollection recording client verification events for a specific job. Documents include the denormalized 'workerId' and 'jobId' fields, matching the parent path's `{workerId}` and `{jobId}`. This is critical for Authorization Independence, enabling rules to confirm ownership without `get()` calls. Access for creating/updating is typically system-driven or client-initiated (via token), but reading/managing the records is restricted to the owning worker.",
-          "params": [
-            {
-              "name": "workerId",
-              "description": "The unique identifier of the worker associated with the job being verified."
-            },
-            {
-              "name": "jobId",
-              "description": "The unique identifier of the job being verified."
-            },
-            {
-              "name": "verificationId",
-              "description": "The unique identifier for a client verification record."
+              "description": "Job ID."
             }
           ]
         }
@@ -452,15 +479,15 @@
           "schema": {
             "$ref": "#/backend/entities/Rating"
           },
-          "description": "Subcollection storing client ratings for a worker's jobs. Each document explicitly includes the 'workerId' and 'jobId' fields. The 'workerId' matches the parent path's `{workerId}`, ensuring Authorization Independence and efficient querying of all ratings for a given worker. Workers can read their own ratings; clients create them, typically linked to a verified job.",
+          "description": "Subcollection for client ratings.",
           "params": [
             {
               "name": "workerId",
-              "description": "The unique identifier of the worker who received this rating."
+              "description": "Worker UID."
             },
             {
               "name": "ratingId",
-              "description": "The unique identifier for a specific rating."
+              "description": "Rating ID."
             }
           ]
         }
@@ -472,52 +499,15 @@
           "schema": {
             "$ref": "#/backend/entities/Notification"
           },
-          "description": "Subcollection for worker-specific notifications. Each document includes the 'workerId' field, matching the parent path's `{workerId}`, ensuring Authorization Independence. Notifications are system-generated, but only the owning worker can read and mark them as read.",
+          "description": "Subcollection for notifications.",
           "params": [
             {
               "name": "workerId",
-              "description": "The unique identifier of the worker to whom the notification is addressed."
-            },
-            {
-              "name": "notificationId",
-              "description": "The unique identifier for a specific notification."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/badges/{badgeId}",
-        "definition": {
-          "entityName": "Badge",
-          "schema": {
-            "$ref": "#/backend/entities/Badge"
-          },
-          "description": "Top-level collection for achievement badges. These badge definitions are globally readable (for display on public reputation pages) and managed only by administrators. No specific authorization denormalization needed beyond basic admin checks for write operations.",
-          "params": [
-            {
-              "name": "badgeId",
-              "description": "The unique identifier for a specific badge definition."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/adminUsers/{adminId}",
-        "definition": {
-          "entityName": "AdminUser",
-          "schema": {
-            "$ref": "#/backend/entities/AdminUser"
-          },
-          "description": "Top-level collection for administrative users. The document ID `{adminId}` corresponds directly to the admin's Firebase Authentication UID (`request.auth.uid`) and the 'externalAuthId' field. This provides a direct DBAC mechanism where the presence and 'role' within this document determine administrative privileges. Only authenticated administrators can read/update their own profile, and higher-level admins may manage others.",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "The unique identifier of the administrator, matching their Firebase Authentication UID."
+              "description": "Worker UID."
             }
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore data structure for TrustLink prioritizes security, scalability, and debuggability by adhering strictly to the core design principles, especially Authorization Independence and Structural Segregation.\n\n**Authorization Independence:** This is achieved primarily through pervasive denormalization of owner IDs. For all worker-specific subcollections (`jobs`, `clientVerifications`, `ratings`, `notifications`), the `workerId` (which corresponds to `request.auth.uid`) is explicitly included as a field within each document. For instance, a `Job` document under `/workerProfiles/{workerId}/jobs/{jobId}` will contain a `workerId` field, and a `ClientVerification` document under `/workerProfiles/{workerId}/jobs/{jobId}/clientVerifications/{verificationId}` will contain both `workerId` and `jobId`. This eliminates the need for `get()` calls in security rules to check parent document ownership or attributes, making rules atomic, faster, and easier to debug. Similarly, for `AdminUser` profiles, the `externalAuthId` (which is the admin's `request.auth.uid`) is used as the document ID, allowing direct authorization checks.\n\n**Structural Segregation and QAPs (Rules are not Filters):**\n1.  **Worker-Owned Data:** All data directly associated with a `WorkerProfile` (Jobs, ClientVerifications, Ratings, Notifications) is nested under `/workerProfiles/{workerId}/...`. This design ensures that security rules can use the path wildcard `{workerId}` to directly enforce ownership (`request.auth.uid == workerId`). This immediately satisfies the Query Access Patterns (QAPs) requirement, as any `list` operation on these subcollections (e.g., `/workerProfiles/{currentUid}/jobs`) is inherently filtered by the authenticated user's ID, preventing users from accidentally or maliciously querying data they don't own. The `workerId` denormalized within the document provides a secondary, robust check.\n2.  **Global Data:** Entities like `Badge` are global and publicly readable, residing in a top-level `/badges` collection. Their security posture is homogeneous (public read, admin write), simplifying rules and preventing mixed access requirements within a single collection.\n3.  **Admin Data:** `/adminUsers/{adminId}` serves as a dedicated collection for administrative profiles, where `adminId` is the `request.auth.uid` of the admin. This allows for clear DBAC implementation, where admin privileges are granted by the existence and role within this specific, secured collection, without relying on custom claims.\n\n**Consistency and Predictability:** Semantic naming conventions (`workerId`, `jobId`, `adminId`) are used for path wildcards and document fields. Explicit state modeling (e.g., `ClientVerification.status`) simplifies logic. This structured approach significantly reduces complexity, enhances clarity of intent in security rules, and promotes maintainability for a scalable and trustworthy application like TrustLink."
+    ]
   }
 }

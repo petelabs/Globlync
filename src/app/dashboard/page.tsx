@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -13,13 +14,17 @@ import {
   Award,
   ChevronRight,
   Loader2,
-  Sparkles
+  Sparkles,
+  Heart,
+  X
 } from "lucide-react";
 import Link from "next/link";
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit, doc } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { collection, query, orderBy, limit, doc, serverTimestamp } from "firebase/firestore";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string }> = {
   'first-job': { name: "First Verified Job", icon: Award, color: "text-blue-500" },
@@ -30,6 +35,12 @@ const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string 
 export default function DashboardPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
+
+  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
+  const [appRating, setAppRating] = useState(0);
+  const [appComment, setAppComment] = useState("");
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -56,6 +67,17 @@ export default function DashboardPage() {
   const { data: recentJobs, isLoading: isJobsLoading } = useCollection(recentJobsQuery);
   const { data: ratings } = useCollection(ratingsRef);
 
+  // Prompt logic: Show after 15 seconds if they have at least one job and haven't rated in this session
+  useEffect(() => {
+    const hasRated = localStorage.getItem(`rated_app_${user?.uid}`);
+    if (allJobs && allJobs.length > 0 && !hasRated) {
+      const timer = setTimeout(() => {
+        setShowRatingPrompt(true);
+      }, 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [allJobs, user?.uid]);
+
   const stats = useMemo(() => {
     const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
     const avgRating = ratings?.length 
@@ -70,6 +92,29 @@ export default function DashboardPage() {
       badges: profile?.badgeIds || []
     };
   }, [allJobs, ratings, profile]);
+
+  const handleAppRatingSubmit = async () => {
+    if (appRating === 0 || !db || !user) return;
+    setIsSubmittingRating(true);
+    
+    const globalAppRatingsRef = collection(db, "appRatings");
+    addDocumentNonBlocking(globalAppRatingsRef, {
+      workerId: user.uid,
+      workerName: user.displayName || "A Professional",
+      score: appRating,
+      comment: appComment.substring(0, 100), // Enforce 100 char limit
+      createdAt: serverTimestamp(),
+    });
+
+    localStorage.setItem(`rated_app_${user.uid}`, "true");
+    setIsSubmittingRating(false);
+    setShowRatingPrompt(false);
+    
+    toast({
+      title: "Thank You!",
+      description: "We're happy to have you as part of Globlync.",
+    });
+  };
 
   if (!user) return null;
 
@@ -95,6 +140,55 @@ export default function DashboardPage() {
           </Button>
         </div>
       </header>
+
+      {/* Rate Us Prompt */}
+      {showRatingPrompt && (
+        <Card className="border-2 border-primary bg-primary/5 animate-in slide-in-from-top-4 relative overflow-hidden">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute top-2 right-2 h-6 w-6 rounded-full" 
+            onClick={() => setShowRatingPrompt(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Heart className="h-5 w-5 text-primary fill-primary" />
+              How are we doing?
+            </CardTitle>
+            <CardDescription>We'd love a 5-star rating if Globlync is helping your career!</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button 
+                  key={star} 
+                  onClick={() => setAppRating(star)}
+                  className="transition-transform hover:scale-110"
+                >
+                  <Star className={cn("h-8 w-8", star <= appRating ? "fill-secondary text-secondary" : "text-muted")} />
+                </button>
+              ))}
+            </div>
+            {appRating > 0 && (
+              <div className="space-y-3 animate-in fade-in">
+                <Textarea 
+                  placeholder="Tell us what you love (max 100 characters)" 
+                  className="text-xs resize-none"
+                  maxLength={100}
+                  value={appComment}
+                  onChange={(e) => setAppComment(e.target.value)}
+                />
+                <Button className="w-full rounded-full" onClick={handleAppRatingSubmit} disabled={isSubmittingRating}>
+                  {isSubmittingRating ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
+                  Submit Feedback
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-12">
         {/* Trust Score Card */}
