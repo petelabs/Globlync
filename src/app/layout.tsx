@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -20,10 +19,8 @@ export const metadata: Metadata = {
   description: 'Globlync helps informal workers (plumbers, electricians, cleaners) build a digital, evidence-based reputation with AI-verified job logs and client ratings.',
   keywords: 'skilled workers, informal labor, professional reputation, job verification, plumber reputation, electrician trust, verified workers, Globlync',
   manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Globlync',
+  icons: {
+    apple: '/apple-icon.png',
   },
   openGraph: {
     type: 'website',
@@ -34,7 +31,7 @@ export const metadata: Metadata = {
     siteName: 'Globlync',
     images: [
       {
-        url: 'https://picsum.photos/seed/globlync-og/1200/630',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Globlync Professional Reputation',
@@ -45,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Globlync | Skilled Worker Reputation',
     description: 'Get verified, earn badges, and grow your career with Globlync.',
-    images: ['https://picsum.photos/seed/globlync-twitter/1200/630'],
+    images: ['/og-image.jpg'],
   },
   other: {
     'monetag': 'eb40c85c2360cc20f8269caf685d4cd8',
@@ -74,7 +71,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Globlync",
               "url": "https://globlync.vercel.app",
-              "logo": "https://picsum.photos/seed/globlync-logo/200/200",
+              "logo": "https://globlync.vercel.app/icon-512.png",
               "description": "A digital reputation platform for skilled manual workers using AI-based verification.",
               "sameAs": []
             })
