@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -14,22 +15,14 @@ import {
   Award,
   ChevronRight,
   Loader2,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from "lucide-react";
 import Link from "next/link";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-
-const chartConfig = {
-  jobs: {
-    label: "Verified Jobs",
-    color: "hsl(var(--primary))",
-  },
-};
 
 const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string }> = {
   'first-job': { name: "First Verified Job", icon: Award, color: "text-blue-500" },
@@ -80,13 +73,6 @@ export default function DashboardPage() {
       badges: profile?.badgeIds || []
     };
   }, [allJobs, ratings, profile]);
-
-  const chartData = [
-    { month: "Jan", jobs: 2 },
-    { month: "Feb", jobs: 4 },
-    { month: "Mar", jobs: 7 },
-    { month: "Apr", jobs: stats.totalVerified },
-  ];
 
   if (!user) return null;
 
@@ -179,8 +165,32 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Ad Space: Professional & Non-Scammy */}
+        <Card className="md:col-span-4 border-none bg-accent/30 shadow-sm overflow-hidden">
+          <CardHeader className="pb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sponsored</span>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+              <img 
+                src="https://picsum.photos/seed/tool-ad/400/225" 
+                alt="Professional Tools Ad" 
+                className="h-full w-full object-cover"
+                data-ai-hint="professional tools"
+              />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold">Upgrade Your Toolset</h4>
+              <p className="text-xs text-muted-foreground">Get 20% off professional-grade equipment this month.</p>
+            </div>
+            <Button variant="outline" size="sm" className="w-full text-xs h-8 rounded-full">
+              Learn More <ExternalLink className="ml-1 h-3 w-3" />
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Recent Jobs */}
-        <Card className="md:col-span-12 border-none shadow-sm">
+        <Card className="md:col-span-8 border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Verified Activity</CardTitle>
             <Button variant="ghost" size="sm" asChild>
