@@ -1,4 +1,5 @@
-# Globlync - Portable Reputation for Skilled Workers
+
+# Globlync - Evidence-Based Reputation for Skilled Workers
 
 Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation.
 
@@ -8,30 +9,31 @@ To deploy this application to Vercel, follow these steps:
 
 ### 1. Push to GitHub
 - Create a new repository on GitHub.
-- Initialize your local project as a git repo (if not already): `git init`
-- Add all files: `git add .`
-- Commit: `git commit -m "Initial commit"`
-- Link and push to your GitHub repo: `git remote add origin <your-repo-url>` and `git push -u origin main`
+- Link and push your local code: `git push -u origin main`
 
 ### 2. Connect to Vercel
-- Go to [Vercel](https://vercel.com) and click **"Add New"** > **"Project"**.
-- Import your GitHub repository.
-- In the **"Environment Variables"** section, add the following:
-    - `GOOGLE_GENAI_API_KEY`: Your Google AI Studio API key (required for AI Bio features).
-- Click **"Deploy"**.
+- Import your GitHub repository into Vercel.
+- **CRITICAL:** In the **Environment Variables** section, add:
+    - `GOOGLE_GENAI_API_KEY`: Your Google AI Studio API key (Required for AI Photo Analysis).
 
-### 3. Firebase Configuration
-The app is pre-configured with the Firebase settings found in `src/firebase/config.ts`. Ensure your Firebase project's Authorized Domains includes your Vercel deployment URL (e.g., `your-app-name.vercel.app`) to allow Google Login to work.
+### 3. Monetag Ad Integration (Monetization)
+To earn revenue and cover your hosting costs without "spammy" ads, follow these steps:
+1. Register at [Monetag.com](https://monetag.com/).
+2. Add your site: `https://globlync.vercel.app`.
+3. Create a **"Native Banner"** ad zone.
+4. **Integration:** Once approved, replace the placeholders in the following files with your Monetag script:
+   - `src/app/dashboard/page.tsx` (ID: `monetag-ad-slot-dashboard`)
+   - `src/app/public/[workerId]/page.tsx` (ID: `monetag-ad-slot-sidebar` and `monetag-ad-slot-footer`)
 
 ## ✨ Features
-- **Verified Job Logging**: Workers log work, and clients verify via QR/SMS.
-- **Trust Score**: Real-time calculation of worker reputation.
-- **AI Bio Assistant**: Genkit-powered professional bio generation.
-- **Public Profiles**: Shareable links for workers to showcase credentials.
+- **Verified Job Logging**: Workers log work, and clients verify via QR.
+- **AI Photo Analysis**: Gemini 2.0 Flash verifies that job photos match descriptions.
+- **Trust Score & Badges**: Real-time calculated reputation system with automated milestones.
+- **Public Profiles**: Dynamic, shareable links (e.g., `globlync.vercel.app/public/USER_ID`) for workers to showcase credentials.
+- **Ad Ready**: Built-in professional slots for non-intrusive revenue.
 
 ## 🛠️ Tech Stack
 - **Framework**: Next.js 15 (App Router)
 - **Database/Auth**: Firebase Firestore & Authentication
 - **AI**: Genkit with Gemini 2.0 Flash
 - **Styling**: Tailwind CSS + ShadCN UI
-# Globlync
