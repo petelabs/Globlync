@@ -4,6 +4,7 @@ import { Navigation } from '@/components/Navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import Script from 'next/script';
 
 export const viewport: Viewport = {
   themeColor: '#00796B',
@@ -61,6 +62,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Monetag Domain Verification */}
+        <meta name="monetag" content="eb40c85c2360cc20f8269caf685d4cd8" />
       </head>
       <body className="font-body antialiased bg-background">
         <FirebaseClientProvider>
@@ -71,6 +74,15 @@ export default function RootLayout({
           <InstallPrompt />
           <Toaster />
         </FirebaseClientProvider>
+
+        {/* Monetag Vignette Banner Script */}
+        <Script
+          id="monetag-vignette"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(s){s.dataset.zone='10674894',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`
+          }}
+        />
       </body>
     </html>
   );

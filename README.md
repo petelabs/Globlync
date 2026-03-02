@@ -20,17 +20,18 @@ To deploy this application to Vercel, follow these steps:
 To earn revenue and cover your hosting costs without "spammy" ads, follow these steps:
 1. Register at [Monetag.com](https://monetag.com/).
 2. Add your site: `https://globlync.vercel.app`.
-3. Create a **"Native Banner"** ad zone.
-4. **Integration:** Once approved, replace the placeholders in the following files with your Monetag script:
+3. Create a **"Vignette Banner"** zone.
+4. **Integration:** The Vignette script is already added to `src/app/layout.tsx`. It will automatically activate once Monetag approves your domain.
+5. **Native Slots:** I have created placeholders for "Native Banner" ad zones in:
    - `src/app/dashboard/page.tsx` (ID: `monetag-ad-slot-dashboard`)
-   - `src/app/public/[workerId]/page.tsx` (ID: `monetag-ad-slot-sidebar` and `monetag-ad-slot-footer`)
+   - `src/app/public/[workerId]/page.tsx` (ID: `monetag-ad-slot-sidebar`)
 
 ## ✨ Features
 - **Verified Job Logging**: Workers log work, and clients verify via QR.
 - **AI Photo Analysis**: Gemini 2.0 Flash verifies that job photos match descriptions.
 - **Trust Score & Badges**: Real-time calculated reputation system with automated milestones.
 - **Public Profiles**: Dynamic, shareable links (e.g., `globlync.vercel.app/public/USER_ID`) for workers to showcase credentials.
-- **Ad Ready**: Built-in professional slots for non-intrusive revenue.
+- **PWA Ready**: Installable on home screens with professional SEO.
 
 ## 🛠️ Tech Stack
 - **Framework**: Next.js 15 (App Router)
