@@ -26,6 +26,11 @@ To earn revenue and cover your hosting costs without "spammy" ads, follow these 
    - `src/app/dashboard/page.tsx` (ID: `monetag-ad-slot-dashboard`)
    - `src/app/public/[workerId]/page.tsx` (ID: `monetag-ad-slot-sidebar`)
 
+## 💡 Troubleshooting Ads
+- **Localhost:** Ads will NOT show on `localhost` because the domain isn't verified.
+- **AdBlockers:** Disable AdBlock to see your slots during testing.
+- **Approval:** It can take up to 24 hours for Monetag to activate your domain.
+
 ## ✨ Features
 - **Verified Job Logging**: Workers log work, and clients verify via QR.
 - **AI Photo Analysis**: Gemini 2.0 Flash verifies that job photos match descriptions.
