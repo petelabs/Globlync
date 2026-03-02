@@ -165,23 +165,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Ad Space: Professional & Non-Scammy */}
-        <Card className="md:col-span-4 border-none bg-accent/30 shadow-sm overflow-hidden">
+        {/* Ad Space: Professional Slot for Monetag/A-Ads */}
+        <Card className="md:col-span-4 border-none bg-accent/30 shadow-sm overflow-hidden border-dashed border-2">
           <CardHeader className="pb-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sponsored</span>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-              <img 
-                src="https://picsum.photos/seed/tool-ad/400/225" 
-                alt="Professional Tools Ad" 
-                className="h-full w-full object-cover"
-                data-ai-hint="professional tools"
-              />
+            <div id="monetag-ad-slot" className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
+              <div className="text-center p-4">
+                <p className="text-[10px] text-muted-foreground italic">Ads help keep Globlync free for professionals.</p>
+              </div>
             </div>
             <div>
-              <h4 className="text-sm font-bold">Upgrade Your Toolset</h4>
-              <p className="text-xs text-muted-foreground">Get 20% off professional-grade equipment this month.</p>
+              <h4 className="text-sm font-bold">Professional Offers</h4>
+              <p className="text-xs text-muted-foreground">Exclusive deals for skilled tradespeople.</p>
             </div>
             <Button variant="outline" size="sm" className="w-full text-xs h-8 rounded-full">
               Learn More <ExternalLink className="ml-1 h-3 w-3" />
