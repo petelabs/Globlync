@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from "react";
@@ -165,24 +164,23 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Ad Space: Monetag Native Banner Placeholder */}
+        {/* Ad Space: A-Ads Slot Placeholder */}
         <Card className="md:col-span-4 border-none bg-accent/30 shadow-sm overflow-hidden border-dashed border-2">
           <CardHeader className="pb-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sponsored</span>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            {/* INSTRUCTION: Paste Monetag Native Banner script into this div */}
-            <div id="monetag-ad-slot-dashboard" className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
+            <div id="aads-ad-slot-dashboard" className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
               <div className="text-center p-4">
                 <p className="text-[10px] text-muted-foreground italic">Ads help keep Globlync free for professionals.</p>
               </div>
             </div>
             <div>
-              <h4 className="text-sm font-bold">Industry Offers</h4>
-              <p className="text-xs text-muted-foreground">Exclusive deals for skilled tradespeople.</p>
+              <h4 className="text-sm font-bold">A-Ads Integrated</h4>
+              <p className="text-xs text-muted-foreground">Privacy-respecting professional offers.</p>
             </div>
             <Button variant="outline" size="sm" className="w-full text-xs h-8 rounded-full">
-              Learn More <ExternalLink className="ml-1 h-3 w-3" />
+              Explore <ExternalLink className="ml-1 h-3 w-3" />
             </Button>
           </CardContent>
         </Card>
