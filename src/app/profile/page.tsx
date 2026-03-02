@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,7 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, MapPin, Briefcase, Mail, Phone, Sparkles, Loader2, QrCode, Download, ExternalLink } from "lucide-react";
+import { 
+  Camera, 
+  MapPin, 
+  Briefcase, 
+  Mail, 
+  Phone, 
+  Sparkles, 
+  Loader2, 
+  QrCode, 
+  Download, 
+  ExternalLink,
+  Settings
+} from "lucide-react";
+import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { generateProfessionalBio } from "@/ai/flows/generate-bio-flow";
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
@@ -106,9 +118,16 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
-      <header>
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <p className="text-muted-foreground">Manage your Globlync professional presence and public reputation.</p>
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Profile Settings</h1>
+          <p className="text-muted-foreground">Manage your Globlync professional presence.</p>
+        </div>
+        <Button variant="outline" size="sm" asChild className="rounded-full">
+          <Link href="/settings">
+            <Settings className="mr-2 h-4 w-4" /> Settings
+          </Link>
+        </Button>
       </header>
 
       <div className="grid gap-6 md:grid-cols-3">

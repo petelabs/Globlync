@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, User, Bell, Search, ShieldCheck, LogIn } from "lucide-react";
+import { 
+  Home, 
+  ClipboardList, 
+  User, 
+  Bell, 
+  Search, 
+  ShieldCheck, 
+  LogIn,
+  Settings
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +22,7 @@ const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: ShieldCheck, authRequired: true },
   { label: "Jobs", href: "/jobs", icon: ClipboardList, authRequired: true },
   { label: "Profile", href: "/profile", icon: User, authRequired: true },
+  { label: "Settings", href: "/settings", icon: Settings, authRequired: true },
 ];
 
 export function Navigation() {
