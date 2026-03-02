@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge as BadgeUI } from "@/components/ui/badge";
 import { 
   PlusCircle, 
   CheckCircle2, 
@@ -14,8 +13,7 @@ import {
   Award,
   ChevronRight,
   Loader2,
-  Sparkles,
-  ExternalLink
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
@@ -90,7 +88,7 @@ export default function DashboardPage() {
             </Link>
           </Button>
           <Button size="sm" className="rounded-full shadow-lg" asChild>
-            <Link href="/jobs">
+            <Link href="/work-log">
               <PlusCircle className="mr-2 h-4 w-4" />
               Log New Job
             </Link>
@@ -169,7 +167,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Activity</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/jobs">Full History <ChevronRight className="ml-1 h-4 w-4" /></Link>
+              <Link href="/work-log">Full History <ChevronRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </CardHeader>
           <CardContent className="grid gap-4">

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Home, 
-  ClipboardList, 
+  Briefcase, 
   User, 
   Bell, 
   Search, 
@@ -13,7 +13,7 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
-  Menu
+  ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -55,7 +55,8 @@ export function Navigation() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Jobs", href: "/jobs", icon: ClipboardList, authRequired: true },
+    { label: "Jobs", href: "/jobs", icon: Briefcase },
+    { label: "Log Work", href: "/work-log", icon: ClipboardCheck, authRequired: true },
   ];
 
   return (
@@ -75,7 +76,7 @@ export function Navigation() {
               onClick={() => router.push('/search')}
             >
               <Search className="h-4 w-4 mr-2" />
-              <span className="text-sm">Search skilled workers...</span>
+              <span className="text-sm">Search workers...</span>
             </Button>
           </div>
 
@@ -110,6 +111,12 @@ export function Navigation() {
                       <Link href="/dashboard" className="cursor-pointer">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         <span>Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/work-log" className="cursor-pointer">
+                        <ClipboardCheck className="mr-2 h-4 w-4" />
+                        <span>Log New Work</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -201,7 +208,7 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Desktop Main Nav (Optional side links or simplified top) */}
+      {/* Desktop Sub Nav */}
       <div className="hidden md:flex fixed top-16 left-0 right-0 h-12 bg-background/50 border-b items-center justify-center gap-8 z-40 backdrop-blur-sm">
         {navItems.map((item) => {
           if (item.authRequired && !user) return null;
