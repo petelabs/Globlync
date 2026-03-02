@@ -20,7 +20,12 @@ import {
   Wrench,
   BookOpen,
   Car,
-  Laptop
+  Laptop,
+  Scissors,
+  Camera,
+  GraduationCap,
+  PlugZap,
+  HardHat
 } from "lucide-react";
 import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -29,10 +34,26 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const SKILL_CATEGORIES = [
-  { name: "Construction", icon: Hammer, skills: ["Mason", "Carpenter", "Welder", "Painter", "Bricklayer"] },
-  { name: "Home Services", icon: Home, skills: ["Plumber", "Electrician", "Solar Tech", "Gardener", "Housekeeper"] },
-  { name: "Technical", icon: Laptop, skills: ["Mechanic", "IT Support", "Phone Repair", "Tailor"] },
-  { name: "Professional", icon: BookOpen, skills: ["Tutor", "Accountant", "Sales Agent", "Driver"] },
+  { 
+    name: "Construction", 
+    icon: HardHat, 
+    skills: ["Mason", "Carpenter", "Welder", "Painter", "Bricklayer", "Tiler", "Plasterer"] 
+  },
+  { 
+    name: "Home Services", 
+    icon: Home, 
+    skills: ["Plumber", "Electrician", "Solar Tech", "Gardener", "Housekeeper", "Nanny", "Laundry"] 
+  },
+  { 
+    name: "Technical", 
+    icon: Laptop, 
+    skills: ["Mechanic", "IT Support", "Phone Repair", "Tailor", "Cobbler", "Barber", "Beautician"] 
+  },
+  { 
+    name: "Professional", 
+    icon: GraduationCap, 
+    skills: ["Tutor", "Accountant", "Sales Agent", "Driver", "Photographer", "Event Planner"] 
+  },
 ];
 
 export default function SearchPage() {
@@ -40,7 +61,6 @@ export default function SearchPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const db = useFirestore();
 
-  // Limited query for performance and Spark plan safety
   const workersRef = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "workerProfiles");
@@ -53,7 +73,6 @@ export default function SearchPage() {
 
   const { data: allWorkers, isLoading } = useCollection(discoveryQuery);
 
-  // Filter for newcomers (24 hours)
   const newcomers = useMemo(() => {
     if (!allWorkers) return [];
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
@@ -63,7 +82,6 @@ export default function SearchPage() {
     });
   }, [allWorkers]);
 
-  // Main filtered list based on search and category
   const filteredWorkers = useMemo(() => {
     if (!allWorkers) return [];
     return allWorkers.filter(w => {
@@ -85,25 +103,24 @@ export default function SearchPage() {
       <header className="flex flex-col gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tight text-primary">Discover Professionals</h1>
-          <p className="text-muted-foreground">Find AI-verified skilled workers across Malawi.</p>
+          <p className="text-muted-foreground text-sm">Find AI-verified skilled workers across Malawi.</p>
         </div>
 
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
             <Input 
-              placeholder="Who are you looking for? (e.g. Plumber)" 
-              className="pl-12 h-12 rounded-2xl shadow-sm border-2 focus-visible:ring-primary" 
+              placeholder="Find a Plumber, Mason, or Tutor..." 
+              className="pl-12 h-12 rounded-2xl shadow-sm border-2 focus-visible:ring-primary text-base" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl">
+          <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl shrink-0">
             <Filter className="h-5 w-5" />
           </Button>
         </div>
 
-        {/* Categories Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {SKILL_CATEGORIES.map((cat) => {
             const Icon = cat.icon;
@@ -120,14 +137,13 @@ export default function SearchPage() {
                 )}
               >
                 <Icon className={cn("h-6 w-6", isActive ? "text-primary-foreground" : "text-primary")} />
-                <span className="text-xs font-bold uppercase tracking-wider">{cat.name}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{cat.name}</span>
               </button>
             );
           })}
         </div>
       </header>
 
-      {/* 24 Hour Newcomers Section - High Discovery */}
       {newcomers.length > 0 && !searchTerm && !selectedCategory && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
@@ -163,7 +179,6 @@ export default function SearchPage() {
         </section>
       )}
 
-      {/* Main Results */}
       <section className="space-y-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
           {searchTerm || selectedCategory ? "Search Results" : "All Professionals"}
@@ -195,14 +210,6 @@ export default function SearchPage() {
                         <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Location Verified</span>
                         <span className="flex items-center gap-1 text-foreground"><Star className="h-3 w-3 text-secondary fill-secondary" /> 5.0 Rating</span>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {worker.badgeIds?.slice(0, 2).map((b: string) => (
-                          <Badge key={b} variant="secondary" className="text-[9px] py-0 px-2 uppercase font-black tracking-tighter">
-                            {b.replace('-', ' ')}
-                          </Badge>
-                        ))}
-                        <Badge variant="outline" className="text-[9px] py-0 px-2 uppercase font-black border-primary/20 text-primary">Verified Pro</Badge>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -218,30 +225,17 @@ export default function SearchPage() {
         </div>
       </section>
 
-      {/* Malawi Specific Help */}
-      {!searchTerm && !selectedCategory && (
-        <Card className="border-none bg-primary text-primary-foreground p-8 rounded-[2.5rem] shadow-xl overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <MapPin className="h-32 w-32" />
-          </div>
-          <div className="relative z-10 space-y-4">
-            <h3 className="text-2xl font-black italic">Supporting Malawi's Workforce</h3>
-            <p className="text-primary-foreground/80 leading-relaxed text-sm max-w-lg">
-              Globlync is dedicated to helping independent workers in Lilongwe, Blantyre, Mzuzu, and across Malawi build a reputation that opens doors to better opportunities.
-            </p>
-            <div className="flex gap-4">
-              <div className="bg-white/10 rounded-xl p-3 flex-1 text-center">
-                <span className="block text-xl font-black">100%</span>
-                <span className="text-[9px] uppercase font-bold opacity-70">Verified Pros</span>
-              </div>
-              <div className="bg-white/10 rounded-xl p-3 flex-1 text-center">
-                <span className="block text-xl font-black">AI</span>
-                <span className="text-[9px] uppercase font-bold opacity-70">Powered Logs</span>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
+      <Card className="border-none bg-primary text-primary-foreground p-8 rounded-[2.5rem] shadow-xl overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <MapPin className="h-32 w-32" />
+        </div>
+        <div className="relative z-10 space-y-4">
+          <h3 className="text-2xl font-black italic">Supporting Malawi's Workforce</h3>
+          <p className="text-primary-foreground/80 leading-relaxed text-sm max-w-lg">
+            Globlync is dedicated to helping independent workers in Lilongwe, Blantyre, Mzuzu, and across Malawi build a reputation that opens doors.
+          </p>
+        </div>
+      </Card>
     </div>
   );
 }

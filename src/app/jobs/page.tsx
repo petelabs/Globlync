@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -13,11 +14,11 @@ import {
   Filter,
   Building2,
   ChevronRight,
-  Info
+  Info,
+  MessageSquare
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Sample data for the job board
 const JOB_LISTINGS = [
   {
     id: "dzenje-cook-1",
@@ -53,15 +54,12 @@ export default function JobsBoardPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input 
-              placeholder="Search jobs (e.g. Cooker, Plumber)..." 
+              placeholder="Search jobs..." 
               className="pl-10 h-12 rounded-full shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="icon" className="h-12 w-12 rounded-full">
-            <Filter className="h-5 w-5" />
-          </Button>
         </div>
       </header>
 
@@ -98,13 +96,9 @@ export default function JobsBoardPage() {
                 <Button className="w-full sm:w-auto rounded-full px-6" asChild>
                   <a href={`mailto:${job.applicationEmail}`}>
                     <Mail className="mr-2 h-4 w-4" />
-                    Apply Now
+                    Apply via Email
                   </a>
                 </Button>
-                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                  <Info className="h-3 w-3" />
-                  Contact employer via email for details
-                </div>
               </CardFooter>
             </Card>
           ))
@@ -116,12 +110,21 @@ export default function JobsBoardPage() {
         )}
       </section>
 
-      <Card className="border-none bg-primary/5 text-primary text-center p-6 rounded-2xl">
-        <h3 className="font-bold mb-2">Want to post a job here?</h3>
-        <p className="text-sm opacity-80 mb-4">Are you looking for skilled workers? Contact us to get your job listed on Malawi's most trusted professional platform.</p>
-        <Button variant="outline" className="rounded-full border-primary hover:bg-primary hover:text-white transition-colors">
-          Contact Support
-        </Button>
+      <Card className="border-none bg-primary/5 text-primary text-center p-8 rounded-[2.5rem]">
+        <h3 className="font-bold text-xl mb-2">Want to post a job?</h3>
+        <p className="text-sm opacity-80 mb-6">Reach thousands of verified skilled workers across Malawi.</p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Button variant="outline" className="rounded-full border-primary" asChild>
+            <a href="https://wa.me/0987066051" target="_blank">
+              <MessageSquare className="mr-2 h-4 w-4" /> Message on WhatsApp
+            </a>
+          </Button>
+          <Button variant="outline" className="rounded-full border-primary" asChild>
+            <a href="mailto:globlync.pro@gmail.com">
+              <Mail className="mr-2 h-4 w-4" /> Email globlync.pro@gmail.com
+            </a>
+          </Button>
+        </div>
       </Card>
     </div>
   );

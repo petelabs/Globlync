@@ -13,12 +13,12 @@ import {
   Users, 
   Lock,
   Star,
-  Quote
+  Quote,
+  Share2
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
-import { cn } from "@/lib/utils";
 
 export default function Home() {
   const db = useFirestore();
@@ -47,7 +47,7 @@ export default function Home() {
           Trust is the new <span className="text-primary">Currency.</span>
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-          Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof and real client ratings.
+          Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
@@ -56,16 +56,6 @@ export default function Home() {
           <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg" asChild>
             <Link href="/search">Find Verified Pros</Link>
           </Button>
-        </div>
-      </section>
-
-      {/* Trust Bar */}
-      <section className="border-y bg-muted/30 py-8">
-        <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all">
-          <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-5 w-5" /> AI VERIFIED</div>
-          <div className="flex items-center gap-2 font-bold"><Lock className="h-5 w-5" /> SECURE DATA</div>
-          <div className="flex items-center gap-2 font-bold"><Users className="h-5 w-5" /> 100% TRANSPARENT</div>
-          <div className="flex items-center gap-2 font-bold"><CheckCircle className="h-5 w-5" /> CLIENT APPROVED</div>
         </div>
       </section>
 
@@ -140,19 +130,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="rounded-[3rem] bg-primary px-8 py-16 text-primary-foreground text-center overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div className="relative z-10 max-w-3xl mx-auto flex flex-col gap-8">
-          <h2 className="text-4xl font-bold sm:text-5xl">Your reputation is your future. Start building it today.</h2>
-          <p className="text-xl opacity-80">Join the elite community of skilled tradespeople who prove their excellence with data, not just words.</p>
-          <div className="flex justify-center">
-            <Button size="lg" variant="secondary" className="rounded-full px-12 h-14 text-lg font-bold" asChild>
-              <Link href="/dashboard">Get Your Trust Score</Link>
+      {/* Footer Branding */}
+      <footer className="text-center py-12 border-t mt-12">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2 text-primary font-bold">
+            <ShieldCheck className="h-6 w-6" />
+            <span>Globlync</span>
+          </div>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-black">
+            Built by Petediano Tech
+          </p>
+          <div className="flex gap-4 mt-2">
+            <Button variant="ghost" size="sm" className="rounded-full text-[10px]" asChild>
+              <Link href="/jobs">Post a Job</Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="rounded-full text-[10px]" asChild>
+              <Link href="/search">Find Workers</Link>
             </Button>
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }
