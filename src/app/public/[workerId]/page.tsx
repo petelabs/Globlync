@@ -1,28 +1,31 @@
-
 "use client";
 
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useDoc, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, collection, query, orderBy, limit } from "firebase/firestore";
+import { doc, collection, query, where, orderBy } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, 
   Star, 
-  MapPin, 
   CheckCircle2, 
-  Clock, 
   Award, 
+  Clock, 
+  MapPin, 
   ExternalLink,
-  ChevronRight,
-  Loader2,
-  Sparkles
+  Briefcase,
+  Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+
+const BADGE_CONFIG: Record<string, { name: string; color: string }> = {
+  'first-job': { name: "First Verified Job", color: "bg-blue-500" },
+  'reliable-worker': { name: "Reliable Professional", color: "bg-primary" },
+  'perfect-streak': { name: "Customer Favorite", color: "bg-secondary" },
+};
 
 export default function PublicProfilePage() {
   const { workerId } = useParams() as { workerId: string };
@@ -38,28 +41,33 @@ export default function PublicProfilePage() {
     return collection(db, "workerProfiles", workerId, "jobs");
   }, [db, workerId]);
 
+  const verifiedJobsQuery = useMemoFirebase(() => {
+    if (!jobsRef) return null;
+    return query(jobsRef, where("isVerified", "==", true), orderBy("createdAt", "desc"));
+  }, [jobsRef]);
+
   const ratingsRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
     return collection(db, "workerProfiles", workerId, "ratings");
   }, [db, workerId]);
 
-  const verifiedJobsQuery = useMemoFirebase(() => {
-    if (!jobsRef) return null;
-    return query(jobsRef, orderBy("dateCompleted", "desc"), limit(10));
-  }, [jobsRef]);
-
-  const { data: worker, isLoading: isWorkerLoading } = useDoc(workerRef);
+  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
   const { data: jobs, isLoading: isJobsLoading } = useCollection(verifiedJobsQuery);
   const { data: ratings } = useCollection(ratingsRef);
 
   const stats = useMemo(() => {
-    if (!ratings) return { avg: 0, count: 0 };
-    const count = ratings.length;
-    const avg = count > 0 ? ratings.reduce((acc, r) => acc + (r.score || 0), 0) / count : 0;
-    return { avg: avg.toFixed(1), count };
-  }, [ratings]);
+    const avgRating = ratings?.length 
+      ? ratings.reduce((acc, r) => acc + (r.score || 0), 0) / ratings.length 
+      : 5.0;
+    
+    return {
+      averageRating: avgRating.toFixed(1),
+      totalVerified: jobs?.length || 0,
+      trustScore: profile?.trustScore || 0,
+    };
+  }, [jobs, ratings, profile]);
 
-  if (isWorkerLoading) {
+  if (isProfileLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -67,180 +75,149 @@ export default function PublicProfilePage() {
     );
   }
 
-  if (!worker) {
+  if (!profile) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <h1 className="text-2xl font-bold">Profile Not Found</h1>
-        <p className="text-muted-foreground">This worker profile may be private or deleted.</p>
-        <Button asChild><a href="/">Go Home</a></Button>
+        <p className="text-muted-foreground">The worker profile you're looking for doesn't exist.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto">
-      {/* AI Structured Data for Trust */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ProfessionalService",
-            "name": worker.name,
-            "image": worker.profilePictureUrl || `https://picsum.photos/seed/${workerId}/200/200`,
-            "description": worker.bio || `${worker.name} is a verified ${worker.tradeSkill} on Globlync.`,
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": stats.avg,
-              "reviewCount": stats.count || 1
-            },
-            "hasCredential": worker.badgeIds?.map((b: string) => ({
-              "@type": "EducationalOccupationalCredential",
-              "name": b.replace('-', ' ')
-            }))
-          })
-        }}
-      />
+    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto px-4">
+      {/* Header Profile Section */}
+      <section className="flex flex-col md:flex-row items-center md:items-start gap-6 bg-card p-8 rounded-[2rem] border shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+        
+        <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
+          <AvatarImage src={profile.profilePictureUrl || `https://picsum.photos/seed/${workerId}/200/200`} />
+          <AvatarFallback>{profile.name?.charAt(0)}</AvatarFallback>
+        </Avatar>
 
-      <header className="relative">
-        <div className="h-32 w-full bg-primary/10 rounded-3xl" />
-        <div className="absolute -bottom-12 left-8 flex flex-col sm:flex-row items-end sm:items-center gap-4 sm:gap-6">
-          <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-            <AvatarImage src={worker.profilePictureUrl || `https://picsum.photos/seed/${workerId}/200/200`} />
-            <AvatarFallback>{worker.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="pb-2 sm:pb-0">
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              {worker.name}
-              <ShieldCheck className="h-6 w-6 text-primary" />
-            </h1>
-            <p className="text-lg text-primary font-semibold">{worker.tradeSkill}</p>
+        <div className="flex-1 text-center md:text-left space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tight">{profile.name}</h1>
+            <Badge variant="secondary" className="w-fit mx-auto md:mx-0 bg-primary/10 text-primary border-none font-bold">
+              <ShieldCheck className="mr-1 h-3 w-3" /> Verified Pro
+            </Badge>
+          </div>
+          <p className="text-xl font-medium text-primary flex items-center justify-center md:justify-start gap-2">
+            <Briefcase className="h-5 w-5" /> {profile.tradeSkill}
+          </p>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Location Verified</span>
+            <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> Member since {profile.createdAt ? format(new Date(profile.createdAt.seconds * 1000), "MMM yyyy") : "2024"}</span>
           </div>
         </div>
-      </header>
 
-      <div className="grid gap-8 mt-16 md:grid-cols-12">
-        <div className="md:col-span-4 space-y-6">
-          <Card className="border-none shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Reputation Stats</CardTitle>
+        <div className="bg-primary text-primary-foreground p-6 rounded-2xl flex flex-col items-center justify-center min-w-[140px] shadow-lg">
+          <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Trust Score</span>
+          <span className="text-4xl font-black">{stats.trustScore}</span>
+          <div className="flex items-center gap-1 mt-2 text-secondary font-bold">
+            <Star className="h-4 w-4 fill-secondary" /> {stats.averageRating}
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-8 md:grid-cols-3">
+        {/* Sidebar info */}
+        <div className="md:col-span-1 space-y-6">
+          <Card className="border-none shadow-md bg-muted/30">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold">About {profile.name?.split(' ')[0]}</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Trust Score</span>
-                <span className="text-xl font-bold text-primary">{worker.trustScore || 0}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Rating</span>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-secondary text-secondary" />
-                  <span className="text-sm font-bold">{stats.avg} ({stats.count})</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" /> Location Verified
-              </div>
+            <CardContent>
+              <p className="text-sm text-muted-foreground leading-relaxed italic">
+                {profile.bio || "This worker provides expert manual labor and professional trade services. Verified by Globlync for reliability and quality."}
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Achievements</CardTitle>
+          <Card className="border-none shadow-md">
+            <CardHeader>
+              <CardTitle className="text-sm font-bold">Badges & Milestones</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              {worker.badgeIds?.map((badgeId: string) => (
-                <Badge key={badgeId} variant="secondary" className="capitalize">
-                  <Award className="h-3 w-3 mr-1" /> {badgeId.replace('-', ' ')}
-                </Badge>
-              ))}
-              {!worker.badgeIds?.length && <p className="text-xs text-muted-foreground">Building reputation...</p>}
+              {profile.badgeIds && profile.badgeIds.length > 0 ? (
+                profile.badgeIds.map((bid: string) => {
+                  const config = BADGE_CONFIG[bid] || { name: bid, color: "bg-muted" };
+                  return (
+                    <div key={bid} className="flex flex-col items-center gap-1 p-2 bg-muted/30 rounded-lg w-[45%] text-center">
+                      <Award className={cn("h-6 w-6 mb-1", config.color === "bg-primary" ? "text-primary" : "text-muted-foreground")} />
+                      <span className="text-[8px] font-bold uppercase tracking-tight leading-none">{config.name}</span>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-muted-foreground italic">No milestones earned yet.</p>
+              )}
             </CardContent>
           </Card>
-
-          {/* Ad Slot Sidebar */}
-          <div id="monetag-ad-slot-sidebar" className="rounded-2xl bg-accent/30 p-4 border border-dashed text-center">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Sponsored Content</p>
-            <div className="aspect-square bg-muted rounded-xl flex items-center justify-center border">
-               <span className="text-[10px] text-muted-foreground p-4 italic">Professional trade tools & equipment</span>
-            </div>
-          </div>
         </div>
 
-        <div className="md:col-span-8 space-y-6">
-          <section>
-            <h2 className="text-xl font-bold mb-4">About the Professional</h2>
-            <p className="text-muted-foreground leading-relaxed bg-white p-6 rounded-2xl shadow-sm border">
-              {worker.bio || "This worker has verified their identity and skills with Globlync but hasn't updated their bio yet."}
-            </p>
-          </section>
+        {/* Work History */}
+        <div className="md:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <CheckCircle2 className="h-6 w-6 text-primary" />
+              Verified Work History ({stats.totalVerified})
+            </h2>
+          </div>
 
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Verified Work History</h2>
-              <Badge variant="outline" className="rounded-full">{jobs?.length || 0} Jobs Logged</Badge>
-            </div>
-            
-            <div className="grid gap-4">
-              {isJobsLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted" />
-              ) : jobs && jobs.length > 0 ? (
-                jobs.map((job) => (
-                  <Card key={job.id} className="border-none shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
-                    <div className="flex flex-col sm:flex-row">
-                      <div className="h-40 sm:w-48 bg-muted shrink-0 relative">
-                        <img 
-                          src={job.photoUrl || `https://picsum.photos/seed/${job.id}/300/200`} 
-                          alt={job.title} 
-                          className="h-full w-full object-cover"
-                          data-ai-hint="verified work"
-                        />
+          <div className="grid gap-4">
+            {isJobsLoading ? (
+              <p className="text-center py-10">Loading evidence...</p>
+            ) : jobs && jobs.length > 0 ? (
+              jobs.map((job) => (
+                <Card key={job.id} className="overflow-hidden border-none shadow-sm group hover:shadow-md transition-all">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="aspect-video w-full sm:w-40 bg-muted shrink-0 overflow-hidden">
+                      <img 
+                        src={job.photoUrl || `https://picsum.photos/seed/${job.id}/300/200`} 
+                        alt={job.title} 
+                        className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                        data-ai-hint="construction job"
+                      />
+                    </div>
+                    <div className="p-4 flex flex-1 flex-col">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg leading-tight">{job.title}</h3>
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{format(new Date(job.dateCompleted), "MMM d, yyyy")}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{job.description}</p>
+                      <div className="mt-auto flex items-center gap-1">
+                        <div className="bg-primary/10 text-primary text-[8px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="h-2.5 w-2.5" /> CLIENT VERIFIED
+                        </div>
                         {job.aiVerified && (
-                          <div className="absolute top-2 left-2 bg-primary/90 backdrop-blur-sm text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
-                            <Sparkles className="h-2 w-2" /> AI Verified
+                          <div className="bg-secondary/10 text-secondary-foreground text-[8px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <ShieldCheck className="h-2.5 w-2.5" /> AI PROVEN
                           </div>
                         )}
                       </div>
-                      <div className="p-4 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <h3 className="font-bold text-lg">{job.title}</h3>
-                            {job.isVerified ? (
-                              <CheckCircle2 className="h-5 w-5 text-primary" />
-                            ) : (
-                              <Clock className="h-5 w-5 text-amber-500" />
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{job.description}</p>
-                        </div>
-                        <div className="flex items-center justify-between mt-auto">
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-                            {format(new Date(job.dateCompleted), "MMM d, yyyy")}
-                          </span>
-                          <Badge variant="outline" className="text-[8px] font-bold py-0">EVIDENCE-BASED</Badge>
-                        </div>
-                      </div>
                     </div>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center py-12 bg-muted/20 rounded-2xl border-2 border-dashed">
-                  <p className="text-muted-foreground italic">No jobs logged in this history yet.</p>
-                </div>
-              )}
-            </div>
-          </section>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
+                <p className="text-muted-foreground italic">No public logs available yet.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <footer className="mt-12 pt-12 border-t text-center space-y-4">
-        <p className="text-sm text-muted-foreground">Globlync: Portable, Verifiable Trust for Skilled Workers.</p>
-        <div className="flex justify-center gap-4">
-          <Button variant="outline" size="sm" className="rounded-full" asChild>
-            <a href="/login">Create Your Profile</a>
-          </Button>
-          <Button size="sm" className="rounded-full" asChild>
-            <a href="/search">Find More Pros</a>
-          </Button>
+      {/* Trust Footer */}
+      <footer className="mt-12 pt-8 border-t text-center space-y-4">
+        <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+          <ShieldCheck className="h-4 w-4" /> This profile is a portable reputation powered by Globlync.
+        </p>
+        <div className="flex justify-center gap-2">
+          <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-tighter">Identity Verified</Badge>
+          <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-tighter">Photo Evidence</Badge>
+          <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-tighter">AI Quality Scan</Badge>
         </div>
       </footer>
     </div>

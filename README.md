@@ -6,16 +6,18 @@ Globlync is a professional platform designed for informal workers (plumbers, ele
 
 To deploy this application to Vercel, follow these steps:
 
-### 1. Push to GitHub
-- Create a new repository on GitHub.
+### 1. Standardize Dynamic Routes
+**IMPORTANT:** Ensure you have deleted the `src/app/public/[id]` folder and only keep `src/app/public/[workerId]`. Next.js fails to build if two different dynamic slugs exist at the same path level.
+
+### 2. Push to GitHub
 - Link and push your local code: `git push -u origin main`
 
-### 2. Connect to Vercel
+### 3. Connect to Vercel
 - Import your GitHub repository into Vercel.
 - **CRITICAL:** In the **Environment Variables** section, add:
     - `GOOGLE_GENAI_API_KEY`: Your Google AI Studio API key (Required for AI Photo Analysis).
 
-### 3. A-Ads Integration (Monetization)
+### 4. A-Ads Integration (Monetization)
 To earn revenue and cover your hosting costs without tracking ads, follow these steps:
 1. Register at [A-Ads.com](https://a-ads.com/).
 2. Create an **Adaptive** ad unit.
