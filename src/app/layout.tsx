@@ -21,6 +21,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+        <meta name="monetag" content="eb40c85c2360cc20f8269caf685d4cd8" />
       </head>
       <body className="font-body antialiased bg-background">
         <FirebaseClientProvider>
