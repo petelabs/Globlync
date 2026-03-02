@@ -58,14 +58,16 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        {/* Monetag Native Banner Script */}
+        
+        {/* Ads Paused for Design Phase
         <Script 
           src="https://walkingdrunkard.com/732a8eb1f93a972b628ecf38814db400/invoke.js" 
           strategy="afterInteractive" 
           async 
           data-cfasync="false"
         />
-        {/* Global Structured Data for AI Trust */}
+        */}
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -81,17 +83,17 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background">
+      <body className="font-body antialiased bg-background text-foreground">
         <FirebaseClientProvider>
           <Navigation />
-          <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-24 pt-6 md:pb-6 md:pt-24">
+          <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-24 pt-20 md:pb-6 md:pt-24">
             {children}
           </main>
           <InstallPrompt />
           <Toaster />
         </FirebaseClientProvider>
 
-        {/* BEGIN AADS AD UNIT 2429261 */}
+        {/* A-Ads Paused for Design Phase
         <div style={{ position: "absolute", zIndex: 99999 }}>
           <input autoComplete="off" type="checkbox" id="aadsstickymm9q4oin" hidden />
           <div style={{ paddingTop: "auto", paddingBottom: 0 }}>
@@ -112,7 +114,7 @@ export default function RootLayout({
             ` }} />
           </div>
         </div>
-        {/* END AADS AD UNIT 2429261 */}
+        */}
       </body>
     </html>
   );

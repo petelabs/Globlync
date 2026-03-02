@@ -79,14 +79,14 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6 py-4">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome, {user.displayName?.split(' ')[0]}</h1>
-          <p className="text-muted-foreground">Your reputation is growing. {stats.totalVerified} verified jobs logged.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Worker Dashboard</h1>
+          <p className="text-muted-foreground">Manage your reputation and track your verified growth.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full" asChild>
             <Link href={`/public/${user.uid}`}>
               <QrCode className="mr-2 h-4 w-4" />
-              Public Profile
+              View Public Page
             </Link>
           </Button>
           <Button size="sm" className="rounded-full shadow-lg" asChild>
@@ -105,8 +105,8 @@ export default function DashboardPage() {
             <TrendingUp className="h-24 w-24" />
           </div>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">Trust Score</CardTitle>
-            <CardDescription className="text-primary-foreground/70">Verified Reputation Level</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-xl">Trust Score</CardTitle>
+            <CardDescription className="text-primary-foreground/70">Verified Professional Level</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-6 text-center">
             <div className="relative flex h-32 w-32 items-center justify-center">
@@ -164,22 +164,10 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Monetag Native Banner Integration */}
-        <Card className="md:col-span-12 border-none bg-accent/10 shadow-sm overflow-hidden border-dashed border-2">
-          <CardHeader className="pb-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sponsored Recommendations</span>
-          </CardHeader>
-          <CardContent className="flex justify-center p-4">
-            <div id="container-732a8eb1f93a972b628ecf38814db400" className="w-full min-h-[100px] bg-muted/20 rounded-lg flex items-center justify-center">
-              <p className="text-[10px] text-muted-foreground italic">Professional Tools & Offers Loading...</p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Recent Jobs */}
         <Card className="md:col-span-12 border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Verified Activity</CardTitle>
+            <CardTitle>Recent Activity</CardTitle>
             <Button variant="ghost" size="sm" asChild>
               <Link href="/jobs">Full History <ChevronRight className="ml-1 h-4 w-4" /></Link>
             </Button>
