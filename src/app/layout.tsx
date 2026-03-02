@@ -64,6 +64,21 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         {/* Monetag Domain Verification */}
         <meta name="monetag" content="eb40c85c2360cc20f8269caf685d4cd8" />
+        {/* Global Structured Data for AI Trust */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Globlync",
+              "url": "https://globlync.vercel.app",
+              "logo": "https://picsum.photos/seed/globlync-logo/200/200",
+              "description": "A digital reputation platform for skilled manual workers using AI-based verification.",
+              "sameAs": []
+            })
+          }}
+        />
       </head>
       <body className="font-body antialiased bg-background">
         <FirebaseClientProvider>
