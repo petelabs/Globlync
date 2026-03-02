@@ -3,26 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * TRUSTLINK FIREBASE SECURITY RULES
+     * GLOBIINC FIREBASE SECURITY RULES
      * 
      * Core Philosophy:
      * This ruleset implements a strict Ownership and Role-Based Access Control (RBAC) model. 
      * Access is primarily governed by a user's identity as either a Worker or an Admin. 
-     *
-     * Data Structure:
-     * - /workerProfiles/{workerId}: Root for worker data. workerId matches the Firebase Auth UID.
-     * - /workerProfiles/{workerId}/[subcollections]: Private worker data (Jobs, Ratings, etc.).
-     * - /badges: Publicly readable achievement definitions managed by Admins.
-     * - /adminUsers/{adminId}: Admin profiles allowing for database-level authorization.
-     *
-     * Key Security Decisions:
-     * 1. Authorization Independence: All worker-owned documents contain a 'workerId' field to
-     *    allow for fast, single-document authorization without parent lookups.
-     * 2. Structural Segregation: Private worker data is isolated under the user's specific path.
-     * 3. Prototyping Flexibility: Rules enforce WHO can write (Authorization) and basic 
-     *    relational integrity, but do not strictly validate the shape of the data content.
-     * 4. Admin Overrides: Administrative users (identified via the /adminUsers collection) 
-     *    are granted write access to global definitions like Badges.
      */
 
     // --- Helper Functions ---
@@ -56,10 +41,6 @@ service cloud.firestore {
 
     /**
      * @description Root profiles for workers. IDs match the Auth UID.
-     * @path /workerProfiles/{workerId}
-     * @allow get, list: if true; (Public for reputation pages)
-     * @allow create, update, delete: if isOwner(workerId);
-     * @principle Self-creation and ownership for root user documents.
      */
     match /workerProfiles/{workerId} {
       allow get, list: if true;
@@ -68,9 +49,6 @@ service cloud.firestore {
 
       /**
        * @description Jobs completed by the worker.
-       * @path /workerProfiles/{workerId}/jobs/{jobId}
-       * @allow get, list, create, update, delete: if isOwner(workerId);
-       * @principle Enforces path-based ownership for subcollections.
        */
       match /jobs/{jobId} {
         allow get, list: if isOwner(workerId);
@@ -79,10 +57,6 @@ service cloud.firestore {
 
         /**
          * @description Verifications associated with a specific job.
-         * @path /workerProfiles/{workerId}/jobs/{jobId}/clientVerifications/{verificationId}
-         * @allow get, list, update, delete: if isOwner(workerId);
-         * @allow create: if isSignedIn(); (Allows authenticated clients to initiate verification)
-         * @principle Restricts management to owner while allowing interaction from other users.
          */
         match /clientVerifications/{verificationId} {
           allow get, list: if isOwner(workerId);
@@ -93,24 +67,15 @@ service cloud.firestore {
 
       /**
        * @description Ratings received by the worker.
-       * @path /workerProfiles/{workerId}/ratings/{ratingId}
-       * @allow get, list: if true; (Public for reputation display)
-       * @allow create: if isSignedIn(); (Authenticated clients can rate)
-       * @allow update, delete: if isExistingOwner(workerId);
-       * @principle Supports public consumption of ratings with owner management.
        */
       match /ratings/{ratingId} {
         allow get, list: if true;
-        allow create: if isSignedIn() && isValidWorkerData(workerId);
-        allow update, delete: if isExistingOwner(workerId) && request.resource.data.workerId == resource.data.workerId;
+        allow create: if isSignedIn();
+        allow update, delete: if isExistingOwner(workerId);
       }
 
       /**
        * @description System notifications for the worker.
-       * @path /workerProfiles/{workerId}/notifications/{notificationId}
-       * @allow get, list, update, delete: if isOwner(workerId);
-       * @allow create: if false; (System only - restricted to Backend/Admin)
-       * @principle Private notification stream for the specific user.
        */
       match /notifications/{notificationId} {
         allow get, list: if isOwner(workerId);
@@ -120,11 +85,15 @@ service cloud.firestore {
     }
 
     /**
+     * @description Global app ratings/feedback (Testimonials).
+     */
+    match /appRatings/{ratingId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+    }
+
+    /**
      * @description Global badge definitions.
-     * @path /badges/{badgeId}
-     * @allow get, list: if true;
-     * @allow create, update, delete: if isAdmin();
-     * @principle Public read with role-based write access for administrators.
      */
     match /badges/{badgeId} {
       allow get, list: if true;
@@ -133,12 +102,6 @@ service cloud.firestore {
 
     /**
      * @description Administrative user profiles.
-     * @path /adminUsers/{adminId}
-     * @allow get, update: if isOwner(adminId);
-     * @allow list: if isAdmin();
-     * @allow create: if isOwner(adminId); (Admin self-provisioning during prototype)
-     * @allow delete: if false;
-     * @principle Protects admin identity and enables role-based checks.
      */
     match /adminUsers/{adminId} {
       allow get, create, update: if isOwner(adminId);
