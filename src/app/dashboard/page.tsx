@@ -164,29 +164,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Ad Space: A-Ads Slot Placeholder */}
-        <Card className="md:col-span-4 border-none bg-accent/30 shadow-sm overflow-hidden border-dashed border-2">
+        {/* Monetag Native Banner Integration */}
+        <Card className="md:col-span-12 border-none bg-accent/10 shadow-sm overflow-hidden border-dashed border-2">
           <CardHeader className="pb-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sponsored</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sponsored Recommendations</span>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <div id="aads-ad-slot-dashboard" className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center overflow-hidden border">
-              <div className="text-center p-4">
-                <p className="text-[10px] text-muted-foreground italic">Ads help keep Globlync free for professionals.</p>
-              </div>
+          <CardContent className="flex justify-center p-4">
+            <div id="container-732a8eb1f93a972b628ecf38814db400" className="w-full min-h-[100px] bg-muted/20 rounded-lg flex items-center justify-center">
+              <p className="text-[10px] text-muted-foreground italic">Professional Tools & Offers Loading...</p>
             </div>
-            <div>
-              <h4 className="text-sm font-bold">A-Ads Integrated</h4>
-              <p className="text-xs text-muted-foreground">Privacy-respecting professional offers.</p>
-            </div>
-            <Button variant="outline" size="sm" className="w-full text-xs h-8 rounded-full">
-              Explore <ExternalLink className="ml-1 h-3 w-3" />
-            </Button>
           </CardContent>
         </Card>
 
         {/* Recent Jobs */}
-        <Card className="md:col-span-8 border-none shadow-sm">
+        <Card className="md:col-span-12 border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Verified Activity</CardTitle>
             <Button variant="ghost" size="sm" asChild>

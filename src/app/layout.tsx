@@ -4,6 +4,7 @@ import { Navigation } from '@/components/Navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import Script from 'next/script';
 
 export const viewport: Viewport = {
   themeColor: '#00796B',
@@ -53,9 +54,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="monetag" content="eb40c85c2360cc20f8269caf685d4cd8" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Monetag Native Banner Script */}
+        <Script 
+          src="https://walkingdrunkard.com/732a8eb1f93a972b628ecf38814db400/invoke.js" 
+          strategy="afterInteractive" 
+          async 
+          data-cfasync="false"
+        />
         {/* Global Structured Data for AI Trust */}
         <script
           type="application/ld+json"
