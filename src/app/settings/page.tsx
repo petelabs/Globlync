@@ -1,9 +1,10 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { 
   Settings, 
   Shield, 
@@ -14,7 +15,11 @@ import {
   ChevronRight, 
   Lock, 
   BellRing,
-  ExternalLink
+  ExternalLink,
+  Moon,
+  Sun,
+  Zap,
+  ZapOff
 } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
@@ -44,6 +49,38 @@ export default function SettingsPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  const [darkMode, setDarkMode] = useState(false);
+  const [animationsDisabled, setAnimationsDisabled] = useState(false);
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const isNoAnim = document.documentElement.classList.contains('no-animations');
+    setDarkMode(isDark);
+    setAnimationsDisabled(isNoAnim);
+  }, []);
+
+  const toggleDarkMode = (enabled: boolean) => {
+    setDarkMode(enabled);
+    if (enabled) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  };
+
+  const toggleAnimations = (disabled: boolean) => {
+    setAnimationsDisabled(disabled);
+    if (disabled) {
+      document.documentElement.classList.add('no-animations');
+      localStorage.setItem('animationsDisabled', 'true');
+    } else {
+      document.documentElement.classList.remove('no-animations');
+      localStorage.setItem('animationsDisabled', 'false');
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -86,8 +123,51 @@ export default function SettingsPage() {
           <Settings className="h-8 w-8 text-primary" />
           Settings
         </h1>
-        <p className="text-muted-foreground">Manage your account, privacy, and legal preferences.</p>
+        <p className="text-muted-foreground">Manage your account, appearance, and privacy.</p>
       </header>
+
+      {/* Appearance Section */}
+      <Card className="border-none shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">Appearance</CardTitle>
+          <CardDescription>Customize your visual experience.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                {darkMode ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
+              </div>
+              <div className="space-y-0.5">
+                <Label htmlFor="dark-mode" className="text-sm font-bold">Dark Mode</Label>
+                <p className="text-xs text-muted-foreground">Switch to a darker theme for night use.</p>
+              </div>
+            </div>
+            <Switch 
+              id="dark-mode" 
+              checked={darkMode} 
+              onCheckedChange={toggleDarkMode} 
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                {animationsDisabled ? <ZapOff className="h-5 w-5 text-primary" /> : <Zap className="h-5 w-5 text-primary" />}
+              </div>
+              <div className="space-y-0.5">
+                <Label htmlFor="animations" className="text-sm font-bold">Reduce Animations</Label>
+                <p className="text-xs text-muted-foreground">Turn off visual motion effects.</p>
+              </div>
+            </div>
+            <Switch 
+              id="animations" 
+              checked={animationsDisabled} 
+              onCheckedChange={toggleAnimations} 
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Account Section */}
       <Card className="border-none shadow-sm">

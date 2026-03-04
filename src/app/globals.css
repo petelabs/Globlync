@@ -30,6 +30,28 @@
     --chart-5: 173 30% 60%;
     --radius: 0.75rem;
   }
+
+  .dark {
+    --background: 173 100% 5%;
+    --foreground: 173 10% 98%;
+    --card: 173 100% 7%;
+    --card-foreground: 173 10% 98%;
+    --popover: 173 100% 7%;
+    --popover-foreground: 173 10% 98%;
+    --primary: 173 100% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 100% 51%;
+    --secondary-foreground: 173 100% 5%;
+    --muted: 173 30% 15%;
+    --muted-foreground: 173 10% 65%;
+    --accent: 173 30% 15%;
+    --accent-foreground: 173 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 173 10% 98%;
+    --border: 173 30% 18%;
+    --input: 173 30% 18%;
+    --ring: 173 100% 35%;
+  }
 }
 
 @layer base {
@@ -37,11 +59,16 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body transition-colors duration-300;
   }
 }
 
 @layer utilities {
+  .no-animations, .no-animations * {
+    animation: none !important;
+    transition: none !important;
+  }
+
   @keyframes shimmer {
     0% { background-position: -200% center; }
     100% { background-position: 200% center; }
@@ -63,12 +90,6 @@
     display: inline-block;
   }
 
-  /* Link Animation: 5s total cycle */
-  /* 0-10%: Apart */
-  /* 10-20%: Closing */
-  /* 20-80%: Together (3s pause) */
-  /* 80-90%: Opening */
-  /* 90-100%: Apart */
   @keyframes link-connect-left {
     0%, 10% { transform: translateX(-6px); }
     20%, 80% { transform: translateX(0); }
