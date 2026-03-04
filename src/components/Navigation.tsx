@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -16,10 +15,11 @@ import {
   LogOut,
   LayoutDashboard,
   ClipboardCheck,
-  ChevronDown
+  ChevronDown,
+  Link as LinkIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu, 
@@ -32,15 +32,46 @@ import {
 import { Button } from "@/components/ui/button";
 import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { collection, query, where } from "firebase/firestore";
+
+export function Logo({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center gap-1", className)}>
+      <span className="text-2xl font-black tracking-tighter italic text-primary">Glob</span>
+      <div className="relative flex items-center h-8 w-10">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary absolute left-0 animate-link-left">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-secondary absolute right-0 animate-link-right">
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useUser();
+  const db = useFirestore();
   const auth = useAuth();
   const { toast } = useToast();
   const [logoError, setLogoError] = useState(false);
+
+  const notificationsRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return collection(db, "workerProfiles", user.uid, "notifications");
+  }, [db, user?.uid]);
+
+  const unreadQuery = useMemoFirebase(() => {
+    if (!notificationsRef) return null;
+    return query(notificationsRef, where("isRead", "==", false));
+  }, [notificationsRef]);
+
+  const { data: unreadNotifications } = useCollection(unreadQuery);
+  const unreadCount = (unreadNotifications?.length || 0) + (user ? 3 : 0); // Defaulting 3 system ones for UI feel
 
   const handleLogout = async () => {
     try {
@@ -66,25 +97,10 @@ export function Navigation() {
 
   return (
     <>
-      {/* Top Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-card/80 backdrop-blur-lg h-16">
         <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0 group">
-            {!logoError ? (
-              <Image 
-                src="/logo.png" 
-                alt="Globlync Logo" 
-                width={36} 
-                height={36} 
-                className="rounded-lg shadow-sm"
-                onError={() => setLogoError(true)}
-              />
-            ) : (
-              <ShieldCheck className="h-7 w-7 text-primary" />
-            )}
-            <span className="text-2xl font-black tracking-tighter italic animate-shimmer-text hidden sm:block">
-              Globlync
-            </span>
+          <Link href="/" className="flex items-center gap-1 hover:opacity-90 transition-opacity shrink-0 group">
+            <Logo />
           </Link>
           
           <div className="flex-1 flex justify-center px-4 max-w-md">
@@ -103,9 +119,11 @@ export function Navigation() {
               <>
                 <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden xs:flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
-                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground border-2 border-card">
-                    3
-                  </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground border-2 border-card">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
 
                 <DropdownMenu>
@@ -184,7 +202,6 @@ export function Navigation() {
         </div>
       </header>
 
-      {/* Bottom Navigation for Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/90 backdrop-blur-xl md:hidden h-16">
         <div className="flex h-full items-center justify-around px-4">
           {navItems.map((item) => {
@@ -216,9 +233,11 @@ export function Navigation() {
             >
               <div className="relative">
                 <Bell className="h-6 w-6" />
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
-                  3
-                </span>
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
+                    {unreadCount}
+                  </span>
+                )}
               </div>
               <span className="text-[10px] font-bold tracking-tight uppercase">Inbox</span>
             </Link>
@@ -239,7 +258,6 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Desktop Sub Nav */}
       <div className="hidden md:flex fixed top-16 left-0 right-0 h-12 bg-background/50 border-b items-center justify-center gap-8 z-40 backdrop-blur-sm">
         {navItems.map((item) => {
           if (item.authRequired && !user) return null;

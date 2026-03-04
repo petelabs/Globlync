@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Logo } from "@/components/Navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -28,7 +29,6 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
-  const [logoError, setLogoError] = useState(false);
   
   const auth = useAuth();
   const router = useRouter();
@@ -137,22 +137,9 @@ export default function LoginPage() {
     <div className="flex min-h-[80vh] flex-col items-center justify-center py-12 px-4">
       <Card className="w-full max-w-md border-none shadow-xl">
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-primary/10 p-4 rounded-3xl relative h-20 w-20 flex items-center justify-center">
-              {!logoError ? (
-                <Image 
-                  src="/logo.png" 
-                  alt="Globlync Logo" 
-                  fill 
-                  className="object-contain p-2 rounded-2xl"
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <ShieldCheck className="h-12 w-12 text-primary" />
-              )}
-            </div>
+          <div className="flex justify-center mb-6">
+            <Logo className="scale-125" />
           </div>
-          <CardTitle className="text-2xl font-black italic tracking-tighter">Globlync</CardTitle>
           <CardDescription>
             {isSignUp ? "Create an account to build your reputation" : "Sign in to manage your worker profile"}
           </CardDescription>

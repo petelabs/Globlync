@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,5 +61,23 @@
     background-clip: text;
     animation: shimmer 4s linear infinite;
     display: inline-block;
+  }
+
+  @keyframes link-connect {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+  }
+
+  @keyframes link-connect-rev {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-4px); }
+  }
+
+  .animate-link-left {
+    animation: link-connect 2.5s ease-in-out infinite;
+  }
+
+  .animate-link-right {
+    animation: link-connect-rev 2.5s ease-in-out infinite;
   }
 }
