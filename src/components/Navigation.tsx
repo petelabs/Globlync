@@ -111,14 +111,14 @@ export function Navigation() {
             <Logo />
           </Link>
           
-          <div className="flex-1 flex justify-center px-4 max-w-md">
+          <div className="flex-1 flex justify-center px-4 max-w-[180px] sm:max-w-xs md:max-w-sm">
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-11 px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
+              className="w-full justify-start text-muted-foreground rounded-full h-11 px-4 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
               onClick={() => router.push('/search')}
             >
-              <Search className="h-4 w-4 mr-3" />
-              <span className="text-xs sm:text-sm font-bold tracking-tight">Search Verified Professionals...</span>
+              <Search className="h-4 w-4 mr-2 sm:mr-3 shrink-0" />
+              <span className="text-[10px] sm:text-xs font-bold tracking-tight truncate">Search Professionals...</span>
             </Button>
           </div>
 
@@ -134,9 +134,9 @@ export function Navigation() {
                   )}
                 </Link>
 
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild id="nav-user-menu">
-                    <button className="flex items-center gap-3 p-1.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
+                    <button className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
                         <Avatar className="h-9 w-9 border-2 border-primary/20 shadow-sm">
                           <AvatarImage src={displayPhoto} />
@@ -144,6 +144,7 @@ export function Navigation() {
                         </Avatar>
                         {isGrowthChampion && (
                           <div className="absolute -top-1 -right-1 bg-pink-500 rounded-full p-1 border-2 border-white shadow-xl animate-pulse">
+                            <span className="sr-only">Growth Champion</span>
                             <Sparkles className="h-2 w-2 text-white" />
                           </div>
                         )}
@@ -188,7 +189,7 @@ export function Navigation() {
               </>
             ) : (
               <Button asChild className="rounded-full shadow-lg font-black px-6 sm:px-8 h-11" size="sm">
-                <Link href="/login"><LogIn className="h-4 w-4 mr-2 hidden sm:inline" />Sign In</Link>
+                <Link href="/login">Sign In</Link>
               </Button>
             )}
           </div>

@@ -139,6 +139,7 @@ export function OnboardingTutorial() {
   const isWrongPage = pathname !== currentStep.path;
   
   // Decide where to put the card so it doesn't cover the spotlight
+  // If the target element is in the top half of the screen, move the card to the bottom
   const cardPositionClass = rect && rect.top < 400 ? "bottom-10" : "top-10";
 
   return (
@@ -152,7 +153,7 @@ export function OnboardingTutorial() {
       {/* Spotlight Effect */}
       {rect && !isWrongPage && (
         <div 
-          className="absolute border-4 border-secondary shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] rounded-xl pointer-events-none transition-all duration-500 ease-in-out"
+          className="absolute border-4 border-secondary shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] rounded-xl pointer-events-auto transition-all duration-500 ease-in-out"
           style={{
             top: rect.top - 8,
             left: rect.left - 8,
