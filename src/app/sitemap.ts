@@ -3,8 +3,6 @@ import { MetadataRoute } from 'next'
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://globlync.vercel.app'
   
-  // In a production app, you would fetch all worker IDs from Firestore 
-  // to include their public profiles in the sitemap.
   return [
     {
       url: baseUrl,
@@ -17,6 +15,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'always',
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
     },
     {
       url: `${baseUrl}/login`,

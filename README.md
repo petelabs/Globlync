@@ -11,6 +11,8 @@ To show your professional logo in the app:
 
 ## 🛡️ Verification Ready (Google Cloud Console)
 **Code Status**: Updated for fast verification.
+- **Privacy Policy URL**: `https://globlync.vercel.app/privacy`
+- **Terms of Service URL**: `https://globlync.vercel.app/terms`
 - **Sensitive Scopes**: None. The app does NOT request access to Cloud Platform or Storage.
 - **Allowed Scopes**: `openid`, `email`, `profile` (Non-sensitive).
 - **Official Branding**: The login button follows the "Sign in with Google" brand guidelines.
@@ -28,7 +30,8 @@ To show "Globlync" instead of your project ID in the Google popup:
 - Go to the [Google Cloud Console](https://console.cloud.google.com/).
 - Navigate to **APIs & Services** > **OAuth consent screen**.
 - Set **App name** to "Globlync".
-- Set your **User support email** and **Developer contact info**.
+- Set **User support email** and **Developer contact info**.
+- Paste the **Privacy Policy URL** and **Terms of Service URL** provided above.
 
 ### 3. Professional Magic Link Template
 To make copying easier on mobile:
