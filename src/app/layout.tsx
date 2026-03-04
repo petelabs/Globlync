@@ -45,6 +45,9 @@ export const metadata: Metadata = {
     description: 'Get verified, earn badges, and grow your career with Globlync.',
     images: ['/og-image.jpg'],
   },
+  verification: {
+    google: 'pf3wUPFRMjh7iH06e_yc8dutjITQF7WtulH1GEwAxhk',
+  },
 };
 
 export default function RootLayout({
