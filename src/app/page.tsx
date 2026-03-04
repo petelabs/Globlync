@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -62,7 +63,7 @@ export default function Home() {
           <span>Portable, AI-Verified Reputation</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Trust is the new <span className="text-primary italic">Currency.</span>
+          Trust is the new <span className="animate-shimmer-text italic">Currency.</span>
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
           Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof.
@@ -160,7 +161,7 @@ export default function Home() {
             <span className="italic font-black tracking-tighter">Globlync</span>
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-black">
-            Built by Petediano Tech
+            Built by Petediano Tech • Established 2026
           </p>
           <div className="flex gap-4 mt-2">
             <Button variant="ghost" size="sm" className="rounded-full text-[10px]" asChild>

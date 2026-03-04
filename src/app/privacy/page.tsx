@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
       <Card className="border-none shadow-sm">
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
-          <p className="text-sm text-muted-foreground">Last Updated: May 20, 2024</p>
+          <p className="text-sm text-muted-foreground">Last Updated: March 1, 2026</p>
         </CardHeader>
         <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed">
           <section>
@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
       </Card>
       
       <footer className="text-center text-[10px] text-muted-foreground mt-8">
-        © 2024 Petediano Tech • Malawi
+        © 2026 Petediano Tech • Malawi
       </footer>
     </div>
   );

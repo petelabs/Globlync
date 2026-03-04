@@ -123,7 +123,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
         <CardFooter className="flex gap-2">
-          <Button variant="outline" className="flex-1 rounded-full" onClick={handleLogout}>
+          <Button variant="outline" className="flex-1 rounded-full font-bold" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" /> Sign Out
           </Button>
         </CardFooter>
@@ -146,7 +146,7 @@ export default function SettingsPage() {
               <AccordionContent className="text-xs text-muted-foreground leading-relaxed space-y-4">
                 <p><strong>1. Data Collection:</strong> We collect your professional trade, job descriptions, and photos to build your digital reputation.</p>
                 <p><strong>2. Usage:</strong> Data is used to verify jobs and calculate Trust Scores.</p>
-                <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
+                <Button variant="link" size="sm" className="p-0 h-auto text-primary font-bold" asChild>
                   <Link href="/privacy">Read Full Privacy Policy <ExternalLink className="ml-1 h-3 w-3" /></Link>
                 </Button>
               </AccordionContent>
@@ -160,7 +160,7 @@ export default function SettingsPage() {
               </AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground leading-relaxed space-y-4">
                 <p><strong>1. Conduct:</strong> You agree to log only genuine work. Fraudulent logs will result in account suspension.</p>
-                <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
+                <Button variant="link" size="sm" className="p-0 h-auto text-primary font-bold" asChild>
                   <Link href="/terms">Read Full Terms of Service <ExternalLink className="ml-1 h-3 w-3" /></Link>
                 </Button>
               </AccordionContent>
@@ -181,7 +181,7 @@ export default function SettingsPage() {
               <p className="text-sm font-bold">Export My Data</p>
               <p className="text-xs text-muted-foreground">Get a CSV of all your verified jobs and ratings.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleDownloadData}>
+            <Button variant="outline" size="sm" className="font-bold" onClick={handleDownloadData}>
               <Download className="h-4 w-4 mr-2" /> Export
             </Button>
           </div>
@@ -193,7 +193,7 @@ export default function SettingsPage() {
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
+                <Button variant="destructive" size="sm" className="font-bold">
                   <Trash2 className="h-4 w-4 mr-2" /> Delete
                 </Button>
               </AlertDialogTrigger>
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground">
+                  <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground font-bold">
                     Delete Account
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -218,8 +218,8 @@ export default function SettingsPage() {
       </Card>
 
       <footer className="text-center py-6">
-        <p className="text-[10px] text-muted-foreground">Globlync Version 1.0.2 • Made with Trust</p>
-        <p className="text-[10px] text-muted-foreground mt-1">© 2024 Petediano Tech</p>
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Globlync Professional v1.2.0 • Est. 2026</p>
+        <p className="text-[10px] text-muted-foreground mt-1">© 2026 Petediano Tech • Built with Trust</p>
       </footer>
     </div>
   );

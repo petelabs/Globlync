@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -14,7 +15,8 @@ import {
   Settings,
   LogOut,
   LayoutDashboard,
-  ClipboardCheck
+  ClipboardCheck,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth } from "@/firebase";
@@ -67,37 +69,39 @@ export function Navigation() {
       {/* Top Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-card/80 backdrop-blur-lg h-16">
         <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0 group">
             {!logoError ? (
               <Image 
                 src="/logo.png" 
                 alt="Globlync Logo" 
-                width={32} 
-                height={32} 
-                className="rounded-lg"
+                width={36} 
+                height={36} 
+                className="rounded-lg shadow-sm"
                 onError={() => setLogoError(true)}
               />
             ) : (
-              <ShieldCheck className="h-6 w-6 text-primary" />
+              <ShieldCheck className="h-7 w-7 text-primary" />
             )}
-            <span className="text-xl font-black text-primary hidden sm:block tracking-tighter italic">Globlync</span>
+            <span className="text-2xl font-black tracking-tighter italic animate-shimmer-text hidden sm:block">
+              Globlync
+            </span>
           </Link>
           
           <div className="flex-1 flex justify-center px-4 max-w-md">
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-10 px-4 bg-muted/30"
+              className="w-full justify-start text-muted-foreground rounded-full h-10 px-4 bg-muted/30 hover:bg-muted/50 transition-all border-2"
               onClick={() => router.push('/search')}
             >
               <Search className="h-4 w-4 mr-2" />
-              <span className="text-sm">Search workers...</span>
+              <span className="text-sm font-medium">Search verified pros...</span>
             </Button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {user && (
               <>
-                <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors">
+                <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden xs:flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground border-2 border-card">
                     3
@@ -106,49 +110,62 @@ export function Navigation() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-                      <Avatar className="h-10 w-10 border-2 border-primary/20">
+                    <button className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-muted transition-all outline-none border border-transparent focus:border-primary/20">
+                      <Avatar className="h-9 w-9 border-2 border-primary/20 ring-2 ring-primary/5">
                         <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`} />
-                        <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {user.displayName?.charAt(0) || 'U'}
+                        </AvatarFallback>
                       </Avatar>
-                    </Button>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
+                    </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 mt-2" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  <DropdownMenuContent className="w-64 mt-2 p-2 rounded-2xl shadow-2xl border-none" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal px-2 py-3">
+                      <div className="flex items-center gap-3">
+                         <Avatar className="h-10 w-10">
+                          <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`} />
+                        </Avatar>
+                        <div className="flex flex-col space-y-0.5">
+                          <p className="text-sm font-bold leading-none">{user.displayName || "Professional"}</p>
+                          <p className="text-[10px] font-medium leading-none text-muted-foreground mt-1 truncate max-w-[140px]">{user.email}</p>
+                        </div>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/work-log" className="cursor-pointer">
-                        <ClipboardCheck className="mr-2 h-4 w-4" />
-                        <span>Log New Work</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>My Profile</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
+                    <DropdownMenuSeparator className="mx-[-8px] my-2" />
+                    <div className="space-y-1">
+                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
+                        <Link href="/dashboard">
+                          <LayoutDashboard className="mr-3 h-4 w-4 text-primary" />
+                          <span className="font-semibold">Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
+                        <Link href="/work-log">
+                          <ClipboardCheck className="mr-3 h-4 w-4 text-primary" />
+                          <span className="font-semibold">Log New Work</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
+                        <Link href="/profile">
+                          <User className="mr-3 h-4 w-4 text-primary" />
+                          <span className="font-semibold">My Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
+                        <Link href="/settings">
+                          <Settings className="mr-3 h-4 w-4 text-primary" />
+                          <span className="font-semibold">Settings</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+                    <DropdownMenuSeparator className="mx-[-8px] my-2" />
+                    <DropdownMenuItem 
+                      className="text-destructive font-bold cursor-pointer rounded-lg py-2.5 focus:bg-destructive/5 focus:text-destructive" 
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-3 h-4 w-4" />
+                      <span>Log Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -156,7 +173,7 @@ export function Navigation() {
             )}
 
             {!user && (
-              <Button asChild className="rounded-full shadow-md" size="sm">
+              <Button asChild className="rounded-full shadow-lg font-bold px-6" size="sm">
                 <Link href="/login">
                   <LogIn className="h-4 w-4 mr-2" />
                   Sign In
@@ -232,8 +249,8 @@ export function Navigation() {
               key={item.href}
               href={item.href}
               className={cn(
-                "text-sm font-bold uppercase tracking-wider transition-colors",
-                isActive ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-primary"
+                "text-xs font-black uppercase tracking-widest transition-colors",
+                isActive ? "text-primary border-b-2 border-primary h-full flex items-center" : "text-muted-foreground hover:text-primary"
               )}
             >
               {item.label}
