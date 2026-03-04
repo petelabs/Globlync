@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, LogIn, Sparkles, Wand2 } from "lucide-react";
+import { Mail, Lock, LogIn, Sparkles, Wand2, Loader2 } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -24,7 +24,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -72,7 +72,6 @@ export default function LoginPage() {
     
     if (!snap.exists()) {
       let invitedBy = "";
-      // Handle Referral Credit
       if (referralCode) {
         const refMappingRef = doc(db, "referralCodes", referralCode);
         const refMappingSnap = await getDoc(refMappingRef);
@@ -81,17 +80,13 @@ export default function LoginPage() {
           invitedBy = refMappingSnap.data().uid;
           const inviterRef = doc(db, "workerProfiles", invitedBy);
           
-          // Credit the inviter
           updateDoc(inviterRef, {
             referralCount: increment(1),
             updatedAt: serverTimestamp()
-          }).catch(() => {
-            // Inviter profile might not be fully initialized, skip silent error
-          });
+          }).catch(() => {});
         }
       }
 
-      // Generate Original Professional Referral Code: GL-XXXXXX
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
       await setDoc(profileRef, {
@@ -110,10 +105,8 @@ export default function LoginPage() {
         updatedAt: serverTimestamp(),
       });
 
-      // Register the code mapping
       await setDoc(doc(db, "referralCodes", newCode), { uid });
 
-      // Create Welcome Notification
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
       await addDoc(notifRef, {
         type: "app",
@@ -280,5 +273,17 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-[80vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
