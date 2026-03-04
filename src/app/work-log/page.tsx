@@ -27,6 +27,8 @@ import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBl
 import { collection, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { analyzeJobPhoto } from "@/ai/flows/analyze-job-photo-flow";
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 export default function WorkLogPage() {
   const { user } = useUser();
   const db = useFirestore();
@@ -57,6 +59,16 @@ export default function WorkLogPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          variant: "destructive",
+          title: "File Too Large",
+          description: "Please choose an image smaller than 2MB.",
+        });
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoDataUri(reader.result as string);
@@ -88,12 +100,18 @@ export default function WorkLogPage() {
           title: "AI Verified!",
           description: "Gemini confirms your photo matches the work described.",
         });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Match Not Found",
+          description: "The AI could not confirm the photo matches the description.",
+        });
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: "Could not verify photo at this time.",
+        description: "Could not verify photo at this time. Please try a clearer image.",
       });
     } finally {
       setIsAnalyzing(false);
@@ -140,7 +158,7 @@ export default function WorkLogPage() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Link Copies",
+      title: "Link Copied",
       description: "Send this to your client to get verified.",
     });
   };
@@ -217,7 +235,7 @@ export default function WorkLogPage() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label>Job Photo (Proof of work)</Label>
+                    <Label>Job Photo (Max 2MB)</Label>
                     <div className="flex flex-col gap-3">
                       {photoDataUri ? (
                         <div className="relative aspect-video w-full rounded-lg overflow-hidden border">
@@ -227,7 +245,10 @@ export default function WorkLogPage() {
                             variant="secondary" 
                             size="sm" 
                             className="absolute top-2 right-2 rounded-full opacity-90 hover:opacity-100"
-                            onClick={() => setPhotoDataUri(null)}
+                            onClick={() => {
+                              setPhotoDataUri(null);
+                              setAiAnalysis(null);
+                            }}
                           >
                             Remove
                           </Button>
@@ -240,13 +261,12 @@ export default function WorkLogPage() {
                           onClick={() => fileInputRef.current?.click()}
                         >
                           <Camera className="h-8 w-8 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">Upload or take a photo</span>
+                          <span className="text-xs text-muted-foreground">Upload photo</span>
                         </Button>
                       )}
                       <input 
                         type="file" 
                         accept="image/*" 
-                        capture="environment" 
                         ref={fileInputRef} 
                         className="hidden" 
                         onChange={handleFileChange}
@@ -267,13 +287,13 @@ export default function WorkLogPage() {
 
                       {aiAnalysis && (
                         <div className={cn(
-                          "flex items-start gap-3 p-3 rounded-lg border",
-                          aiAnalysis.isMatch ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"
+                          "flex items-start gap-3 p-4 rounded-lg border-2 animate-in fade-in zoom-in",
+                          aiAnalysis.isMatch ? "bg-green-50 border-green-300" : "bg-amber-50 border-amber-300"
                         )}>
-                          {aiAnalysis.isMatch ? <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" /> : <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />}
-                          <div className="text-xs">
-                            <p className="font-bold">{aiAnalysis.isMatch ? "AI Verified" : "AI Review Needed"}</p>
-                            <p className="text-muted-foreground">{aiAnalysis.analysis}</p>
+                          {aiAnalysis.isMatch ? <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" /> : <AlertCircle className="h-6 w-6 text-amber-600 mt-0.5" />}
+                          <div className="text-sm">
+                            <p className="font-bold text-foreground">{aiAnalysis.isMatch ? "AI Proof Accepted" : "AI Proof Rejected"}</p>
+                            <p className="text-muted-foreground leading-snug mt-1">{aiAnalysis.analysis}</p>
                           </div>
                         </div>
                       )}
@@ -318,7 +338,7 @@ export default function WorkLogPage() {
                 <CardContent className="text-xs text-muted-foreground space-y-2">
                   <p>• AI-verified photos increase your Trust Score by +2 extra points.</p>
                   <p>• It prevents disputes by providing instant proof of completion.</p>
-                  <p>• Verified photos help you earn "Evidence Master" badges.</p>
+                  <p>• Photos are analyzed locally to ensure they match your trade.</p>
                 </CardContent>
               </Card>
             </div>
@@ -328,7 +348,7 @@ export default function WorkLogPage() {
         <TabsContent value="history">
           <div className="grid gap-4">
             {isLoading ? (
-              <p className="text-center py-10">Loading jobs...</p>
+              <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin text-muted" /></div>
             ) : jobs && jobs.length > 0 ? (
               jobs.map((job) => (
                 <Card key={job.id} className="overflow-hidden border-none shadow-sm">
@@ -339,7 +359,6 @@ export default function WorkLogPage() {
                           src={job.photoUrl || `https://picsum.photos/seed/${job.id}/300/200`} 
                           alt={job.title} 
                           className="h-full w-full object-cover"
-                          data-ai-hint="construction work"
                         />
                         {job.aiVerified && (
                           <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
