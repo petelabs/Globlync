@@ -4,36 +4,44 @@ Globlync is a professional platform designed for informal workers (plumbers, ele
 
 ## 🚀 Deployment Instructions (Vercel)
 
-To deploy this application to Vercel, follow these steps:
+1. **Push to GitHub**: Link and push your local code: `git push -u origin main`
+2. **Connect to Vercel**: Import your GitHub repository.
+3. **Environment Variables**: Add `GOOGLE_GENAI_API_KEY` in Vercel.
 
-### 1. Standardize Dynamic Routes
-**IMPORTANT:** Ensure you have deleted the `src/app/public/[id]` folder and only keep `src/app/public/[workerId]`. Next.js fails to build if two different dynamic slugs exist at the same path level.
+## 🔑 Firebase Console Setup (Action Required)
 
-### 2. Push to GitHub
-- Link and push your local code: `git push -u origin main`
+### 1. Enable Passwordless Sign-in
+- Go to **Authentication** > **Sign-in method**.
+- Enable **Email/Password**.
+- Toggle ON **Email link (passwordless sign-in)**.
+- Add `globlync.vercel.app` to **Authorized domains**.
 
-### 3. Connect to Vercel
-- Import your GitHub repository into Vercel.
-- **CRITICAL:** In the **Environment Variables** section, add:
-    - `GOOGLE_GENAI_API_KEY`: Your Google AI Studio API key (Required for AI Photo Analysis).
+### 2. Professional Magic Link Template
+Copy and paste this into your Firebase Console (**Templates** > **Passwordless sign-in** > **HTML**):
 
-### 4. A-Ads Integration (Monetization)
-To earn revenue and cover your hosting costs without tracking ads, follow these steps:
-1. Register at [A-Ads.com](https://a-ads.com/).
-2. Create an **Adaptive** ad unit.
-3. **Integration:** The A-Ads sticky banner code is already added to `src/app/layout.tsx`. It provides a clean, protocol-relative unit for your site.
+```html
+<div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+  <div style="background-color: #00796B; padding: 24px; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">Globlync</h1>
+  </div>
+  <div style="padding: 32px; color: #1a202c; line-height: 1.6;">
+    <h2 style="margin-top: 0;">Sign in to your professional profile</h2>
+    <p>Hello! Tap the button below to sign in to your Globlync account. This link will expire shortly for your security.</p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="%LINK%" style="background-color: #FFC107; color: #1a202c; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Sign In to Globlync</a>
+    </div>
+    <p style="font-size: 12px; color: #718096;">If you didn't request this email, you can safely ignore it.</p>
+  </div>
+  <div style="background-color: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0;">
+    <p style="font-size: 10px; color: #a0aec0; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Built by Petediano Tech • Malawi</p>
+  </div>
+</div>
+```
 
 ## ✨ Features
-- **Verified Job Logging**: Workers log work, and clients verify via QR.
-- **AI Photo Analysis**: Gemini 2.0 Flash verifies that job photos match descriptions.
-- **Trust Score & Badges**: Real-time calculated reputation system with automated milestones.
-- **Public Profiles**: Dynamic, shareable links (e.g., `globlync.vercel.app/public/USER_ID`) for workers to showcase credentials.
+- **Verified Job Logging**: Workers log work, and AI verifies photos vs descriptions.
+- **TikTok-Style UI**: Modern navigation with a search bar at the top and profile-driven settings.
+- **Malawi Skill Discovery**: 20+ categories specifically for the Malawian labor market.
+- **Magic Link Auth**: Secure, passwordless entry for busy professionals.
+- **Trust Score & Badges**: Real-time calculated reputation system.
 - **PWA Ready**: Installable on home screens with professional SEO.
-- **Privacy First Ads**: Clean monetization using A-Ads.
-
-## 🛠️ Tech Stack
-- **Framework**: Next.js 15 (App Router)
-- **Database/Auth**: Firebase Firestore & Authentication
-- **AI**: Genkit with Gemini 2.0 Flash
-- **Styling**: Tailwind CSS + ShadCN UI
-- **Ad Network**: A-Ads (Privacy-focused)
