@@ -10,11 +10,19 @@ Globlync is a professional platform designed for informal workers (plumbers, ele
 - Toggle ON **Email link (passwordless sign-in)**.
 - **CRITICAL**: Go to **Settings** > **Authorized domains** and add `globlync.vercel.app`.
 
-### 2. Domain Verification Note
+### 2. Professional Branding (Google Sign-in)
+To show "Globlync" instead of your project ID in the Google popup:
+- Go to the [Google Cloud Console](https://console.cloud.google.com/).
+- Navigate to **APIs & Services** > **OAuth consent screen**.
+- Set **App name** to "Globlync".
+- Set your **User support email** and **Developer contact info**.
+- **Note**: The technical domain below the name will remain the Firebase ID until you buy a custom domain (e.g., `.com`). You cannot technically verify a `.vercel.app` domain for this specific Google identity step.
+
+### 3. Domain Verification Note
 - You **cannot** verify the DNS records for a `.vercel.app` domain in Firebase (the step asking for TXT/CNAME records). 
 - **Don't worry**: Your app will still work! It will just send emails from the default Firebase address. To use a custom sender, you would need a custom domain (e.g., `.com`).
 
-### 3. Professional Magic Link Template
+### 4. Professional Magic Link Template
 To make copying easier on mobile:
 1. Open the file **`docs/magic-link-template.html`** in this editor.
 2. Use "Select All" to copy the entire code.
