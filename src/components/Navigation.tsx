@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -128,7 +127,7 @@ export function Navigation() {
                 </Link>
 
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  <DropdownMenuTrigger asChild id="nav-user-menu">
                     <button className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-muted transition-all outline-none relative group">
                       <div className="relative">
                         <Avatar className="h-9 w-9 border-2 border-primary/20">

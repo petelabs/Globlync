@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -73,11 +72,11 @@ function LoginContent() {
     if (!snap.exists()) {
       let invitedBy = "";
       if (referralCode) {
-        const refMappingRef = doc(db, "referralCodes", referralCode);
-        const refMappingSnap = await getDoc(refMappingRef);
+        const referralDocRef = doc(db, "referralCodes", referralCode);
+        const referralDocSnap = await getDoc(referralDocRef);
         
-        if (refMappingSnap.exists()) {
-          invitedBy = refMappingSnap.data().uid;
+        if (referralDocSnap.exists()) {
+          invitedBy = referralDocSnap.data().uid;
           const inviterRef = doc(db, "workerProfiles", invitedBy);
           
           updateDoc(inviterRef, {
@@ -101,6 +100,7 @@ function LoginContent() {
         referralCount: 0,
         activeBenefits: [],
         badgeIds: [],
+        onboardingCompleted: false, // Start tutorial for new users
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });

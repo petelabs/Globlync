@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -173,7 +172,12 @@ export default function ProfilePage() {
                   <AvatarImage src={user?.photoURL || `https://picsum.photos/seed/${user?.uid}/200/200`} />
                   <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
-                <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full shadow-md border border-border">
+                <Button 
+                  id="profile-camera-btn"
+                  size="icon" 
+                  variant="secondary" 
+                  className="absolute bottom-0 right-0 rounded-full shadow-md border border-border"
+                >
                   <Camera className="h-4 w-4" />
                 </Button>
               </div>
@@ -280,7 +284,12 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
               <CardFooter className="bg-muted/10">
-                <Button type="submit" className="w-full rounded-full py-6 text-lg shadow-lg" disabled={usernameStatus === "taken"}>
+                <Button 
+                  id="profile-save-btn"
+                  type="submit" 
+                  className="w-full rounded-full py-6 text-lg shadow-lg" 
+                  disabled={usernameStatus === "taken"}
+                >
                   Save Profile
                 </Button>
               </CardFooter>

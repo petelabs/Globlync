@@ -4,6 +4,7 @@ import { Navigation } from '@/components/Navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import Script from 'next/script';
 
 export const viewport: Viewport = {
@@ -95,6 +96,7 @@ export default function RootLayout({
           <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-24 pt-20 md:pb-6 md:pt-24">
             {children}
           </main>
+          <OnboardingTutorial />
           <InstallPrompt />
           <Toaster />
         </FirebaseClientProvider>

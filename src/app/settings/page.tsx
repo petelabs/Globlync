@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,12 +21,14 @@ import {
   Zap,
   ZapOff,
   Crown,
-  CreditCard
+  CreditCard,
+  PlayCircle
 } from "lucide-react";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { doc, serverTimestamp } from "firebase/firestore";
 import Link from "next/link";
 import { 
   Accordion, 
@@ -35,26 +36,21 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
   const { user } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
   const [darkMode, setDarkMode] = useState(false);
   const [animationsDisabled, setAnimationsDisabled] = useState(false);
+
+  const workerRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "workerProfiles", user.uid);
+  }, [db, user?.uid]);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -82,6 +78,17 @@ export default function SettingsPage() {
     } else {
       document.documentElement.classList.remove('no-animations');
       localStorage.setItem('animationsDisabled', 'false');
+    }
+  };
+
+  const restartTutorial = () => {
+    if (workerRef) {
+      updateDocumentNonBlocking(workerRef, {
+        onboardingCompleted: false,
+        updatedAt: serverTimestamp()
+      });
+      router.push("/dashboard");
+      toast({ title: "Tutorial Restarted", description: "Let's walk through the basics again!" });
     }
   };
 
@@ -129,6 +136,26 @@ export default function SettingsPage() {
               <Link href="/pricing">View Plans</Link>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Onboarding Help */}
+      <Card className="border-none shadow-sm bg-secondary/10">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <PlayCircle className="h-5 w-5 text-secondary" />
+            Getting Started
+          </CardTitle>
+          <CardDescription>Need a refresher on how to use Globlync?</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            variant="outline" 
+            className="w-full rounded-full border-secondary text-secondary hover:bg-secondary hover:text-white font-bold"
+            onClick={restartTutorial}
+          >
+            Restart Tutorial Walkthrough
+          </Button>
         </CardContent>
       </Card>
 
