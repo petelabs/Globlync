@@ -34,34 +34,33 @@ export async function POST(req: Request) {
     }
 
     // Verify Signature
-    // PayChangu documentation typically uses HMAC SHA256 of the body
+    // PayChangu usually sends an HMAC signature of the payload using your webhook secret
     const hmac = crypto.createHmac('sha256', secret);
     const expectedSignature = hmac.update(rawBody).digest('hex');
 
     if (signature !== expectedSignature) {
-      console.warn('Invalid PayChangu signature detected');
-      // In production, you might want to return 401, but for initial setup, 
-      // check if PayChangu sends the signature in a different format.
+      console.warn('Invalid PayChangu signature detected. Check if secret matches.');
+      // In production, uncomment the line below to reject unverified requests
       // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Handle Success Status
-    // PayChangu usually sends an event type or a direct status in the payload
-    if (body.status === 'success' || body.event === 'payment.success') {
-      const customerEmail = body.customer?.email || body.data?.customer?.email;
+    // Based on PayChangu event structures: 'success' or 'payment.success'
+    if (body.status === 'success' || body.event === 'payment.success' || body.data?.status === 'success') {
+      const customerEmail = body.customer?.email || body.data?.customer?.email || body.email;
 
       if (!customerEmail) {
         console.warn('Payment successful but no email found in payload');
         return NextResponse.json({ error: 'No email found' }, { status: 400 });
       }
 
-      // Find user by email and update Pro status
+      // Find worker by contact email and upgrade to Pro
       const usersRef = db.collection('workerProfiles');
       const q = await usersRef.where('contactEmail', '==', customerEmail).limit(1).get();
 
       if (q.empty) {
-        console.warn(`Payment successful for ${customerEmail} but no worker profile matches this email.`);
-        return NextResponse.json({ message: 'User not found' }, { status: 404 });
+        console.warn(`Payment success for ${customerEmail} but no Globlync worker profile matches this email.`);
+        return NextResponse.json({ message: 'User not found in Globlync' }, { status: 404 });
       }
 
       const userDoc = q.docs[0];
@@ -70,13 +69,22 @@ export async function POST(req: Request) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log(`User ${userDoc.id} upgraded to Pro via PayChangu webhook`);
+      // Add a notification for the user
+      const notifRef = db.collection('workerProfiles').doc(userDoc.id).collection('notifications');
+      await notifRef.add({
+        type: 'app',
+        message: 'Congratulations! Your Pro membership has been activated via PayChangu. You now have expanded storage and priority AI verification!',
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`User ${userDoc.id} upgraded to Pro via PayChangu`);
       return NextResponse.json({ status: 'success' });
     }
 
-    return NextResponse.json({ message: 'Event ignored' });
+    return NextResponse.json({ message: 'Event received but not processed' });
   } catch (error: any) {
-    console.error('Webhook error:', error.message);
+    console.error('Webhook processing error:', error.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
