@@ -10,23 +10,19 @@ import {
   Star, 
   TrendingUp, 
   QrCode, 
-  History, 
   Award,
-  ChevronRight,
   Loader2,
-  Sparkles,
-  Heart,
-  X,
   Users,
-  Gift
+  Gift,
+  Crown,
+  Sparkles,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, limit, doc, serverTimestamp } from "firebase/firestore";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { Textarea } from "@/components/ui/textarea";
 
 const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string }> = {
   'first-job': { name: "First Verified Job", icon: Award, color: "text-blue-500" },
@@ -39,11 +35,6 @@ export default function DashboardPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
-
-  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
-  const [appRating, setAppRating] = useState(0);
-  const [appComment, setAppComment] = useState("");
-  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -70,15 +61,7 @@ export default function DashboardPage() {
   const { data: recentJobs, isLoading: isJobsLoading } = useCollection(recentJobsQuery);
   const { data: ratings } = useCollection(ratingsRef);
 
-  useEffect(() => {
-    const hasRated = localStorage.getItem(`rated_app_${user?.uid}`);
-    if (allJobs && allJobs.length > 0 && !hasRated) {
-      const timer = setTimeout(() => {
-        setShowRatingPrompt(true);
-      }, 15000);
-      return () => clearTimeout(timer);
-    }
-  }, [allJobs, user?.uid]);
+  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
   const stats = useMemo(() => {
     const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
@@ -96,34 +79,17 @@ export default function DashboardPage() {
     };
   }, [allJobs, ratings, profile]);
 
-  const handleAppRatingSubmit = async () => {
-    if (appRating === 0 || !db || !user) return;
-    setIsSubmittingRating(true);
-    
-    const globalAppRatingsRef = collection(db, "appRatings");
-    addDocumentNonBlocking(globalAppRatingsRef, {
-      workerId: user.uid,
-      workerName: user.displayName || "A Professional",
-      score: appRating,
-      comment: appComment.substring(0, 100),
-      createdAt: serverTimestamp(),
-    });
-
-    localStorage.setItem(`rated_app_${user.uid}`, "true");
-    setIsSubmittingRating(false);
-    setShowRatingPrompt(false);
-    
-    toast({ title: "Thank You!", description: "We're happy to have you as part of Globlync." });
-  };
-
   if (!user) return null;
 
   return (
     <div className="flex flex-col gap-6 py-4">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Worker Dashboard</h1>
-          <p className="text-muted-foreground">Manage your reputation and track your verified growth.</p>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            Dashboard
+            {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30"><Crown className="h-3 w-3 mr-1" /> Pro</Badge>}
+          </h1>
+          <p className="text-muted-foreground">Manage your reputation and professional growth.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full" asChild>
@@ -139,6 +105,28 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {!isPro && (
+        <Card className="border-none bg-primary text-primary-foreground shadow-2xl overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+            <Zap className="h-32 w-32" />
+          </div>
+          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-4 text-center md:text-left">
+              <div className="bg-white/20 p-4 rounded-2xl">
+                <Crown className="h-8 w-8" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Boost Your Business!</h3>
+                <p className="text-sm opacity-80">Unlock 10 HD photos, priority verification, and a Pro badge. Prices start from MWK 250.</p>
+              </div>
+            </div>
+            <Button className="rounded-full bg-secondary text-secondary-foreground font-bold px-8 h-12 hover:scale-105" asChild>
+              <Link href="/pricing">Upgrade to Pro</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 md:grid-cols-12">
         {/* Referral CTA */}
         <Card className="md:col-span-12 border-2 border-secondary bg-secondary/5 overflow-hidden">
@@ -149,7 +137,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold">Invite Friends, Earn Pro!</h3>
-                <p className="text-sm text-muted-foreground">You have invited {stats.referrals} workers. Invite more to unlock badges and ads-free experience.</p>
+                <p className="text-sm text-muted-foreground">You have invited {stats.referrals} workers. Invite {Math.max(0, 10 - stats.referrals)} more to unlock Pro status for free!</p>
               </div>
             </div>
             <Button className="rounded-full bg-secondary text-secondary-foreground font-bold px-8 h-12 hover:scale-105 transition-transform" asChild>

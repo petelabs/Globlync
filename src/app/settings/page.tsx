@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,9 @@ import {
   Moon,
   Sun,
   Zap,
-  ZapOff
+  ZapOff,
+  Crown,
+  CreditCard
 } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
@@ -86,32 +89,10 @@ export default function SettingsPage() {
     try {
       await signOut(auth);
       router.push("/");
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully logged out of Globlync.",
-      });
+      toast({ title: "Signed Out" });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Logout Failed",
-        description: "There was an error signing you out.",
-      });
+      toast({ variant: "destructive", title: "Logout Failed" });
     }
-  };
-
-  const handleDeleteAccount = () => {
-    toast({
-      variant: "destructive",
-      title: "Action Restricted",
-      description: "Please contact support@globlync.pro to request account deletion.",
-    });
-  };
-
-  const handleDownloadData = () => {
-    toast({
-      title: "Data Request Received",
-      description: "Your work history report will be sent to your email shortly.",
-    });
   };
 
   if (!user) return null;
@@ -125,6 +106,31 @@ export default function SettingsPage() {
         </h1>
         <p className="text-muted-foreground">Manage your account, appearance, and privacy.</p>
       </header>
+
+      {/* Subscription Section */}
+      <Card className="border-none shadow-md bg-primary text-primary-foreground">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Crown className="h-5 w-5" />
+            Billing & Subscription
+          </CardTitle>
+          <CardDescription className="text-primary-foreground/70">Manage your Pro features and benefits.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex items-center justify-between p-4 bg-white/10 rounded-2xl border border-white/20">
+            <div className="flex items-center gap-3">
+              <CreditCard className="h-5 w-5" />
+              <div>
+                <p className="text-sm font-bold">Pro Account Status</p>
+                <p className="text-xs opacity-80">Check your current benefits and expiry.</p>
+              </div>
+            </div>
+            <Button variant="secondary" size="sm" asChild className="rounded-full">
+              <Link href="/pricing">View Plans</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Appearance Section */}
       <Card className="border-none shadow-sm">
@@ -143,11 +149,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Switch to a darker theme for night use.</p>
               </div>
             </div>
-            <Switch 
-              id="dark-mode" 
-              checked={darkMode} 
-              onCheckedChange={toggleDarkMode} 
-            />
+            <Switch id="dark-mode" checked={darkMode} onCheckedChange={toggleDarkMode} />
           </div>
 
           <div className="flex items-center justify-between">
@@ -160,11 +162,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Turn off visual motion effects.</p>
               </div>
             </div>
-            <Switch 
-              id="animations" 
-              checked={animationsDisabled} 
-              onCheckedChange={toggleAnimations} 
-            />
+            <Switch id="animations" checked={animationsDisabled} onCheckedChange={toggleAnimations} />
           </div>
         </CardContent>
       </Card>
@@ -184,9 +182,6 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Managed via {user.providerData[0]?.providerId || "Email"}</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => toast({ title: "Social auth managed by provider" })}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
@@ -194,12 +189,10 @@ export default function SettingsPage() {
               <BellRing className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-bold">Push Notifications</p>
-                <p className="text-xs text-muted-foreground">Alerts for job verifications and badges</p>
+                <p className="text-xs text-muted-foreground">Alerts for verifications and badges</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" asChild>
-              <span className="text-xs font-bold text-primary">ENABLED</span>
-            </Button>
+            <span className="text-[10px] font-black text-primary px-2">ACTIVE</span>
           </div>
         </CardContent>
         <CardFooter className="flex gap-2">
@@ -213,87 +206,25 @@ export default function SettingsPage() {
       <Card className="border-none shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg">Legal & Compliance</CardTitle>
-          <CardDescription>Review our terms of service and how we protect your data.</CardDescription>
+          <CardDescription>Review our policies and data protection.</CardDescription>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="privacy">
-              <AccordionTrigger className="text-sm font-bold">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" /> Privacy Policy
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="text-xs text-muted-foreground leading-relaxed space-y-4">
-                <p><strong>1. Data Collection:</strong> We collect your professional trade, job descriptions, and photos to build your digital reputation.</p>
-                <p><strong>2. Usage:</strong> Data is used to verify jobs and calculate Trust Scores.</p>
-                <Button variant="link" size="sm" className="p-0 h-auto text-primary font-bold" asChild>
-                  <Link href="/privacy">Read Full Privacy Policy <ExternalLink className="ml-1 h-3 w-3" /></Link>
-                </Button>
+              <AccordionTrigger className="text-sm font-bold"><Shield className="h-4 w-4 mr-2" /> Privacy Policy</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2">
+                <p>We use your data to verify jobs and build your reputation. We help cover storage and AI costs through optional Pro subscriptions.</p>
+                <Link href="/privacy" className="text-primary font-bold">Read Full Privacy Policy <ExternalLink className="inline h-3 w-3" /></Link>
               </AccordionContent>
             </AccordionItem>
-
             <AccordionItem value="terms">
-              <AccordionTrigger className="text-sm font-bold">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" /> Terms of Service
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="text-xs text-muted-foreground leading-relaxed space-y-4">
-                <p><strong>1. Conduct:</strong> You agree to log only genuine work. Fraudulent logs will result in account suspension.</p>
-                <Button variant="link" size="sm" className="p-0 h-auto text-primary font-bold" asChild>
-                  <Link href="/terms">Read Full Terms of Service <ExternalLink className="ml-1 h-3 w-3" /></Link>
-                </Button>
+              <AccordionTrigger className="text-sm font-bold"><FileText className="h-4 w-4 mr-2" /> Terms of Service</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2">
+                <p>By using Globlync, you agree to log only genuine work. Subscriptions help sustain high-speed infrastructure for the Malawian labor market.</p>
+                <Link href="/terms" className="text-primary font-bold">Read Full Terms <ExternalLink className="inline h-3 w-3" /></Link>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </CardContent>
-      </Card>
-
-      {/* Data & Deletion Section */}
-      <Card className="border-none shadow-sm border-destructive/20 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
-          <CardDescription>Sensitive account actions and data exports.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-sm font-bold">Export My Data</p>
-              <p className="text-xs text-muted-foreground">Get a CSV of all your verified jobs and ratings.</p>
-            </div>
-            <Button variant="outline" size="sm" className="font-bold" onClick={handleDownloadData}>
-              <Download className="h-4 w-4 mr-2" /> Export
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-sm font-bold text-destructive">Delete My Account</p>
-              <p className="text-xs text-muted-foreground">Permanently remove your reputation and data.</p>
-            </div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="font-bold">
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your
-                    professional reputation, all verified job logs, and earned badges.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground font-bold">
-                    Delete Account
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
         </CardContent>
       </Card>
 
