@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -108,7 +109,7 @@ export function Navigation() {
             <Logo />
           </Link>
           
-          <div className="flex-1 flex justify-center px-1 sm:px-4 max-w-[120px] sm:max-w-xs md:max-w-sm">
+          <div className="flex-1 flex justify-center px-2 max-w-[100px] sm:max-w-xs md:max-w-sm">
             <Button 
               variant="outline" 
               className="w-full justify-start text-muted-foreground rounded-full h-9 sm:h-11 px-2 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
@@ -131,7 +132,7 @@ export function Navigation() {
                   )}
                 </Link>
 
-                <DropdownMenu modal={false}>
+                <DropdownMenu>
                   <DropdownMenuTrigger asChild id="nav-user-menu">
                     <button className="flex items-center gap-1 p-0.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
@@ -158,7 +159,7 @@ export function Navigation() {
                           <p className="text-sm font-black leading-none">{user.displayName || "Professional"}</p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{profile?.tradeSkill || "New Worker"}</p>
+                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">{profile?.tradeSkill || "New Worker"}</p>
                           </div>
                         </div>
                       </div>
@@ -184,7 +185,7 @@ export function Navigation() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild className="rounded-full shadow-lg font-black px-4 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm" size="sm">
+              <Button asChild className="rounded-full shadow-lg font-black px-3 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm whitespace-nowrap" size="sm">
                 <Link href="/login">Join Now</Link>
               </Button>
             )}
