@@ -40,6 +40,15 @@
           "type": "number",
           "description": "A real-time calculated score reflecting reputation."
         },
+        "isAvailable": {
+          "type": "boolean",
+          "description": "Whether the worker is currently available for hire."
+        },
+        "serviceAreas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of districts/towns in Malawi where the worker operates."
+        },
         "referralCode": {
           "type": "string",
           "description": "Unique code for inviting others."
