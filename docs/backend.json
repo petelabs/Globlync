@@ -11,9 +11,13 @@
           "type": "string",
           "description": "Unique identifier for the WorkerProfile entity."
         },
+        "username": {
+          "type": "string",
+          "description": "Unique username for the worker."
+        },
         "externalAuthId": {
           "type": "string",
-          "description": "Reference to the unique identifier from the external authentication system (e.g., Google ID, email service user ID)."
+          "description": "Reference to the unique identifier from the external authentication system."
         },
         "name": {
           "type": "string",
@@ -21,40 +25,33 @@
         },
         "tradeSkill": {
           "type": "string",
-          "description": "The primary trade or skill of the worker (e.g., 'Plumber', 'Electrician', 'Gardener')."
+          "description": "The primary trade or skill of the worker."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Professional biography."
         },
         "profilePictureUrl": {
           "type": "string",
           "description": "URL to the worker's profile picture.",
           "format": "uri"
         },
-        "qrCodeUrl": {
-          "type": "string",
-          "description": "URL to a unique QR code associated with the worker, used for client job verification.",
-          "format": "uri"
-        },
         "trustScore": {
           "type": "number",
-          "description": "A real-time calculated score reflecting the worker's reputation based on verified jobs and ratings."
-        },
-        "publicReputationPageLink": {
-          "type": "string",
-          "description": "A shareable URL to the worker's public reputation page.",
-          "format": "uri"
+          "description": "A real-time calculated score reflecting reputation."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp when the worker profile was first created.",
+          "description": "Creation timestamp.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp when the worker profile was last updated.",
+          "description": "Last update timestamp.",
           "format": "date-time"
         },
         "badgeIds": {
           "type": "array",
-          "description": "References to Badge entities awarded to this worker. (Relationship: WorkerProfile N:N Badge)",
           "items": {
             "type": "string"
           }
@@ -62,360 +59,24 @@
       },
       "required": [
         "id",
-        "externalAuthId",
+        "username",
         "name",
         "tradeSkill",
-        "profilePictureUrl",
-        "qrCodeUrl",
         "trustScore",
-        "publicReputationPageLink",
         "createdAt",
         "updatedAt"
       ]
     },
-    "Job": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Job",
+    "Username": {
       "type": "object",
-      "description": "Details of a completed job performed by an informal worker.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Job entity."
-        },
-        "workerId": {
-          "type": "string",
-          "description": "Reference to the WorkerProfile who completed this job. (Relationship: WorkerProfile 1:N Job)"
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the work performed."
-        },
-        "dateCompleted": {
-          "type": "string",
-          "description": "The date when the job was completed.",
-          "format": "date-time"
-        },
-        "photoUrl": {
-          "type": "string",
-          "description": "Optional URL to a photo demonstrating the completed work.",
-          "format": "uri"
-        },
-        "isVerified": {
-          "type": "boolean",
-          "description": "A flag indicating whether the client has verified the job's completion."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the job record was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the job record was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "workerId",
-        "description",
-        "dateCompleted",
-        "isVerified",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "AppRating": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AppRating",
-      "type": "object",
-      "description": "A rating for the Globlync platform itself from a worker.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the app rating."
-        },
-        "workerId": {
-          "type": "string",
-          "description": "The worker who gave the rating."
-        },
-        "workerName": {
-          "type": "string",
-          "description": "The display name of the worker."
-        },
-        "score": {
-          "type": "number",
-          "description": "Rating score (1-5)."
-        },
-        "comment": {
-          "type": "string",
-          "description": "Feedback comment, limited to 100 characters."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of the rating.",
-          "format": "date-time"
-        }
-      },
-      "required": ["id", "workerId", "score", "createdAt"]
-    },
-    "ClientVerification": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ClientVerification",
-      "type": "object",
-      "description": "Records the event of a client verifying a job's completion, typically via SMS or QR code.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ClientVerification entity."
-        },
-        "jobId": {
-          "type": "string",
-          "description": "Reference to the Job being verified. (Relationship: Job 1:N ClientVerification)"
-        },
-        "clientIdentifier": {
-          "type": "string",
-          "description": "The identifier used to contact the client for verification (e.g., phone number for SMS)."
-        },
-        "verificationToken": {
-          "type": "string",
-          "description": "The one-time token or link parameter sent to the client for verification."
-        },
-        "verifiedAt": {
-          "type": "string",
-          "description": "Timestamp when the job was successfully verified by the client.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the verification process (e.g., 'pending', 'sent', 'verified', 'declined')."
-        },
-        "method": {
-          "type": "string",
-          "description": "The method used for verification (e.g., 'SMS', 'QR_SCAN')."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the verification request was initiated.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the verification record was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "jobId",
-        "clientIdentifier",
-        "status",
-        "method",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "Rating": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Rating",
-      "type": "object",
-      "description": "A client's rating and optional feedback for a completed and verified job.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Rating entity."
-        },
-        "jobId": {
-          "type": "string",
-          "description": "Reference to the Job that received this rating. (Relationship: Job 1:N Rating)"
-        },
-        "workerId": {
-          "type": "string",
-          "description": "Reference to the WorkerProfile who performed the job. (Relationship: WorkerProfile 1:N Rating)"
-        },
-        "clientVerificationId": {
-          "type": "string",
-          "description": "Reference to the ClientVerification record that enabled this rating, ensuring authenticity. (Relationship: ClientVerification 1:N Rating)"
-        },
-        "score": {
-          "type": "number",
-          "description": "The numerical rating given by the client (e.g., 1 to 5 stars)."
-        },
-        "comment": {
-          "type": "string",
-          "description": "Optional text feedback or comment from the client."
-        },
-        "ratedAt": {
-          "type": "string",
-          "description": "Timestamp when the rating was submitted.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "jobId",
-        "workerId",
-        "clientVerificationId",
-        "score",
-        "ratedAt"
-      ]
-    },
-    "Badge": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Badge",
-      "type": "object",
-      "description": "Represents an achievement or milestone that a worker can earn, contributing to their reputation.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Badge entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The display name of the badge (e.g., 'Five Star Achiever', 'First 5 Jobs')."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of what the badge represents and its significance."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL to the icon or image representing the badge.",
-          "format": "uri"
-        },
-        "criteria": {
-          "type": "string",
-          "description": "A human-readable description of the conditions required to earn this badge (e.g., 'Awarded for completing 5 verified jobs with an average rating of 4.5 or higher')."
-        },
-        "type": {
-          "type": "string",
-          "description": "A categorical type for the badge (e.g., 'jobs_milestone', 'rating_threshold', 'community_contributor')."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the badge definition was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the badge definition was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "imageUrl",
-        "criteria",
-        "type",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "Notification": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Notification",
-      "type": "object",
-      "description": "An alert or message sent to a worker regarding their activities or profile updates.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Notification entity."
-        },
-        "workerId": {
-          "type": "string",
-          "description": "Reference to the WorkerProfile to whom the notification is addressed. (Relationship: WorkerProfile 1:N Notification)"
-        },
-        "type": {
-          "type": "string",
-          "description": "The category or type of notification (e.g., 'job_verified', 'new_rating', 'profile_update')."
-        },
-        "message": {
-          "type": "string",
-          "description": "The full text content of the notification message."
-        },
-        "isRead": {
-          "type": "boolean",
-          "description": "A flag indicating whether the worker has viewed or acknowledged the notification."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the notification was created.",
-          "format": "date-time"
-        },
-        "relatedJobId": {
-          "type": "string",
-          "description": "Optional reference to a Job entity if the notification is job-specific. (Relationship: Job 1:N Notification)"
-        },
-        "relatedRatingId": {
-          "type": "string",
-          "description": "Optional reference to a Rating entity if the notification is rating-specific. (Relationship: Rating 1:N Notification)"
-        }
-      },
-      "required": [
-        "id",
-        "workerId",
-        "type",
-        "message",
-        "isRead",
-        "createdAt"
-      ]
-    },
-    "AdminUser": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AdminUser",
-      "type": "object",
-      "description": "Represents an administrative user with access to the TrustLink dashboard for managing users and jobs.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the AdminUser entity."
-        },
-        "externalAuthId": {
-          "type": "string",
-          "description": "Reference to the unique identifier from the external authentication system for the admin user."
-        },
-        "name": {
-          "type": "string",
-          "description": "The full name of the admin user."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the admin user.",
-          "format": "email"
-        },
-        "role": {
-          "type": "string",
-          "description": "The role or permissions level of the admin user (e.g., 'super_admin', 'moderator')."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the admin user account was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the admin user account was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "externalAuthId",
-        "name",
-        "email",
-        "role",
-        "createdAt",
-        "updatedAt"
-      ]
+        "uid": { "type": "string" }
+      }
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous",
       "email_link",
       "google.com"
     ]
@@ -423,91 +84,19 @@
   "firestore": {
     "structure": [
       {
-        "path": "/appRatings/{ratingId}",
-        "definition": {
-          "entityName": "AppRating",
-          "schema": {
-            "$ref": "#/backend/entities/AppRating"
-          },
-          "description": "Collection for general app feedback from workers.",
-          "params": [
-            {
-              "name": "ratingId",
-              "description": "The unique identifier for the app rating."
-            }
-          ]
-        }
-      },
-      {
         "path": "/workerProfiles/{workerId}",
         "definition": {
           "entityName": "WorkerProfile",
-          "schema": {
-            "$ref": "#/backend/entities/WorkerProfile"
-          },
-          "description": "Root collection for informal worker profiles.",
-          "params": [
-            {
-              "name": "workerId",
-              "description": "The unique identifier of the worker."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/WorkerProfile" },
+          "description": "Worker profiles."
         }
       },
       {
-        "path": "/workerProfiles/{workerId}/jobs/{jobId}",
+        "path": "/usernames/{username}",
         "definition": {
-          "entityName": "Job",
-          "schema": {
-            "$ref": "#/backend/entities/Job"
-          },
-          "description": "Subcollection storing jobs completed by a specific worker.",
-          "params": [
-            {
-              "name": "workerId",
-              "description": "Worker UID."
-            },
-            {
-              "name": "jobId",
-              "description": "Job ID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/workerProfiles/{workerId}/ratings/{ratingId}",
-        "definition": {
-          "entityName": "Rating",
-          "schema": {
-            "$ref": "#/backend/entities/Rating"
-          },
-          "description": "Subcollection for client ratings.",
-          "params": [
-            {
-              "name": "workerId",
-              "description": "Worker UID."
-            },
-            {
-              "name": "ratingId",
-              "description": "Rating ID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/workerProfiles/{workerId}/notifications/{notificationId}",
-        "definition": {
-          "entityName": "Notification",
-          "schema": {
-            "$ref": "#/backend/entities/Notification"
-          },
-          "description": "Subcollection for notifications.",
-          "params": [
-            {
-              "name": "workerId",
-              "description": "Worker UID."
-            }
-          ]
+          "entityName": "Username",
+          "schema": { "$ref": "#/backend/entities/Username" },
+          "description": "Registry of unique usernames mapped to UIDs."
         }
       }
     ]

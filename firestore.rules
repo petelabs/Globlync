@@ -1,112 +1,43 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * GLOBIINC FIREBASE SECURITY RULES
-     * 
-     * Core Philosophy:
-     * This ruleset implements a strict Ownership and Role-Based Access Control (RBAC) model. 
-     * Access is primarily governed by a user's identity as either a Worker or an Admin. 
-     */
-
-    // --- Helper Functions ---
-
-    /** @description Checks if the user is authenticated with Firebase. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided ID. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Verifies ownership and ensures the document exists for updates/deletes. */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /** @description Checks if the authenticated user exists in the adminUsers collection. */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid));
-    }
-
-    /** @description Validates that critical relational fields match the path wildcards on creation. */
-    function isValidWorkerData(workerId) {
-      return request.resource.data.workerId == workerId;
-    }
-
-    // --- Collection Rules ---
-
-    /**
-     * @description Root profiles for workers. IDs match the Auth UID.
-     */
     match /workerProfiles/{workerId} {
       allow get, list: if true;
-      allow create: if isOwner(workerId) && request.resource.data.id == workerId;
-      allow update, delete: if isExistingOwner(workerId) && request.resource.data.id == resource.data.id;
-
-      /**
-       * @description Jobs completed by the worker.
-       */
+      allow create: if isOwner(workerId);
+      allow update: if isOwner(workerId);
+      
       match /jobs/{jobId} {
-        allow get, list: if isOwner(workerId);
-        allow create: if isOwner(workerId) && isValidWorkerData(workerId);
-        allow update, delete: if isExistingOwner(workerId) && request.resource.data.workerId == resource.data.workerId;
-
-        /**
-         * @description Verifications associated with a specific job.
-         */
-        match /clientVerifications/{verificationId} {
-          allow get, list: if isOwner(workerId);
-          allow create: if isSignedIn() && isValidWorkerData(workerId);
-          allow update, delete: if isExistingOwner(workerId) && request.resource.data.workerId == resource.data.workerId;
-        }
+        allow read, write: if isOwner(workerId);
       }
-
-      /**
-       * @description Ratings received by the worker.
-       */
       match /ratings/{ratingId} {
-        allow get, list: if true;
+        allow read: if true;
         allow create: if isSignedIn();
-        allow update, delete: if isExistingOwner(workerId);
+        allow update, delete: if isOwner(workerId);
       }
-
-      /**
-       * @description System notifications for the worker.
-       */
       match /notifications/{notificationId} {
-        allow get, list: if isOwner(workerId);
-        allow update, delete: if isExistingOwner(workerId) && request.resource.data.workerId == resource.data.workerId;
-        allow create: if false;
+        allow read, update, delete: if isOwner(workerId);
       }
     }
 
-    /**
-     * @description Global app ratings/feedback (Testimonials).
-     */
+    match /usernames/{username} {
+      allow get: if true;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
     match /appRatings/{ratingId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isSignedIn();
-    }
-
-    /**
-     * @description Global badge definitions.
-     */
-    match /badges/{badgeId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Administrative user profiles.
-     */
-    match /adminUsers/{adminId} {
-      allow get, create, update: if isOwner(adminId);
-      allow list: if isAdmin();
-      allow delete: if false;
     }
   }
 }
