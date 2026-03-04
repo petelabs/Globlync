@@ -17,7 +17,7 @@ export default function TermsOfServicePage() {
         <div className="bg-primary/10 p-2 rounded-xl">
           <FileText className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-4xl font-bold">Terms of Service</h1>
+        <h1 className="text-4xl font-bold tracking-tighter">Terms of Service</h1>
       </div>
 
       <Card className="border-none shadow-sm">
@@ -41,26 +41,30 @@ export default function TermsOfServicePage() {
             <p>You agree NOT to:</p>
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li>Log fake or fraudulent work history.</li>
-              <li>Upload photos that do not belong to you or do not represent your actual work.</li>
+              <li>Upload photos that do not represent your actual work.</li>
               <li>Use the platform to harass, deceive, or defraud clients or other workers.</li>
-              <li>Impersonate any person or entity.</li>
             </ul>
             <p className="mt-2 text-destructive font-bold">Violations of these rules will result in immediate account termination and loss of all earned trust scores and badges.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold mb-2">4. Content Ownership</h3>
-            <p>You retain ownership of the photos and descriptions you upload. However, by uploading them, you grant Globlync a license to display this content on your public profile for the purpose of building your reputation.</p>
+            <h3 className="text-lg font-bold mb-2">4. Subscriptions and Payments</h3>
+            <p>Globlync offers optional Pro tiers. Tiers are automatically assigned based on the amount paid via our payment partners (PayChangu). <strong>All payments are final and non-refundable.</strong></p>
+            <p className="mt-2 font-bold">Minimum Tier Matching:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Payments below MWK 250 will be assigned a 2-day "Trial Pro" status.</li>
+              <li>Users are responsible for entering the correct amount to match their desired Pro duration (7, 15, or 30 days).</li>
+            </ul>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold mb-2">5. Limitation of Liability</h3>
-            <p>Globlync provides a tool for reputation building. We are not a party to any agreements made between workers and clients. Petediano Tech is not responsible for the quality of work performed, payment disputes, or any physical injury or property damage resulting from services logged on the platform.</p>
+            <h3 className="text-lg font-bold mb-2">5. Content Ownership</h3>
+            <p>You retain ownership of the photos you upload. However, you grant Globlync a license to display this content on your public profile for reputation-building purposes.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold mb-2">6. Changes to Terms</h3>
-            <p>We may update these terms from time to time. Your continued use of the app after changes are posted constitutes your acceptance of the new terms.</p>
+            <h3 className="text-lg font-bold mb-2">6. Limitation of Liability</h3>
+            <p>Globlync provides a tool for reputation building. We are not a party to any agreements made between workers and clients. Petediano Tech is not responsible for the quality of work performed or any disputes arising from services logged on the platform.</p>
           </section>
 
           <section>

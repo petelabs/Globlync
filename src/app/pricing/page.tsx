@@ -14,7 +14,8 @@ import {
   Clock,
   Sparkles,
   CreditCard,
-  Info
+  Info,
+  AlertTriangle
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -26,7 +27,7 @@ const PLANS = [
     name: "Standard Pro",
     price: 250,
     duration: "7 Days",
-    features: ["10 HD Photos per job", "5MB per photo", "AI Proof Priority", "Verified Pro Badge"],
+    features: ["10 HD Photos per job", "AI Proof Priority", "Verified Pro Badge", "WhatsApp Visibility"],
     color: "bg-primary/5 border-primary/20",
     paymentLink: "https://pay.paychangu.com/SC-c9Mara"
   },
@@ -34,7 +35,7 @@ const PLANS = [
     name: "Silver Pro",
     price: 500,
     duration: "15 Days",
-    features: ["Everything in Standard", "Enhanced Trust Score", "Search Result Boost", "WhatsApp Priority"],
+    features: ["Everything in Standard", "Enhanced Trust Score", "Search Result Boost", "Priority Support"],
     color: "bg-muted/50 border-muted",
     paymentLink: "https://pay.paychangu.com/SC-c9Mara"
   },
@@ -42,7 +43,7 @@ const PLANS = [
     name: "Gold Pro",
     price: 700,
     duration: "1 Month",
-    features: ["Everything in Silver", "Premium Directory", "Ad-Free Experience", "Monthly Report"],
+    features: ["Everything in Silver", "Premium Directory", "Ad-Free Experience", "Monthly Activity Report"],
     color: "bg-secondary/10 border-secondary/20",
     popular: true,
     paymentLink: "https://pay.paychangu.com/SC-c9Mara"
@@ -60,9 +61,7 @@ export default function PricingPage() {
 
   const { data: profile } = useDoc(workerRef);
   
-  // Check if any benefit is currently active
   const activeBenefit = profile?.activeBenefits?.find((b: any) => new Date(b.expiresAt) > new Date());
-  const isPro = !!activeBenefit || (profile?.referralCount || 0) >= 10;
 
   return (
     <div className="flex flex-col gap-12 py-8 max-w-5xl mx-auto px-4">
@@ -72,7 +71,7 @@ export default function PricingPage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter sm:text-6xl text-primary">Upgrade Your Reputation</h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-          Support the platform that builds your career. Your tier is automatically detected based on the amount you pay.
+          Support the platform that builds your career. Choose your tier by entering the specific amount on the payment page.
         </p>
       </header>
 
@@ -93,7 +92,7 @@ export default function PricingPage() {
           )}>
             {plan.popular && (
               <div className="absolute top-4 right-4 bg-secondary text-secondary-foreground text-[10px] font-black px-3 py-1 rounded-full uppercase">
-                Most Popular
+                Best Value
               </div>
             )}
             <CardHeader>
@@ -119,40 +118,54 @@ export default function PricingPage() {
                   <CreditCard className="mr-2 h-4 w-4" /> Pay with PayChangu
                 </a>
               </Button>
-              <p className="text-[9px] text-center text-muted-foreground mt-2 px-4">
-                Enter at least <b>MWK {plan.price}</b> on the checkout page to unlock this specific tier.
+              <p className="text-[9px] text-center text-muted-foreground mt-2 px-4 italic">
+                Enter MWK {plan.price} or more at checkout to unlock this tier.
               </p>
             </CardFooter>
           </Card>
         ))}
       </section>
 
-      <Card className="border-none bg-muted/30 p-6 rounded-[2rem] flex items-start gap-4">
-        <div className="bg-primary/10 p-3 rounded-2xl">
-          <Info className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h4 className="font-bold text-sm">How automatic detection works</h4>
-          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-            When you click "Pay with PayChangu", you can choose your amount. Our system reads the final amount paid and instantly upgrades your account. For example, paying 700 MWK gives you 30 days of Gold Pro. Always use the email address associated with your Globlync account.
-          </p>
-        </div>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-none bg-muted/30 p-6 rounded-[2rem] flex items-start gap-4">
+          <div className="bg-primary/10 p-3 rounded-2xl">
+            <Info className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm">Automatic Tier Detection</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+              Our system reads the exact amount you choose to pay. For example, paying 700 MWK gives you 30 days of Gold Pro. Always use the email address associated with your Globlync account.
+            </p>
+          </div>
+        </Card>
+
+        <Card className="border-none bg-destructive/5 p-6 rounded-[2rem] flex items-start gap-4 border border-destructive/10">
+          <div className="bg-destructive/10 p-3 rounded-2xl">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-destructive">Payment & Refund Policy</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+              Payments below 250 MWK are assigned to "Trial Pro" (2 days). All payments are final and non-refundable. Please ensure you enter the correct amount for your desired tier.
+            </p>
+          </div>
+        </Card>
+      </div>
 
       <section className="bg-primary text-primary-foreground rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10">
           <ShieldCheck className="h-48 w-48" />
         </div>
         <div className="max-w-3xl relative z-10">
-          <h2 className="text-3xl font-black mb-6">Why we charge for Pro</h2>
+          <h2 className="text-3xl font-black mb-6 italic tracking-tighter">Building a Trustworthy Network</h2>
           <div className="grid gap-8 md:grid-cols-2">
             <div className="flex gap-4">
               <div className="bg-white/20 p-3 rounded-2xl h-fit">
                 <Database className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-bold mb-1">Secure HD Storage</h4>
-                <p className="text-sm opacity-80 leading-relaxed">High-quality photos of your work are stored securely and permanently.</p>
+                <h4 className="font-bold mb-1">HD Proof Storage</h4>
+                <p className="text-sm opacity-80 leading-relaxed">Your professional portfolio is stored securely on our high-speed global infrastructure.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -160,8 +173,8 @@ export default function PricingPage() {
                 <Cpu className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-bold mb-1">AI-Powered Trust</h4>
-                <p className="text-sm opacity-80 leading-relaxed">Gemini AI analyzes your work logs to prevent fraud and boost your reputation.</p>
+                <h4 className="font-bold mb-1">AI-Powered Verification</h4>
+                <p className="text-sm opacity-80 leading-relaxed">Gemini AI works behind the scenes to verify your work logs and boost your Trust Score.</p>
               </div>
             </div>
           </div>
