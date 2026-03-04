@@ -17,10 +17,8 @@ service cloud.firestore {
       allow update: if isOwner(workerId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'activeBenefits']));
       
       match /jobs/{jobId} {
-        allow get: if true;
-        allow list: if isOwner(workerId);
+        allow get, list: if true;
         allow create, update: if isOwner(workerId);
-        allow update: if true; 
       }
       match /ratings/{ratingId} {
         allow read: if true;

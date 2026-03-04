@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
   keywords: 'skilled workers, informal labor, professional reputation, job verification, plumber reputation, electrician trust, verified workers, Globlync',
   manifest: '/manifest.json',
   icons: {
+    icon: '/logo.png',
     apple: '/apple-icon.png',
   },
   openGraph: {
@@ -86,7 +88,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Globlync",
               "url": "https://globlync.vercel.app",
-              "logo": "https://globlync.vercel.app/icon-512.png",
+              "logo": "https://globlync.vercel.app/logo.png",
               "description": "A digital reputation platform for skilled manual workers using AI-based verification.",
               "sameAs": []
             })
