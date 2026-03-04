@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Mail,
   LifeBuoy,
-  Briefcase
+  Briefcase,
+  MapPin
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -202,61 +203,72 @@ export default function Home() {
       </section>
 
       {/* Footer Branding */}
-      <footer className="py-16 border-t mt-12 px-6">
-        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between gap-12">
-          <div className="flex flex-col items-center md:items-start gap-4 flex-1">
-            <div className="flex items-center gap-2 text-primary font-bold">
-              <Logo />
+      <footer className="bg-primary/5 py-16 border-t mt-12 px-6">
+        <div className="max-w-screen-xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-24">
+            {/* Column 1: Brand */}
+            <div className="space-y-6 text-center md:text-left">
+              <Logo className="justify-center md:justify-start" />
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
+                Building a verifiable manual labor market. Headquartered in Dzenje Village, Mulanje, Malawi.
+              </p>
+              <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
+                <MapPin className="h-3 w-3" /> Mulanje, Malawi
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground max-w-xs text-center md:text-left">
-              The portable digital reputation system for skilled professionals across Malawi.
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
-              Built by Petediano Tech • Mulanje
-            </p>
+
+            {/* Column 2: Quick Links */}
+            <div className="space-y-6 text-center md:text-left">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Company</h4>
+              <nav className="flex flex-col gap-3">
+                <Link href="/contact" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">About Us</Link>
+                <Link href="/privacy" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
+                <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Pricing</Link>
+              </nav>
+            </div>
+
+            {/* Column 3: Support */}
+            <div className="space-y-6 text-center md:text-left">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Support</h4>
+              <nav className="flex flex-col gap-3">
+                <a href="mailto:globlync+support@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <LifeBuoy className="h-3.5 w-3.5" /> Help Desk
+                </a>
+                <a href="mailto:globlync+dev@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Report Bug
+                </a>
+                <Link href="/contact" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <ChevronRight className="h-3.5 w-3.5" /> Contact Center
+                </Link>
+              </nav>
+            </div>
+
+            {/* Column 4: Business */}
+            <div className="space-y-6 text-center md:text-left">
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Partners</h4>
+              <nav className="flex flex-col gap-3">
+                <a href="mailto:globlync+ads@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <Briefcase className="h-3.5 w-3.5" /> Advertising
+                </a>
+                <a href="mailto:globlync+info@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                  <Mail className="h-3.5 w-3.5" /> General Inquiries
+                </a>
+              </nav>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 flex-[2]">
-            <div className="space-y-4">
-              <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Company</h4>
-              <nav className="flex flex-col gap-2 text-xs font-medium text-muted-foreground">
-                <Link href="/contact" className="hover:text-primary transition-colors">About Us</Link>
-                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-                <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
-              </nav>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Support</h4>
-              <nav className="flex flex-col gap-3 text-[11px] font-bold text-muted-foreground">
-                <a href="mailto:globlync+support@gmail.com?subject=Globlync%20Support%20Request" className="flex items-center gap-2 hover:text-primary transition-colors">
-                  <LifeBuoy className="h-3 w-3" /> Support
-                </a>
-                <a href="mailto:globlync+dev@gmail.com?subject=Globlync%20Bug%20Report" className="flex items-center gap-2 hover:text-primary transition-colors">
-                  <ShieldCheck className="h-3 w-3" /> Report Bug
-                </a>
-                <a href="/contact" className="flex items-center gap-2 hover:text-primary transition-colors">
-                  <ChevronRight className="h-3 w-3" /> Contact Us
-                </a>
-              </nav>
-            </div>
-
-            <div className="space-y-4 col-span-2 sm:col-span-1">
-              <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Business</h4>
-              <nav className="flex flex-col gap-3 text-[11px] font-bold text-muted-foreground">
-                <a href="mailto:globlync+ads@gmail.com?subject=Globlync%20Partnership%20Inquiry" className="flex items-center gap-2 hover:text-primary transition-colors">
-                  <Briefcase className="h-3 w-3" /> Advertising
-                </a>
-                <a href="mailto:globlync+info@gmail.com?subject=Globlync%20General%20Inquiry" className="flex items-center gap-2 hover:text-primary transition-colors">
-                  <Mail className="h-3 w-3" /> General Info
-                </a>
-              </nav>
+          <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+            <p>© 2026 Petediano Tech • Malawi</p>
+            <div className="flex gap-6">
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link href="/contact" className="hover:text-primary transition-colors">Headquarters</Link>
             </div>
           </div>
-        </div>
-        <div className="mt-16 text-center text-[10px] text-muted-foreground border-t pt-8">
-          © 2026 Petediano Tech • Malawi. Professional storage and AI recovery costs apply for Pro tiers.
+          <p className="mt-4 text-center text-[9px] text-muted-foreground/50 max-w-2xl mx-auto font-medium">
+            Professional storage and AI recovery costs apply for Pro tiers. Managed by Petediano Tech in Mulanje, Dzenje Village.
+          </p>
         </div>
       </footer>
     </div>

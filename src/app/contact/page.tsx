@@ -14,7 +14,8 @@ import {
   MapPin,
   Clock,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,7 @@ const CONTACT_POINTS = [
     priority: "High"
   },
   {
-    title: "Advertising & Partnerships",
+    title: "Advertising",
     description: "Connect with our network of thousands of verified manual workers.",
     email: "globlync+ads@gmail.com",
     subject: "Globlync Partnership Inquiry",
@@ -39,7 +40,7 @@ const CONTACT_POINTS = [
     priority: "Normal"
   },
   {
-    title: "Technical & Bug Reports",
+    title: "Technical Issues",
     description: "Spotted a glitch in the verification flow? Report it to our dev team.",
     email: "globlync+dev@gmail.com",
     subject: "Globlync Bug Report",
@@ -49,7 +50,7 @@ const CONTACT_POINTS = [
   },
   {
     title: "General Inquiries",
-    description: "Anything else on your mind? Feedback and suggestions are welcome.",
+    description: "Feedback, suggestions, or just want to say hi? We're listening.",
     email: "globlync+info@gmail.com",
     subject: "Globlync General Inquiry",
     icon: Info,
@@ -66,14 +67,14 @@ export default function ContactPage() {
           <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
         </Button>
         <div className="space-y-2">
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 mb-2">
             Professional Support
           </Badge>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
             Get in <span className="text-primary italic">Touch.</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Building the future of manual labor in Malawi. We're here to support every verified professional on our platform.
+            Headquartered in Mulanje, building the future of manual labor in Malawi. We support every verified professional on our platform.
           </p>
         </div>
       </header>
@@ -113,19 +114,25 @@ export default function ContactPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
-          <MapPin className="h-8 w-8 text-primary" />
+        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
+          <div className="bg-primary/10 p-4 rounded-full mb-2">
+            <MapPin className="h-6 w-6 text-primary" />
+          </div>
           <h4 className="font-bold uppercase tracking-widest text-[10px]">Headquarters</h4>
-          <p className="text-sm font-medium">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">(Near Dzenje Secondary School)</span></p>
+          <p className="text-sm font-medium">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">Near Dzenje Secondary School</span></p>
         </Card>
-        <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
-          <Clock className="h-8 w-8 text-primary" />
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Hours</h4>
+        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
+          <div className="bg-primary/10 p-4 rounded-full mb-2">
+            <Clock className="h-6 w-6 text-primary" />
+          </div>
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Office Hours</h4>
           <p className="text-sm font-medium">Mon - Sat: 8:00 AM - 5:00 PM</p>
         </Card>
-        <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
-          <LifeBuoy className="h-8 w-8 text-primary" />
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Response</h4>
+        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
+          <div className="bg-primary/10 p-4 rounded-full mb-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Response Time</h4>
           <p className="text-sm font-medium">Within 24 Hours</p>
         </Card>
       </div>
@@ -151,13 +158,13 @@ export default function ContactPage() {
       </Card>
 
       <footer className="text-center py-10 border-t mt-8">
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-2">
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-4">
           Managed by Petediano Tech • Mulanje, Malawi
         </p>
-        <div className="flex justify-center gap-6 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
-          <Link href="/privacy" className="hover:text-primary">Privacy</Link>
-          <Link href="/terms" className="hover:text-primary">Terms</Link>
-          <Link href="/pricing" className="hover:text-primary">Pricing</Link>
+        <div className="flex justify-center gap-8 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
+          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+          <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
         </div>
       </footer>
     </div>
