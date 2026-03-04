@@ -61,7 +61,14 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    // Use standard provider with non-sensitive scopes (default)
     const provider = new GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
     try {
       await signInWithPopup(auth, provider);
       router.push("/dashboard");
@@ -141,8 +148,14 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid grid-cols-1 gap-4">
-            <Button variant="outline" className="w-full rounded-full py-6" onClick={handleGoogleLogin} disabled={isLoading}>
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            {/* Official Sign in with Google Button */}
+            <Button 
+              variant="outline" 
+              className="w-full rounded-full py-6 border-2 font-bold hover:bg-muted/50 transition-colors" 
+              onClick={handleGoogleLogin} 
+              disabled={isLoading}
+            >
+              <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                   fill="#4285F4"
@@ -164,7 +177,7 @@ export default function LoginPage() {
             </Button>
           </div>
           
-          <div className="flex gap-2 p-1 bg-muted rounded-full">
+          <div className="flex gap-2 p-1 bg-muted rounded-full mt-2">
             <button 
               className={cn(
                 "flex-1 py-2 text-xs font-bold rounded-full transition-all",

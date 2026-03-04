@@ -1,6 +1,13 @@
+
 # Globlync - Evidence-Based Reputation for Skilled Workers
 
 Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation.
+
+## 🛡️ Verification Ready (Google Cloud Console)
+**Code Status**: Updated for fast verification.
+- **Sensitive Scopes**: None. The app does NOT request access to Cloud Platform or Storage.
+- **Allowed Scopes**: `openid`, `email`, `profile` (Non-sensitive).
+- **Official Branding**: The login button follows the "Sign in with Google" brand guidelines.
 
 ## 🔑 Firebase Console Setup (Action Required)
 
