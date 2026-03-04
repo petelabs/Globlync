@@ -44,6 +44,19 @@
           "type": "boolean",
           "description": "Whether the worker is currently available for hire."
         },
+        "whatsappNumber": {
+          "type": "string",
+          "description": "WhatsApp contact number."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Direct phone call number."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Professional contact email.",
+          "format": "email"
+        },
         "serviceAreas": {
           "type": "array",
           "items": { "type": "string" },
