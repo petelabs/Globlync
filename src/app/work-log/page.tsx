@@ -22,10 +22,11 @@ import {
   Loader2, 
   AlertCircle,
   Share2,
-  MessageSquare,
   Plus,
   Trash2,
-  Crown
+  Crown,
+  Facebook,
+  Twitter
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -33,11 +34,19 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, addDocum
 import { collection, serverTimestamp, query, orderBy, doc } from "firebase/firestore";
 import { analyzeJobPhoto } from "@/ai/flows/analyze-job-photo-flow";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 const FREE_LIMIT = 1;
 const PRO_LIMIT = 10;
 const FREE_SIZE_LIMIT = 2 * 1024 * 1024; // 2MB
 const PRO_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
+
+// Official WhatsApp Logo as Inline SVG
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
 
 export default function WorkLogPage() {
   const { user } = useUser();
@@ -51,12 +60,11 @@ export default function WorkLogPage() {
   }, [db, user?.uid]);
 
   const { data: profile } = useDoc(workerRef);
-  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || profile?.referralCount >= 10;
+  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
   
   const [date, setDate] = useState<Date>(new Date());
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [clientPhone, setClientPhone] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<{ isMatch: boolean; analysis: string } | null>(null);
@@ -113,7 +121,6 @@ export default function WorkLogPage() {
 
     setIsAnalyzing(true);
     try {
-      // Analyze the first photo for primary verification
       const result = await analyzeJobPhoto({
         photoDataUri: photos[0],
         description
@@ -137,8 +144,7 @@ export default function WorkLogPage() {
       workerId: user.uid,
       title,
       description,
-      clientPhone,
-      photoUrl: photos[0] || "", // Use first photo as primary
+      photoUrl: photos[0] || "",
       allPhotos: photos,
       aiVerified: aiAnalysis?.isMatch || false,
       dateCompleted: date.toISOString(),
@@ -149,16 +155,63 @@ export default function WorkLogPage() {
 
     try {
       const docRef = await addDocumentNonBlocking(jobsRef, newJob);
-      const verificationUrl = `${window.location.origin}/v/${user.uid}/${docRef?.id}`;
-      setLastGeneratedLink(verificationUrl);
-      
-      setTitle("");
-      setDescription("");
-      setPhotos([]);
-      setAiAnalysis(null);
-      
-      toast({ title: "Job Logged Successfully" });
+      if (docRef) {
+        // Build professional domain link
+        const verificationUrl = `https://globlync.vercel.app/v/${user.uid}/${docRef.id}`;
+        setLastGeneratedLink(verificationUrl);
+        
+        setTitle("");
+        setDescription("");
+        setPhotos([]);
+        setAiAnalysis(null);
+        
+        toast({ title: "Job Logged Successfully" });
+      }
     } catch (e) {}
+  };
+
+  const shareNative = async () => {
+    if (!lastGeneratedLink) return;
+    const shareData = {
+      title: 'Verify My Work on Globlync',
+      text: `Hi! I've completed the "${title}" job. Please verify it here:`,
+      url: lastGeneratedLink,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
+  const shareWhatsApp = () => {
+    if (!lastGeneratedLink) return;
+    const text = encodeURIComponent(`Hi! Please verify my work completion on Globlync for "${title}": ${lastGeneratedLink}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const shareFacebook = () => {
+    if (!lastGeneratedLink) return;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(lastGeneratedLink)}`;
+    window.open(url, '_blank');
+  };
+
+  const shareTwitter = () => {
+    if (!lastGeneratedLink) return;
+    const text = encodeURIComponent(`Verify my professional work on Globlync! #skilledworker #globlync`);
+    const url = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(lastGeneratedLink)}`;
+    window.open(url, '_blank');
+  };
+
+  const copyToClipboard = () => {
+    if (!lastGeneratedLink) return;
+    navigator.clipboard.writeText(lastGeneratedLink);
+    toast({ title: "Link Copied", description: "Ready to paste anywhere." });
   };
 
   const currentLimit = isPro ? PRO_LIMIT : FREE_LIMIT;
@@ -217,7 +270,7 @@ export default function WorkLogPage() {
                     <Label className="flex justify-between items-center">
                       Job Photos ({photos.length} / {currentLimit})
                       {!isPro && photos.length >= FREE_LIMIT && (
-                        <Badge variant="secondary" className="text-[10px]"><Crown className="h-2 w-2 mr-1" /> Pro Required for More</Badge>
+                        <Badge variant="secondary" className="text-[10px]"><Crown className="h-2 w-2 mr-1" /> Pro Required</Badge>
                       )}
                     </Label>
                     <div className="grid grid-cols-2 gap-3">
@@ -240,7 +293,7 @@ export default function WorkLogPage() {
                     {photos.length > 0 && !aiAnalysis && (
                       <Button type="button" variant="secondary" className="w-full bg-accent text-accent-foreground h-12" onClick={handleAiVerify} disabled={isAnalyzing}>
                         {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                        Verify Primary Photo with AI
+                        Verify with Gemini AI
                       </Button>
                     )}
 
@@ -256,7 +309,7 @@ export default function WorkLogPage() {
                   </div>
 
                   <Button type="submit" className="w-full rounded-full py-6 text-lg mt-4 shadow-lg" disabled={photos.length === 0}>
-                    Log Job & Generate Link
+                    Log & Generate Link
                   </Button>
                 </form>
               </CardContent>
@@ -266,28 +319,44 @@ export default function WorkLogPage() {
               {lastGeneratedLink && (
                 <Card className="border-2 border-primary bg-primary/5 shadow-lg animate-in fade-in slide-in-from-bottom-4">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Send className="h-5 w-5 text-primary" />Ready for Client</CardTitle>
-                    <CardDescription>Share this link to get your verified rating.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Send className="h-5 w-5 text-primary" />Client Link Ready</CardTitle>
+                    <CardDescription>Share your unique verification link to build reputation.</CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-3">
-                    <div className="flex items-center gap-2 rounded-lg bg-background p-3 border">
-                      <code className="text-[10px] truncate flex-1">{lastGeneratedLink}</code>
-                      <Button size="icon" variant="ghost" onClick={() => { navigator.clipboard.writeText(lastGeneratedLink); toast({ title: "Link Copied" }); }}><Copy className="h-4 w-4" /></Button>
+                  <CardContent className="grid gap-4">
+                    <div className="flex items-center gap-2 rounded-lg bg-background p-3 border group">
+                      <code className="text-[10px] truncate flex-1 font-mono text-primary">{lastGeneratedLink}</code>
+                      <Button size="icon" variant="ghost" onClick={copyToClipboard} className="h-8 w-8">
+                        <Copy className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button className="w-full rounded-full h-12 font-bold" onClick={() => {
-                      if (navigator.share) navigator.share({ title: 'Verify my work', text: 'Hi, please verify my job:', url: lastGeneratedLink });
-                      else window.open(`https://wa.me/?text=${encodeURIComponent(`Hi, please verify my work on Globlync: ${lastGeneratedLink}`)}`, '_blank');
-                    }}><Share2 className="h-4 w-4 mr-2" />Share Verification Link</Button>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button className="rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-12" onClick={shareWhatsApp}>
+                        <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
+                      </Button>
+                      <Button variant="outline" className="rounded-full h-12 border-primary text-primary font-bold" onClick={shareNative}>
+                        <Share2 className="mr-2 h-4 w-4" /> More Options
+                      </Button>
+                    </div>
+
+                    <div className="flex justify-center gap-4 mt-2">
+                      <button onClick={shareFacebook} className="p-3 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform">
+                        <Facebook className="h-5 w-5" />
+                      </button>
+                      <button onClick={shareTwitter} className="p-3 bg-black text-white rounded-full hover:scale-110 transition-transform">
+                        <Twitter className="h-5 w-5" />
+                      </button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
 
               <Card className="border-none bg-muted/30">
-                <CardHeader><CardTitle className="text-sm">Maintenance & Support</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-sm">Trust & Transparency</CardTitle></CardHeader>
                 <CardContent className="text-[10px] text-muted-foreground space-y-2">
-                  <p>• Your support helps us recover costs for high-speed cloud storage and AI verification.</p>
-                  <p>• Free tier: 1 Photo / 2MB. Pro tier: 10 Photos / 5MB.</p>
-                  <p>• AI-verified jobs earn +2 extra trust points instantly.</p>
+                  <p>• Your unique link allows clients to verify work without signing in.</p>
+                  <p>• Every verified job adds significant points to your global Trust Score.</p>
+                  <p>• Pro benefits help recover costs for high-speed storage and AI analysis.</p>
                 </CardContent>
               </Card>
             </div>
@@ -300,7 +369,7 @@ export default function WorkLogPage() {
               <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin text-muted" /></div>
             ) : jobs && jobs.length > 0 ? (
               jobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden border-none shadow-sm">
+                <Card key={job.id} className="overflow-hidden border-none shadow-sm group hover:shadow-md transition-shadow">
                   <CardContent className="p-0 flex flex-col sm:flex-row">
                     <div className="relative aspect-video w-full sm:w-48 bg-muted shrink-0">
                       <img src={job.photoUrl || `https://picsum.photos/seed/${job.id}/300/200`} alt={job.title} className="h-full w-full object-cover" />
@@ -312,20 +381,28 @@ export default function WorkLogPage() {
                     </div>
                     <div className="p-4 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold">{job.title}</h3>
+                        <h3 className="font-bold group-hover:text-primary transition-colors">{job.title}</h3>
                         {job.isVerified ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Clock className="h-4 w-4 text-amber-500" />}
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2">{job.description}</p>
                       <div className="mt-auto pt-4 flex items-center justify-between text-[10px] text-muted-foreground">
                         <span className="font-bold uppercase tracking-widest">{format(new Date(job.dateCompleted), "MMM d, yyyy")}</span>
-                        {job.allPhotos?.length > 1 && <span className="bg-muted px-2 py-0.5 rounded-full">{job.allPhotos.length} Photos</span>}
+                        <div className="flex gap-2">
+                           <Button variant="ghost" size="sm" className="h-6 text-[8px] uppercase font-bold" onClick={() => {
+                             const url = `https://globlync.vercel.app/v/${user.uid}/${job.id}`;
+                             navigator.clipboard.writeText(url);
+                             toast({ title: "Link Copied" });
+                           }}>
+                             <Copy className="h-3 w-3 mr-1" /> Copy Link
+                           </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))
             ) : (
-              <div className="text-center py-20 bg-muted/20 rounded-xl border-2 border-dashed"><p className="text-muted-foreground">No jobs logged yet.</p></div>
+              <div className="text-center py-20 bg-muted/20 rounded-xl border-2 border-dashed"><p className="text-muted-foreground">No jobs logged yet. Start building your portfolio today!</p></div>
             )}
           </div>
         </TabsContent>
