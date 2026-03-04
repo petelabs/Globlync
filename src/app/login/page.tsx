@@ -20,6 +20,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -65,6 +66,7 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
+    provider.addScope('openid');
     provider.setCustomParameters({
       prompt: 'select_account'
     });
@@ -133,7 +135,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center py-12 px-4">
+    <div className="flex min-h-[80vh] flex-col items-center justify-center py-12 px-4">
       <Card className="w-full max-w-md border-none shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
@@ -260,7 +262,7 @@ export default function LoginPage() {
             </form>
           )}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-4">
           <p className="text-center text-sm text-muted-foreground w-full">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button
@@ -272,6 +274,14 @@ export default function LoginPage() {
           </p>
         </CardFooter>
       </Card>
+
+      <div className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+        <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+        <span>•</span>
+        <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+        <span>•</span>
+        <a href="mailto:globlync.pro@gmail.com" className="hover:text-primary transition-colors">Contact Support</a>
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -13,13 +14,13 @@ import {
   ChevronRight, 
   Lock, 
   BellRing,
-  ExternalLink,
-  ChevronDown
+  ExternalLink
 } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 import { 
   Accordion, 
   AccordionContent, 
@@ -143,10 +144,11 @@ export default function SettingsPage() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground leading-relaxed space-y-4">
-                <p><strong>1. Data Collection:</strong> We collect your professional trade, job descriptions, and photos to build your digital reputation. Your name and profile photo are shared on your public reputation page.</p>
-                <p><strong>2. Photo Analysis:</strong> Our AI models analyze job photos solely to verify work completion. These photos are stored securely in Google Cloud (Firebase).</p>
-                <p><strong>3. Third-Party Sharing:</strong> We do not sell your data. We use Monetag for non-personalized advertising to keep the platform free for workers.</p>
-                <p><strong>4. Your Rights:</strong> You can request a copy of your data or request deletion at any time via the settings below.</p>
+                <p><strong>1. Data Collection:</strong> We collect your professional trade, job descriptions, and photos to build your digital reputation.</p>
+                <p><strong>2. Usage:</strong> Data is used to verify jobs and calculate Trust Scores.</p>
+                <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
+                  <Link href="/privacy">Read Full Privacy Policy <ExternalLink className="ml-1 h-3 w-3" /></Link>
+                </Button>
               </AccordionContent>
             </AccordionItem>
 
@@ -157,9 +159,10 @@ export default function SettingsPage() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground leading-relaxed space-y-4">
-                <p><strong>1. Professional Conduct:</strong> You agree to only log work that you have genuinely completed. Fraudulent logs will result in permanent ban and loss of Trust Score.</p>
-                <p><strong>2. Reputation Portability:</strong> Your Globlync profile is yours. You may share your link anywhere, but you may not use Globlync to harass or deceive clients.</p>
-                <p><strong>3. Limitation of Liability:</strong> Globlync is a verification platform. We are not responsible for disputes between workers and clients or the quality of physical labor performed.</p>
+                <p><strong>1. Conduct:</strong> You agree to log only genuine work. Fraudulent logs will result in account suspension.</p>
+                <Button variant="link" size="sm" className="p-0 h-auto text-primary" asChild>
+                  <Link href="/terms">Read Full Terms of Service <ExternalLink className="ml-1 h-3 w-3" /></Link>
+                </Button>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -216,7 +219,7 @@ export default function SettingsPage() {
 
       <footer className="text-center py-6">
         <p className="text-[10px] text-muted-foreground">Globlync Version 1.0.2 • Made with Trust</p>
-        <p className="text-[10px] text-muted-foreground mt-1">© 2024 Globlync Inc.</p>
+        <p className="text-[10px] text-muted-foreground mt-1">© 2024 Petediano Tech</p>
       </footer>
     </div>
   );
