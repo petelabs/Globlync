@@ -63,21 +63,29 @@
     display: inline-block;
   }
 
-  @keyframes link-connect {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(4px); }
+  /* Link Animation: 5s total cycle */
+  /* 0-10%: Apart */
+  /* 10-20%: Closing */
+  /* 20-80%: Together (3s pause) */
+  /* 80-90%: Opening */
+  /* 90-100%: Apart */
+  @keyframes link-connect-left {
+    0%, 10% { transform: translateX(-6px); }
+    20%, 80% { transform: translateX(0); }
+    90%, 100% { transform: translateX(-6px); }
   }
 
-  @keyframes link-connect-rev {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(-4px); }
+  @keyframes link-connect-right {
+    0%, 10% { transform: translateX(6px); }
+    20%, 80% { transform: translateX(0); }
+    90%, 100% { transform: translateX(6px); }
   }
 
   .animate-link-left {
-    animation: link-connect 2.5s ease-in-out infinite;
+    animation: link-connect-left 5s ease-in-out infinite;
   }
 
   .animate-link-right {
-    animation: link-connect-rev 2.5s ease-in-out infinite;
+    animation: link-connect-right 5s ease-in-out infinite;
   }
 }

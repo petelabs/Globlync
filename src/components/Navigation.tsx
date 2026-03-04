@@ -39,11 +39,29 @@ export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-1", className)}>
       <span className="text-2xl font-black tracking-tighter italic text-primary">Glob</span>
-      <div className="relative flex items-center h-8 w-10">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary absolute left-0 animate-link-left">
+      <div className="relative flex items-center h-8 w-12 overflow-visible">
+        {/* Left half of the link */}
+        <svg 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="3.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className="h-7 w-7 text-primary absolute left-0 animate-link-left"
+        >
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
         </svg>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-secondary absolute right-0 animate-link-right">
+        {/* Right half of the link */}
+        <svg 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="3.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className="h-7 w-7 text-secondary absolute right-0 animate-link-right"
+        >
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
       </div>
@@ -58,7 +76,6 @@ export function Navigation() {
   const db = useFirestore();
   const auth = useAuth();
   const { toast } = useToast();
-  const [logoError, setLogoError] = useState(false);
 
   const notificationsRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
