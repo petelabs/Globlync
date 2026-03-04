@@ -3,53 +3,33 @@
 
 Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation.
 
-## 🎨 Branding & Logo Setup (Action Required)
-To show your professional logo in the app:
-1.  **Create a folder** named `public` at the root of your project (same level as `src`).
-2.  **Save your logo** as `logo.png`.
-3.  **Place the file** inside that new `public/` folder.
-4.  The app is already coded to automatically detect and display it in the Header, Hero, and Login screens.
+## 💳 PayChangu Setup (Action Required)
+To enable automatic "Pro" upgrades when someone pays:
+
+1. **Dashboard Configuration**:
+   - Go to your [PayChangu Dashboard](https://dashboard.paychangu.com/).
+   - Set **Webhook URL** to: `https://globlync.vercel.app/api/paychangu-webhook`
+   - Copy the **Webhook secret** provided by PayChangu.
+
+2. **Environment Variables (Vercel)**:
+   - Add `PAYCHANGU_WEBHOOK_SECRET` = (Your Webhook Secret).
+   - Add `GOOGLE_GENAI_API_KEY` = (Your Gemini API Key).
+
+3. **How it Works**:
+   - When a worker pays using the link on the Pricing page, they MUST use the same email address they used to sign up for Globlync.
+   - PayChangu sends a message to our Webhook.
+   - Our app finds the worker by email and instantly unlocks their **Pro Badge** and **10 HD Photo** limit.
+
+## 🎨 Branding & Logo Setup
+To show your professional logo:
+1. Save your logo as `logo.png` in the `public/` folder.
+2. The app automatically detects it for the Header and Login screens.
 
 ## 🛡️ Verification Ready (Google Cloud Console)
-**Code Status**: Updated for fast verification.
 - **Privacy Policy URL**: `https://globlync.vercel.app/privacy`
 - **Terms of Service URL**: `https://globlync.vercel.app/terms`
-- **Sensitive Scopes**: None. The app does NOT request access to Cloud Platform or Storage.
-- **Allowed Scopes**: `openid`, `email`, `profile` (Non-sensitive).
-- **Official Branding**: The login button follows the "Sign in with Google" brand guidelines.
 
-## 🔑 Firebase Console Setup (Action Required)
-
-### 1. Enable Passwordless Sign-in
-- Go to **Authentication** > **Sign-in method**.
-- Enable **Email/Password**.
-- Toggle ON **Email link (passwordless sign-in)**.
-- **CRITICAL**: Go to **Settings** > **Authorized domains** and add `globlync.vercel.app`.
-
-### 2. Professional Branding (Google Sign-in)
-To show "Globlync" instead of your project ID in the Google popup:
-- Go to the [Google Cloud Console](https://console.cloud.google.com/).
-- Navigate to **APIs & Services** > **OAuth consent screen**.
-- Set **App name** to "Globlync".
-- Set **User support email** and **Developer contact info**.
-- Paste the **Privacy Policy URL** and **Terms of Service URL** provided above.
-
-### 3. Professional Magic Link Template
-To make copying easier on mobile:
-1. Open the file **`docs/magic-link-template.html`** in this editor.
-2. Use "Select All" to copy the entire code.
-3. Paste it into your Firebase Console (**Templates** > **Passwordless sign-in** > **HTML**).
-
-## 🚀 Deployment Instructions (Vercel)
-
-1. **Push to GitHub**: Link and push your local code: `git push -u origin main`
-2. **Connect to Vercel**: Import your GitHub repository.
-3. **Environment Variables**: Add `GOOGLE_GENAI_API_KEY` in Vercel.
-
-## ✨ Features
-- **Verified Job Logging**: Workers log work, and AI verifies photos vs descriptions.
-- **Social Sharing**: Instantly share verification links via WhatsApp or Android Share.
-- **TikTok-Style UI**: Modern navigation with a search bar at the top and profile-driven settings.
-- **Malawi Skill Discovery**: 20+ categories specifically for the Malawian labor market.
-- **Trust Score & Badges**: Real-time calculated reputation system.
-- **PWA Ready**: Installable on home screens with professional SEO.
+## 🚀 Deployment (Vercel)
+1. Push to GitHub.
+2. Connect to Vercel.
+3. Ensure all Environment Variables are added.
