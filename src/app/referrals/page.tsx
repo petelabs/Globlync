@@ -18,10 +18,13 @@ import {
   Lock,
   Star,
   Facebook,
-  Twitter
+  Twitter,
+  Loader2,
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +48,7 @@ export default function ReferralsPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -55,31 +59,58 @@ export default function ReferralsPage() {
 
   const referralCount = profile?.referralCount || 0;
   const referralCode = profile?.referralCode || "";
-  // High-Trust Original Link Format
-  const referralUrl = `https://globlync.vercel.app/login?ref=${referralCode}`;
+  const referralUrl = referralCode ? `https://globlync.vercel.app/login?ref=${referralCode}` : "";
+
+  const generateCode = async () => {
+    if (!db || !user?.uid || !workerRef) return;
+    setIsGenerating(true);
+    try {
+      const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      
+      // Update profile
+      await setDoc(workerRef, { 
+        referralCode: newCode,
+        updatedAt: serverTimestamp() 
+      }, { merge: true });
+
+      // Register code
+      await setDoc(doc(db, "referralCodes", newCode), { uid: user.uid });
+      
+      toast({ title: "Link Generated!", description: "Your original professional code is ready." });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Failed to generate link", description: e.message });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const copyLink = () => {
+    if (!referralUrl) return;
     navigator.clipboard.writeText(referralUrl);
     toast({ title: "Link Copied!", description: "Share your professional code to build your reputation." });
   };
 
   const shareWhatsApp = () => {
+    if (!referralUrl) return;
     const text = encodeURIComponent(`Join me on Globlync! Build your professional reputation and find more work. Sign up here: ${referralUrl}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   const shareFacebook = () => {
+    if (!referralUrl) return;
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralUrl)}`;
     window.open(url, "_blank");
   };
 
   const shareTwitter = () => {
+    if (!referralUrl) return;
     const text = encodeURIComponent(`Build your evidence-based professional reputation with me on Globlync!`);
     const url = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(referralUrl)}`;
     window.open(url, "_blank");
   };
 
   const shareNative = async () => {
+    if (!referralUrl) return;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -107,7 +138,7 @@ export default function ReferralsPage() {
     <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto">
       <header className="text-center space-y-2">
         <h1 className="text-3xl font-black tracking-tight text-primary">Invite & Earn</h1>
-        <p className="text-muted-foreground">Help Globlync grow and unlock premium professional features.</p>
+        <p className="text-muted-foreground text-sm leading-relaxed">Help Globlync grow and unlock premium professional features.</p>
       </header>
 
       <Card className="border-none shadow-xl bg-primary text-primary-foreground overflow-hidden relative">
@@ -131,38 +162,54 @@ export default function ReferralsPage() {
             <p className="text-[10px] opacity-80 italic">Invite {Math.max(0, nextMilestone.count - referralCount)} more to unlock: {nextMilestone.reward}</p>
           </div>
 
-          <div className="bg-white/10 p-4 rounded-xl border border-white/20 backdrop-blur-sm">
-            <Label className="text-xs font-bold uppercase mb-2 block">Your Original Invite Link</Label>
-            <div className="flex items-center gap-2">
-              <code className="text-[10px] truncate flex-1 bg-black/20 p-2 rounded font-mono text-secondary">{referralUrl}</code>
-              <Button size="icon" variant="ghost" className="hover:bg-white/20" onClick={copyLink}>
-                <Copy className="h-4 w-4" />
+          <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-md">
+            <Label className="text-[10px] font-black uppercase mb-3 block tracking-wider opacity-80">Your Original Invite Link</Label>
+            {referralUrl ? (
+              <div className="flex items-center gap-2">
+                <code className="text-[10px] truncate flex-1 bg-black/20 p-2.5 rounded-lg font-mono text-secondary border border-white/10">{referralUrl}</code>
+                <Button size="icon" variant="ghost" className="hover:bg-white/20 h-10 w-10 shrink-0" onClick={copyLink}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                onClick={generateCode} 
+                disabled={isGenerating} 
+                className="w-full bg-secondary text-secondary-foreground font-black uppercase tracking-tighter h-12 rounded-xl shadow-lg hover:scale-[1.02] transition-transform"
+              >
+                {isGenerating ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <RefreshCw className="h-5 w-5 mr-2" />}
+                Generate My Unique Link
               </Button>
-            </div>
+            )}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-3 relative z-10">
-          <div className="flex gap-2 w-full">
-            <Button className="flex-1 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-12" onClick={shareWhatsApp}>
-              <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
-            </Button>
-            <Button className="flex-1 rounded-full bg-white text-primary font-bold hover:bg-white/90 h-12" onClick={shareNative}>
-              <Share2 className="mr-2 h-4 w-4" /> More Options
-            </Button>
-          </div>
-          <div className="flex justify-center gap-4 mt-2">
-            <button onClick={shareFacebook} className="p-3 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform shadow-md">
-              <Facebook className="h-5 w-5" />
-            </button>
-            <button onClick={shareTwitter} className="p-3 bg-black text-white rounded-full hover:scale-110 transition-transform shadow-md">
-              <Twitter className="h-5 w-5" />
-            </button>
-          </div>
-        </CardFooter>
+        {referralUrl && (
+          <CardFooter className="flex flex-col gap-3 relative z-10 pt-0">
+            <div className="flex gap-3 w-full">
+              <Button className="flex-1 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-12 shadow-lg" onClick={shareWhatsApp}>
+                <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
+              </Button>
+              <Button className="flex-1 rounded-full bg-white text-primary font-bold hover:bg-white/90 h-12 shadow-lg" onClick={shareNative}>
+                <Share2 className="mr-2 h-4 w-4" /> Share
+              </Button>
+            </div>
+            <div className="flex justify-center gap-6 mt-2 pb-2">
+              <button onClick={shareFacebook} className="p-3 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform shadow-md">
+                <Facebook className="h-5 w-5" />
+              </button>
+              <button onClick={shareTwitter} className="p-3 bg-black text-white rounded-full hover:scale-110 transition-transform shadow-md">
+                <Twitter className="h-5 w-5" />
+              </button>
+            </div>
+          </CardFooter>
+        )}
       </Card>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-bold px-1">Rewards Roadmap</h2>
+        <h2 className="text-xl font-bold px-1 flex items-center gap-2">
+          <Award className="h-5 w-5 text-primary" />
+          Rewards Roadmap
+        </h2>
         <div className="grid gap-3">
           {MILESTONES.map((m, i) => {
             const isUnlocked = referralCount >= m.count;
@@ -182,10 +229,10 @@ export default function ReferralsPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold">{m.label}</h4>
+                      <h4 className="font-bold text-sm">{m.label}</h4>
                       <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded-full">{m.count} Invites</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{m.reward}</p>
+                    <p className="text-[10px] text-muted-foreground">{m.reward}</p>
                   </div>
                   <Icon className={cn("h-5 w-5", isUnlocked ? "text-primary" : "text-muted-foreground")} />
                 </CardContent>
@@ -194,6 +241,20 @@ export default function ReferralsPage() {
           })}
         </div>
       </section>
+
+      <Card className="border-none bg-accent/30 p-6 rounded-[2rem]">
+        <div className="flex gap-4">
+          <div className="bg-white p-3 rounded-2xl h-fit shadow-sm">
+            <Sparkles className="h-6 w-6 text-secondary" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-bold text-sm">Building Real Trust</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Invitations help us build a larger verified community. More workers means more clients trust the platform, which leads to more jobs for you.
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
