@@ -1,24 +1,63 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Mail, Lock, LogIn } from "lucide-react";
+import { ShieldCheck, Mail, Lock, LogIn, Sparkles, Wand2 } from "lucide-react";
 import { useAuth } from "@/firebase";
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink
+} from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
+  
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Handle incoming magic link
+  useEffect(() => {
+    if (typeof window !== "undefined" && isSignInWithEmailLink(auth, window.location.href)) {
+      let emailForLink = window.localStorage.getItem('emailForSignIn');
+      if (!emailForLink) {
+        emailForLink = window.prompt('Please provide your email for confirmation');
+      }
+      if (emailForLink) {
+        setIsLoading(true);
+        signInWithEmailLink(auth, emailForLink, window.location.href)
+          .then(() => {
+            window.localStorage.removeItem('emailForSignIn');
+            router.push("/dashboard");
+            toast({ title: "Success", description: "You are now signed in!" });
+          })
+          .catch((error: any) => {
+            toast({
+              variant: "destructive",
+              title: "Link Verification Failed",
+              description: error.message,
+            });
+          })
+          .finally(() => setIsLoading(false));
+      }
+    }
+  }, [auth, router, toast]);
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -30,6 +69,34 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Login Failed",
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMagicLinkSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsLoading(true);
+    
+    const actionCodeSettings = {
+      url: window.location.origin + '/login',
+      handleCodeInApp: true,
+    };
+
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      toast({
+        title: "Link Sent!",
+        description: "Check your email for your magic sign-in link.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to send link",
         description: error.message,
       });
     } finally {
@@ -96,48 +163,89 @@ export default function LoginPage() {
               Continue with Google
             </Button>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-            </div>
+          
+          <div className="flex gap-2 p-1 bg-muted rounded-full">
+            <button 
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-full transition-all",
+                authMode === "password" ? "bg-white shadow-sm text-primary" : "text-muted-foreground"
+              )}
+              onClick={() => setAuthMode("password")}
+            >
+              Password
+            </button>
+            <button 
+              className={cn(
+                "flex-1 py-2 text-xs font-bold rounded-full transition-all",
+                authMode === "magic-link" ? "bg-white shadow-sm text-primary" : "text-muted-foreground"
+              )}
+              onClick={() => setAuthMode("magic-link")}
+            >
+              Magic Link
+            </button>
           </div>
-          <form onSubmit={handleEmailAuth} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  className="pl-10 h-12"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+
+          {authMode === "password" ? (
+            <form onSubmit={handleEmailAuth} className="grid gap-4 animate-in fade-in duration-300">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    className="pl-10 h-12"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  className="pl-10 h-12"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    className="pl-10 h-12"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-            </div>
-            <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>
-              {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
-            </Button>
-          </form>
+              <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>
+                {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleMagicLinkSignIn} className="grid gap-4 animate-in fade-in duration-300">
+              <div className="grid gap-2">
+                <Label htmlFor="magic-email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="magic-email"
+                    type="email"
+                    placeholder="m@example.com"
+                    className="pl-10 h-12"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground text-center px-4">
+                We'll email you a one-time link that signs you in instantly. No password required.
+              </p>
+              <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>
+                {isLoading ? "Sending..." : "Send Magic Link"}
+                <Wand2 className="ml-2 h-4 w-4" />
+              </Button>
+            </form>
+          )}
         </CardContent>
         <CardFooter>
           <p className="text-center text-sm text-muted-foreground w-full">

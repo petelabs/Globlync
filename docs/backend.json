@@ -415,7 +415,9 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "email_link",
+      "google.com"
     ]
   },
   "firestore": {
