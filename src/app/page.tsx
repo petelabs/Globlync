@@ -22,13 +22,15 @@ import {
   Mail,
   LifeBuoy,
   Briefcase,
-  MapPin
+  MapPin,
+  Info
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const db = useFirestore();
@@ -80,6 +82,42 @@ export default function Home() {
           <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg" asChild>
             <Link href="/search">Find Verified Pros</Link>
           </Button>
+        </div>
+      </section>
+
+      {/* Explicit Purpose Section (for Google Verification) */}
+      <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="flex flex-col items-center text-center gap-4">
+            <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
+              Our Mission & Purpose
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Empowering the Malawian Labor Market</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Globlync is a professional reputation platform designed specifically for informal workers in Malawi. Our purpose is to bridge the trust gap between skilled manual professionals and their clients through transparent, evidence-based job verification and AI-assisted portfolio building.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm space-y-3 border border-primary/5">
+              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center">
+                <ShieldCheck className="text-primary h-6 w-6" />
+              </div>
+              <h3 className="font-bold text-xl">Digital Reputation</h3>
+              <p className="text-sm text-muted-foreground">We provide workers with a portable digital ID that proves their skills and reliability to any potential employer.</p>
+            </div>
+            <div className="bg-white p-8 rounded-[2rem] shadow-sm space-y-3 border border-primary/5">
+              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center">
+                <CheckCircle className="text-primary h-6 w-6" />
+              </div>
+              <h3 className="font-bold text-xl">Job Verification</h3>
+              <p className="text-sm text-muted-foreground">Clients can instantly verify completed work using QR codes, creating an immutable record of success for the worker.</p>
+            </div>
+          </div>
+          <div className="pt-4 text-center">
+            <Link href="/privacy" className="text-primary font-black underline underline-offset-4 hover:opacity-80 transition-opacity">
+              Read our Privacy Commitment & Data Usage Policy
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -261,8 +299,8 @@ export default function Home() {
           <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
             <p>© 2026 Petediano Tech • Malawi</p>
             <div className="flex gap-6">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
               <Link href="/contact" className="hover:text-primary transition-colors">Headquarters</Link>
             </div>
           </div>
