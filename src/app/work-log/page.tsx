@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -19,7 +20,9 @@ import {
   Copy, 
   Sparkles, 
   Loader2, 
-  AlertCircle 
+  AlertCircle,
+  Share2,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -161,6 +164,27 @@ export default function WorkLogPage() {
       title: "Link Copied",
       description: "Send this to your client to get verified.",
     });
+  };
+
+  const handleShare = async () => {
+    if (!lastGeneratedLink) return;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Verify my work on Globlync',
+          text: `Hi, I've logged the job: "${title}". Please verify it here:`,
+          url: lastGeneratedLink,
+        });
+      } catch (err) {
+        // Fallback if sharing failed
+        copyToClipboard(lastGeneratedLink);
+      }
+    } else {
+      // Fallback for browsers without navigator.share
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Hi, please verify my work on Globlync: ${lastGeneratedLink}`)}`;
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   return (
@@ -317,15 +341,23 @@ export default function WorkLogPage() {
                     </CardTitle>
                     <CardDescription>Share this link to get your verified rating.</CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-4">
+                  <CardContent className="grid gap-3">
                     <div className="flex items-center gap-2 rounded-lg bg-background p-3 border">
                       <code className="text-[10px] truncate flex-1">{lastGeneratedLink}</code>
                       <Button size="icon" variant="ghost" onClick={() => copyToClipboard(lastGeneratedLink)}>
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>
-                    <Button className="w-full rounded-full" onClick={() => copyToClipboard(lastGeneratedLink)}>
-                      Copy Link for SMS/WhatsApp
+                    <Button className="w-full rounded-full h-12 font-bold flex items-center justify-center gap-2" onClick={handleShare}>
+                      <Share2 className="h-4 w-4" />
+                      Share Verification Link
+                    </Button>
+                    <Button variant="outline" className="w-full rounded-full h-12 font-bold flex items-center justify-center gap-2" onClick={() => {
+                       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Hi, please verify my work on Globlync: ${lastGeneratedLink}`)}`;
+                       window.open(whatsappUrl, '_blank');
+                    }}>
+                      <MessageSquare className="h-4 w-4" />
+                      Share via WhatsApp
                     </Button>
                   </CardContent>
                 </Card>

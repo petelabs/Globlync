@@ -5,9 +5,10 @@ Globlync is a professional platform designed for informal workers (plumbers, ele
 
 ## 🎨 Branding & Logo Setup (Action Required)
 To show your professional logo in the app:
-1. Save your logo image as **`logo.png`**.
-2. Upload/Place it in the **`public/`** folder of this project.
-3. The app is already coded to automatically detect and display it in the Header, Hero, and Login screens.
+1.  **Create a folder** named `public` at the root of your project (same level as `src`).
+2.  **Save your logo** as `logo.png`.
+3.  **Place the file** inside that new `public/` folder.
+4.  The app is already coded to automatically detect and display it in the Header, Hero, and Login screens.
 
 ## 🛡️ Verification Ready (Google Cloud Console)
 **Code Status**: Updated for fast verification.
@@ -47,8 +48,8 @@ To make copying easier on mobile:
 
 ## ✨ Features
 - **Verified Job Logging**: Workers log work, and AI verifies photos vs descriptions.
+- **Social Sharing**: Instantly share verification links via WhatsApp or Android Share.
 - **TikTok-Style UI**: Modern navigation with a search bar at the top and profile-driven settings.
 - **Malawi Skill Discovery**: 20+ categories specifically for the Malawian labor market.
-- **Magic Link Auth**: Secure, passwordless entry for busy professionals.
 - **Trust Score & Badges**: Real-time calculated reputation system.
 - **PWA Ready**: Installable on home screens with professional SEO.
