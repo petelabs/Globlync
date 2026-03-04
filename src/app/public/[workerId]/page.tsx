@@ -2,29 +2,32 @@
 "use client";
 
 import { useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDoc, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, orderBy, limit } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   ShieldCheck, 
   MapPin, 
   Star, 
   Clock, 
-  Award, 
-  MessageSquare, 
+  CheckCircle2, 
   Phone, 
   Mail, 
-  ChevronRight,
-  Loader2,
-  CheckCircle2,
-  Sparkles
+  MessageSquare,
+  ArrowLeft,
+  Award,
+  Sparkles,
+  Briefcase,
+  Share2,
+  ExternalLink
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -32,9 +35,18 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string }> = {
+  'first-job': { name: "First Verified Job", icon: Award, color: "text-blue-500" },
+  'reliable-worker': { name: "Reliable Pro", icon: Award, color: "text-primary" },
+  'perfect-streak': { name: "Customer Favorite", icon: Award, color: "text-secondary" },
+  'growth-champion': { name: "Growth Champion", icon: Award, color: "text-pink-500" },
+};
+
 export default function PublicProfilePage() {
   const { workerId } = useParams() as { workerId: string };
   const db = useFirestore();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
@@ -51,13 +63,13 @@ export default function PublicProfilePage() {
     return collection(db, "workerProfiles", workerId, "ratings");
   }, [db, workerId]);
 
-  const recentJobsQuery = useMemoFirebase(() => {
+  const verifiedJobsQuery = useMemoFirebase(() => {
     if (!jobsRef) return null;
     return query(jobsRef, orderBy("createdAt", "desc"), limit(10));
   }, [jobsRef]);
 
-  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
-  const { data: jobs } = useCollection(recentJobsQuery);
+  const { data: profile } = useDoc(workerRef);
+  const { data: jobs } = useCollection(verifiedJobsQuery);
   const { data: ratings } = useCollection(ratingsRef);
 
   const stats = useMemo(() => {
@@ -70,189 +82,239 @@ export default function PublicProfilePage() {
       totalVerified: verifiedJobs.length,
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
-      badges: profile?.badgeIds || []
+      tier: (profile?.trustScore || 0) > 100 ? "Platinum" : (profile?.trustScore || 0) > 50 ? "Gold" : "Bronze",
     };
   }, [jobs, ratings, profile]);
 
-  if (isProfileLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Verified Reputation: ${profile?.name}`,
+          text: `Check out ${profile?.name}'s evidence-based professional profile on Globlync!`,
+          url: url,
+        });
+      } catch (e) {}
+    } else {
+      navigator.clipboard.writeText(url);
+      toast({ title: "Link Copied!" });
+    }
+  };
 
-  if (!profile) {
-    return (
-      <div className="text-center py-20">
-        <h1 className="text-2xl font-bold">Worker Profile Not Found</h1>
-        <p className="text-muted-foreground">The profile you are looking for does not exist or has been removed.</p>
-        <Button className="mt-6 rounded-full" asChild><Link href="/search">Find Other Professionals</Link></Button>
-      </div>
-    );
-  }
+  if (!profile) return null;
+
+  const cleanWhatsApp = profile.whatsappNumber?.replace(/\s+/g, '') || "";
+  const waLink = `https://wa.me/${cleanWhatsApp}`;
 
   return (
-    <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-4">
-      {/* Profile Header */}
-      <section className="flex flex-col md:flex-row items-center gap-8 bg-card p-8 rounded-[2.5rem] shadow-xl border-none relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-          <ShieldCheck className="h-48 w-48" />
+    <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4">
+      <header className="flex items-center justify-between mb-4">
+        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="rounded-full" onClick={handleShare}>
+            <Share2 className="h-4 w-4 mr-2" /> Share
+          </Button>
         </div>
-        
-        <div className="relative group shrink-0">
-          <Avatar className="h-48 w-48 border-4 border-primary shadow-2xl">
-            <AvatarImage src={profile.profilePictureUrl || `https://picsum.photos/seed/${profile.id}/300/300`} />
-            <AvatarFallback className="text-4xl font-black">{profile.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-black shadow-xl flex items-center gap-1.5 border-2 border-white">
-            <ShieldCheck className="h-4 w-4" /> {stats.trustScore} TRUST
-          </div>
-        </div>
+      </header>
 
-        <div className="flex-1 text-center md:text-left space-y-4">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-black tracking-tighter text-foreground">{profile.name}</h1>
-            <p className="text-primary font-black uppercase tracking-[0.2em] text-sm">{profile.tradeSkill || "Skilled Professional"}</p>
+      {/* Hero Card */}
+      <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-card">
+        <div className="bg-primary p-8 md:p-12 flex flex-col items-center gap-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Sparkles className="h-48 w-48" />
           </div>
-
-          <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">{profile.bio || "Building a professional reputation through verified evidence and client satisfaction."}</p>
-          
-          <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
-            <Badge variant={profile.isAvailable ? "default" : "secondary"} className="h-8 px-4 rounded-full text-xs font-bold">
+          <div className="relative z-10 flex flex-col items-center gap-4">
+            <div className="relative">
+              <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
+                <AvatarImage src={profile.profilePictureUrl || `https://picsum.photos/seed/${workerId}/300/300`} />
+                <AvatarFallback className="text-4xl">{profile.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-2 -right-2 bg-secondary text-secondary-foreground p-2 rounded-full shadow-lg border-4 border-primary">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+            </div>
+            <div className="text-center space-y-1">
+              <h1 className="text-3xl font-black tracking-tighter text-white">{profile.name}</h1>
+              <p className="text-primary-foreground/80 font-bold uppercase tracking-widest text-xs">
+                {profile.tradeSkill || "Skilled Professional"}
+              </p>
+            </div>
+            <Badge variant={profile.isAvailable ? "secondary" : "outline"} className={cn(
+              "rounded-full px-6 py-1 font-bold",
+              profile.isAvailable ? "bg-secondary text-secondary-foreground" : "text-white border-white/40"
+            )}>
               {profile.isAvailable ? "Available Now" : "Currently Busy"}
             </Badge>
-            <div className="flex items-center gap-1.5 bg-secondary/10 px-4 py-1.5 rounded-full text-secondary font-black text-xs">
-              <Star className="h-4 w-4 fill-secondary" /> {stats.averageRating} Rating
-            </div>
-            <div className="flex items-center gap-1.5 bg-muted px-4 py-1.5 rounded-full text-muted-foreground font-black text-xs">
-              <Award className="h-4 w-4" /> {stats.totalVerified} Jobs Verified
-            </div>
           </div>
         </div>
-      </section>
 
-      <div className="grid gap-8 md:grid-cols-12">
-        {/* Left Column: Contact & Badges */}
-        <div className="md:col-span-4 space-y-6">
-          <Card className="border-none shadow-xl bg-primary text-primary-foreground rounded-[2rem] overflow-hidden">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Get in Touch
-              </CardTitle>
-              <CardDescription className="text-primary-foreground/70">Connect directly with {profile.name.split(' ')[0]}.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3 p-6">
-              {profile.whatsappNumber && (
-                <Button className="w-full h-14 rounded-2xl bg-[#25D366] hover:bg-[#128C7E] text-white font-black shadow-lg" asChild>
-                  <a href={`https://wa.me/${profile.whatsappNumber}`} target="_blank">
-                    <WhatsAppIcon className="mr-3 h-6 w-6" /> WhatsApp
-                  </a>
-                </Button>
-              )}
-              {profile.phoneNumber && (
-                <Button className="w-full h-14 rounded-2xl bg-white text-primary hover:bg-white/90 font-black shadow-lg" asChild>
-                  <a href={`tel:${profile.phoneNumber}`}>
-                    <Phone className="mr-3 h-6 w-6" /> Call Directly
-                  </a>
-                </Button>
-              )}
-              {profile.contactEmail && (
-                <Button variant="ghost" className="w-full h-12 rounded-2xl text-white hover:bg-white/10 font-bold" asChild>
-                  <a href={`mailto:${profile.contactEmail}`}>
-                    <Mail className="mr-2 h-4 w-4" /> Email Professional
-                  </a>
-                </Button>
-              )}
-              {!profile.whatsappNumber && !profile.phoneNumber && !profile.contactEmail && (
-                <p className="text-center text-xs opacity-70 italic py-4">This professional hasn't listed direct contact details yet.</p>
-              )}
-            </CardContent>
-          </Card>
+        <CardContent className="p-8 grid grid-cols-3 gap-4 border-b">
+          <div className="text-center space-y-1">
+            <p className="text-2xl font-black text-primary">{stats.trustScore}</p>
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Trust Score</p>
+          </div>
+          <div className="text-center space-y-1 border-x">
+            <p className="text-2xl font-black text-primary">{stats.totalVerified}</p>
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Jobs Done</p>
+          </div>
+          <div className="text-center space-y-1">
+            <p className="text-2xl font-black text-primary">{stats.averageRating}</p>
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Avg Star</p>
+          </div>
+        </CardContent>
 
-          <Card className="border-none shadow-lg rounded-[2rem]">
-            <CardHeader>
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" /> Service Areas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {profile.serviceAreas && profile.serviceAreas.length > 0 ? (
-                profile.serviceAreas.map(area => (
-                  <Badge key={area} variant="secondary" className="rounded-full text-[10px] font-bold px-3">{area}</Badge>
-                ))
-              ) : (
-                <p className="text-xs text-muted-foreground">Covering Lilongwe & Central Region.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column: Evidence History */}
-        <div className="md:col-span-8 space-y-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
-              <Award className="h-6 w-6 text-primary" />
-              Verified Evidence Log
-            </h2>
+        <CardContent className="p-8 space-y-8">
+          {/* Bio */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">About the Professional</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {profile.bio || "This professional is building their reputation through high-quality work and AI-verified job logs."}
+            </p>
           </div>
 
-          <div className="grid gap-4">
-            {jobs && jobs.length > 0 ? (
-              jobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden border-none shadow-md group hover:shadow-xl transition-all">
-                  <CardContent className="p-0 flex flex-col sm:flex-row">
-                    <div className="relative aspect-video w-full sm:w-48 bg-muted shrink-0 overflow-hidden">
-                      <img src={job.photoUrl || `https://picsum.photos/seed/${job.id}/400/300`} alt={job.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                      {job.aiVerified && (
-                        <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
-                          <Sparkles className="h-2 w-2" /> AI Verified
-                        </div>
-                      )}
-                      <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded-full text-[8px] font-black text-primary shadow-sm">
-                        {job.isVerified ? "CLIENT CONFIRMED" : "PENDING"}
-                      </div>
-                    </div>
-                    <div className="p-6 flex flex-col flex-1 justify-center">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-black text-lg group-hover:text-primary transition-colors">{job.title}</h3>
-                        {job.isVerified && <CheckCircle2 className="h-5 w-5 text-primary" />}
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{job.description}</p>
-                      <div className="mt-4 pt-4 border-t flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> 
-                          {job.dateCompleted ? formatDistanceToNow(new Date(job.dateCompleted), { addSuffix: true }) : "recently"}
-                        </span>
-                        <span className="text-primary/70">Evidence Ref: {job.id.substring(0, 8)}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed">
-                <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-10" />
-                <p className="text-muted-foreground font-medium">No verified jobs logged in this portfolio yet.</p>
+          {/* Service Areas */}
+          {profile.serviceAreas && profile.serviceAreas.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Service Areas</h3>
+              <div className="flex flex-wrap gap-2">
+                {profile.serviceAreas.map(area => (
+                  <Badge key={area} variant="outline" className="rounded-full bg-muted/30 border-none px-4 py-1.5 text-xs font-medium">
+                    <MapPin className="h-3 w-3 mr-1 text-primary" /> {area}
+                  </Badge>
+                ))}
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+            </div>
+          )}
 
-      {/* Footer / CTA */}
-      <section className="py-12 border-t mt-8 text-center space-y-6">
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Verified Reputation Provided by Globlync</p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button variant="outline" className="rounded-full h-12 px-8" asChild>
-            <Link href="/search">Find Other Pros</Link>
-          </Button>
-          <Button className="rounded-full h-12 px-8 shadow-lg" asChild>
-            <Link href="/login">Create Your Own Profile</Link>
-          </Button>
+          {/* Badges */}
+          {profile.badgeIds && profile.badgeIds.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Achievements</h3>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                {profile.badgeIds.map(badgeId => {
+                  const badge = MILESTONE_BADGES[badgeId];
+                  if (!badge) return null;
+                  const Icon = badge.icon;
+                  return (
+                    <div key={badgeId} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-muted/30 border min-w-[100px] text-center">
+                      <Icon className={cn("h-8 w-8", badge.color)} />
+                      <span className="text-[10px] font-black leading-tight uppercase">{badge.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="p-8 pt-0 grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Button className="rounded-full h-14 font-black text-lg bg-[#25D366] hover:bg-[#128C7E] text-white shadow-xl" asChild>
+              <a href={waLink} target="_blank">
+                <WhatsAppIcon className="h-6 w-6 mr-2" /> WhatsApp
+              </a>
+            </Button>
+            <Button className="rounded-full h-14 font-black text-lg shadow-xl" asChild>
+              <a href={`tel:${profile.phoneNumber}`}>
+                <Phone className="h-5 w-5 mr-2" /> Call Now
+              </a>
+            </Button>
+          </div>
+          {profile.contactEmail && (
+            <Button variant="outline" className="rounded-full h-12 font-bold border-muted" asChild>
+              <a href={`mailto:${profile.contactEmail}`}>
+                <Mail className="h-4 w-4 mr-2" /> Email
+              </a>
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
+
+      {/* Evidence Gallery */}
+      <section className="space-y-4 mt-4">
+        <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+          <Briefcase className="h-5 w-5 text-primary" />
+          Evidence Gallery
+        </h2>
+        <div className="grid gap-4">
+          {jobs && jobs.filter(j => j.isVerified).length > 0 ? (
+            jobs.filter(j => j.isVerified).map((job) => (
+              <Card key={job.id} className="overflow-hidden border-none shadow-lg group">
+                <div className="flex flex-col sm:flex-row">
+                  <div className="relative aspect-video w-full sm:w-48 bg-muted shrink-0">
+                    <img src={job.photoUrl || `https://picsum.photos/seed/${job.id}/400/300`} alt={job.title} className="h-full w-full object-cover" />
+                    {job.aiVerified && (
+                      <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[8px] font-black px-2 py-1 rounded-full flex items-center gap-1 shadow-md uppercase tracking-widest">
+                        <Sparkles className="h-2 w-2" /> AI Verified
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5 flex flex-col justify-center flex-1">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-black text-lg text-primary">{job.title}</h3>
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2 italic">"{job.description}"</p>
+                    <div className="mt-3 flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                      <Clock className="h-3 w-3" /> 
+                      {formatDistanceToNow(new Date(job.dateCompleted), { addSuffix: true })}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-20 bg-muted/20 rounded-[2rem] border-2 border-dashed">
+              <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-10" />
+              <p className="text-muted-foreground font-medium">No verified jobs yet.</p>
+            </div>
+          )}
         </div>
       </section>
+
+      {/* Ratings Section */}
+      {ratings && ratings.length > 0 && (
+        <section className="space-y-4 mt-4">
+          <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+            <Star className="h-5 w-5 text-secondary fill-secondary" />
+            Client Feedback
+          </h2>
+          <div className="grid gap-4">
+            {ratings.map((r) => (
+              <Card key={r.id} className="border-none shadow-sm bg-accent/30">
+                <CardContent className="p-5 space-y-3">
+                  <div className="flex text-secondary">
+                    {[...Array(r.score)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-sm italic text-muted-foreground">"{r.comment || "Great work, very professional!"}"</p>
+                  <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <span>Verified Client</span>
+                    <span>{r.ratedAt?.seconds ? formatDistanceToNow(new Date(r.ratedAt.seconds * 1000), { addSuffix: true }) : "recently"}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <footer className="text-center py-12 mt-8 space-y-4">
+        <div className="flex justify-center mb-6 opacity-30 grayscale hover:grayscale-0 transition-all">
+          <img src="/logo.png" alt="Globlync" className="h-8 object-contain" />
+        </div>
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em]">
+          Evidence-Based Reputation • Malawi
+        </p>
+        <div className="flex justify-center gap-8 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
+          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+        </div>
+      </footer>
     </div>
   );
 }
