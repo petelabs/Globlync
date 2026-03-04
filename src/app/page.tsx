@@ -16,12 +16,15 @@ import {
   Lock,
   Star,
   Quote,
-  Share2
+  Share2,
+  Clock,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Home() {
   const db = useFirestore();
@@ -36,7 +39,18 @@ export default function Home() {
     return query(appRatingsRef, orderBy("createdAt", "desc"), limit(6));
   }, [appRatingsRef]);
 
+  const workersRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "workerProfiles");
+  }, [db]);
+
+  const newcomersQuery = useMemoFirebase(() => {
+    if (!workersRef) return null;
+    return query(workersRef, orderBy("createdAt", "desc"), limit(10));
+  }, [workersRef]);
+
   const { data: testimonials } = useCollection(appRatingsQuery);
+  const { data: newcomers, isLoading: isNewcomersLoading } = useCollection(newcomersQuery);
 
   return (
     <div className="flex flex-col gap-16 py-6">
@@ -64,6 +78,54 @@ export default function Home() {
           </Button>
         </div>
       </section>
+
+      {/* New Workers Showcase */}
+      {newcomers && newcomers.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-2">
+              <div className="bg-secondary/20 p-1.5 rounded-lg">
+                <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
+              </div>
+              <h2 className="text-2xl font-black tracking-tight">New to Globlync</h2>
+            </div>
+            <Button variant="ghost" size="sm" className="text-primary font-bold" asChild>
+              <Link href="/search">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide">
+            {newcomers.map((worker) => (
+              <Link key={worker.id} href={`/public/${worker.id}`} className="shrink-0 transition-transform hover:scale-[1.02] active:scale-95">
+                <Card className="w-56 border-none shadow-lg overflow-hidden bg-card">
+                  <div className="h-40 w-full bg-muted relative">
+                    <img 
+                      src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/300/300`} 
+                      alt={worker.name} 
+                      className="h-full w-full object-cover" 
+                    />
+                    <div className="absolute top-2 right-2 bg-white/95 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1 text-[10px] font-black text-primary shadow-lg">
+                      <ShieldCheck className="h-3.5 w-3.5" /> {worker.trustScore || 0}
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <h3 className="font-bold text-sm truncate">{worker.name}</h3>
+                    <p className="text-[10px] text-primary font-black uppercase tracking-tighter truncate mt-0.5">
+                      {worker.tradeSkill || "Skilled Professional"}
+                    </p>
+                    <div className="mt-3 flex items-center gap-1.5 text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
+                      <Clock className="h-3 w-3" /> 
+                      {worker.createdAt?.seconds 
+                        ? formatDistanceToNow(new Date(worker.createdAt.seconds * 1000), { addSuffix: true }) 
+                        : "joined recently"}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Community Testimonials */}
       {testimonials && testimonials.length > 0 && (
