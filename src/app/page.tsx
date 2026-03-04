@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -18,7 +17,10 @@ import {
   Quote,
   Share2,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Mail,
+  LifeBuoy,
+  Briefcase
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -199,22 +201,61 @@ export default function Home() {
       </section>
 
       {/* Footer Branding */}
-      <footer className="text-center py-12 border-t mt-12">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-2 text-primary font-bold">
-            <Logo />
+      <footer className="py-16 border-t mt-12 px-6">
+        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row justify-between gap-12">
+          <div className="flex flex-col items-center md:items-start gap-4 flex-1">
+            <div className="flex items-center gap-2 text-primary font-bold">
+              <Logo />
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs text-center md:text-left">
+              The portable digital reputation system for skilled professionals across Malawi.
+            </p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
+              Built by Petediano Tech • Lilongwe
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-black">
-            Built by Petediano Tech • Established 2026
-          </p>
-          <div className="flex gap-4 mt-2">
-            <Button variant="ghost" size="sm" className="rounded-full text-[10px]" asChild>
-              <Link href="/jobs">Post a Job</Link>
-            </Button>
-            <Button variant="ghost" size="sm" className="rounded-full text-[10px]" asChild>
-              <Link href="/search">Find Workers</Link>
-            </Button>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 flex-[2]">
+            <div className="space-y-4">
+              <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Company</h4>
+              <nav className="flex flex-col gap-2 text-xs font-medium text-muted-foreground">
+                <Link href="/contact" className="hover:text-primary transition-colors">About Us</Link>
+                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+              </nav>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Support</h4>
+              <nav className="flex flex-col gap-3 text-[11px] font-bold text-muted-foreground">
+                <a href="mailto:globlync+support@gmail.com?subject=Globlync%20Support%20Request" className="flex items-center gap-2 hover:text-primary transition-colors">
+                  <LifeBuoy className="h-3 w-3" /> Support
+                </a>
+                <a href="mailto:globlync+dev@gmail.com?subject=Globlync%20Bug%20Report" className="flex items-center gap-2 hover:text-primary transition-colors">
+                  <ShieldCheck className="h-3 w-3" /> Report Bug
+                </a>
+                <a href="/contact" className="flex items-center gap-2 hover:text-primary transition-colors">
+                  <ChevronRight className="h-3 w-3" /> Contact Us
+                </a>
+              </nav>
+            </div>
+
+            <div className="space-y-4 col-span-2 sm:col-span-1">
+              <h4 className="font-bold text-primary text-sm uppercase tracking-wider">Business</h4>
+              <nav className="flex flex-col gap-3 text-[11px] font-bold text-muted-foreground">
+                <a href="mailto:globlync+ads@gmail.com?subject=Globlync%20Partnership%20Inquiry" className="flex items-center gap-2 hover:text-primary transition-colors">
+                  <Briefcase className="h-3 w-3" /> Advertising
+                </a>
+                <a href="mailto:globlync+info@gmail.com?subject=Globlync%20General%20Inquiry" className="flex items-center gap-2 hover:text-primary transition-colors">
+                  <Mail className="h-3 w-3" /> General Info
+                </a>
+              </nav>
+            </div>
           </div>
+        </div>
+        <div className="mt-16 text-center text-[10px] text-muted-foreground border-t pt-8">
+          © 2026 Petediano Tech • Malawi. Professional storage and AI recovery costs apply for Pro tiers.
         </div>
       </footer>
     </div>

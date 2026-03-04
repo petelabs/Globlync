@@ -22,7 +22,9 @@ import {
   ZapOff,
   Crown,
   CreditCard,
-  PlayCircle
+  PlayCircle,
+  Mail,
+  LifeBuoy
 } from "lucide-react";
 import { useAuth, useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
 import { signOut } from "firebase/auth";
@@ -136,6 +138,27 @@ export default function SettingsPage() {
               <Link href="/pricing">View Plans</Link>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Support & Help */}
+      <Card className="border-none shadow-sm bg-accent/30">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <LifeBuoy className="h-5 w-5 text-primary" />
+            Help & Support
+          </CardTitle>
+          <CardDescription>Need help with your account or professional profile?</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <Button variant="outline" className="w-full rounded-full border-primary text-primary font-bold bg-white" asChild>
+            <a href="mailto:globlync+support@gmail.com?subject=Globlync%20Support%20Request">
+              <Mail className="mr-2 h-4 w-4" /> Email Support
+            </a>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full text-xs" asChild>
+            <Link href="/contact">View All Contact Points</Link>
+          </Button>
         </CardContent>
       </Card>
 
