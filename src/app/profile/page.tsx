@@ -22,19 +22,29 @@ import {
   CheckCircle2,
   AlertCircle,
   MapPin,
-  Clock
+  Clock,
+  ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { generateProfessionalBio } from "@/ai/flows/generate-bio-flow";
-import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
 import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { QRCodeSVG } from "qrcode.react";
 import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const MALAWI_DISTRICTS = [
-  "Lilongwe", "Blantyre", "Mzuzu", "Zomba", "Mangochi", "Dedza", "Kasungu", "Salima", 
-  "Mulanje", "Chikwawa", "Thyolo", "Mzimba", "Karonga", "Nkhotakota", "Ntcheu"
+  // Northern Region
+  "Chitipa", "Karonga", "Likoma", "Mzimba", "Nkhata Bay", "Rumphi", "Mzuzu City",
+  // Central Region
+  "Dedza", "Dowa", "Kasungu", "Lilongwe District", "Lilongwe City", "Mchinji", "Nkhotakota", "Ntcheu", "Ntchisi", "Salima",
+  // Southern Region
+  "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
 export default function ProfilePage() {
@@ -56,7 +66,7 @@ export default function ProfilePage() {
   const [serviceAreas, setServiceAreas] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isAreasOpen, setIsAreasOpen] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -71,7 +81,6 @@ export default function ProfilePage() {
   const checkUsername = async (val: string) => {
     if (!db || !val || val.length < 3 || val === profile?.username) {
       setUsernameStatus("idle");
-      setSuggestions([]);
       return;
     }
     
@@ -81,15 +90,8 @@ export default function ProfilePage() {
     
     if (snap.exists()) {
       setUsernameStatus("taken");
-      const sugs = [
-        `${val}${Math.floor(Math.random() * 999)}`,
-        `${val}_pro`,
-        `${val}_mw`
-      ];
-      setSuggestions(sugs);
     } else {
       setUsernameStatus("available");
-      setSuggestions([]);
     }
   };
 
@@ -151,7 +153,7 @@ export default function ProfilePage() {
     }
   };
 
-  const publicUrl = user ? `${window.location.origin}/public/${user.uid}` : "";
+  const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/public/${user?.uid}` : "";
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
@@ -287,27 +289,45 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    Service Areas (Districts)
-                  </Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {MALAWI_DISTRICTS.map(district => (
-                      <button
-                        key={district}
-                        type="button"
-                        onClick={() => toggleArea(district)}
-                        className={cn(
-                          "px-3 py-1.5 rounded-full text-[10px] font-bold border-2 transition-all",
-                          serviceAreas.includes(district) 
-                            ? "bg-primary border-primary text-primary-foreground" 
-                            : "bg-background border-muted text-muted-foreground hover:border-primary/50"
-                        )}
-                      >
-                        {district}
-                      </button>
-                    ))}
-                  </div>
+                  <Collapsible open={isAreasOpen} onOpenChange={setIsAreasOpen} className="w-full space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        Service Areas ({serviceAreas.length} selected)
+                      </Label>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-9 p-0">
+                          <ChevronDown className={cn("h-4 w-4 transition-transform", isAreasOpen && "rotate-180")} />
+                          <span className="sr-only">Toggle</span>
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {serviceAreas.slice(0, 5).map(area => (
+                        <Badge key={area} variant="secondary" className="text-[8px]">{area}</Badge>
+                      ))}
+                      {serviceAreas.length > 5 && <Badge variant="outline" className="text-[8px]">+{serviceAreas.length - 5} more</Badge>}
+                    </div>
+                    <CollapsibleContent className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 bg-muted/20 rounded-xl border max-h-[300px] overflow-y-auto">
+                        {MALAWI_DISTRICTS.map(district => (
+                          <button
+                            key={district}
+                            type="button"
+                            onClick={() => toggleArea(district)}
+                            className={cn(
+                              "px-3 py-2 rounded-lg text-[10px] font-bold border transition-all text-left",
+                              serviceAreas.includes(district) 
+                                ? "bg-primary border-primary text-primary-foreground" 
+                                : "bg-background border-muted text-muted-foreground hover:border-primary/50"
+                            )}
+                          >
+                            {district}
+                          </button>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               </CardContent>
               <CardFooter className="bg-muted/10">

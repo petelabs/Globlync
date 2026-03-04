@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -9,79 +10,101 @@ import {
   Briefcase, 
   Info, 
   ArrowLeft,
-  MessageSquare
+  MessageSquare,
+  MapPin,
+  Clock,
+  ExternalLink,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 const CONTACT_POINTS = [
   {
     title: "Support & Help",
-    description: "Need help with your profile or verification?",
+    description: "Need help with your profile, trust score, or manual job verification?",
     email: "globlync+support@gmail.com",
     subject: "Globlync Support Request",
     icon: LifeBuoy,
-    color: "bg-blue-500/10 text-blue-500"
+    color: "bg-blue-500/10 text-blue-500",
+    priority: "High"
   },
   {
     title: "Advertising & Partnerships",
-    description: "Interested in reaching our verified workers?",
+    description: "Connect with our network of thousands of verified manual workers.",
     email: "globlync+ads@gmail.com",
     subject: "Globlync Partnership Inquiry",
     icon: Briefcase,
-    color: "bg-primary/10 text-primary"
+    color: "bg-primary/10 text-primary",
+    priority: "Normal"
   },
   {
     title: "Technical & Bug Reports",
-    description: "Found a glitch? Let our dev team know.",
+    description: "Spotted a glitch in the verification flow? Report it to our dev team.",
     email: "globlync+dev@gmail.com",
     subject: "Globlync Bug Report",
     icon: ShieldAlert,
-    color: "bg-destructive/10 text-destructive"
+    color: "bg-destructive/10 text-destructive",
+    priority: "Urgent"
   },
   {
     title: "General Inquiries",
-    description: "Anything else on your mind?",
+    description: "Anything else on your mind? Feedback and suggestions are welcome.",
     email: "globlync+info@gmail.com",
     subject: "Globlync General Inquiry",
     icon: Info,
-    color: "bg-secondary/10 text-secondary"
+    color: "bg-secondary/10 text-secondary",
+    priority: "Normal"
   }
 ];
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col gap-8 py-8 max-w-4xl mx-auto px-4">
-      <header className="flex flex-col gap-4">
+    <div className="flex flex-col gap-12 py-10 max-w-5xl mx-auto px-4">
+      <header className="flex flex-col gap-6 text-center md:text-left">
         <Button variant="ghost" size="sm" asChild className="w-fit">
           <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
         </Button>
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary">Contact Globlync</h1>
-          <p className="text-muted-foreground text-lg">We're here to help build the future of Malawian labor.</p>
+        <div className="space-y-2">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+            Professional Support
+          </Badge>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
+            Get in <span className="text-primary italic">Touch.</span>
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl">
+            Building the future of manual labor in Malawi. We're here to support every verified professional on our platform.
+          </p>
         </div>
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
         {CONTACT_POINTS.map((point) => (
-          <Card key={point.email} className="border-none shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
+          <Card key={point.email} className="border-none shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
-              <div className={`p-3 rounded-2xl ${point.color} group-hover:scale-110 transition-transform`}>
+              <div className={`p-4 rounded-2xl ${point.color} group-hover:scale-110 transition-transform shadow-inner`}>
                 <point.icon className="h-6 w-6" />
               </div>
-              <div>
-                <CardTitle className="text-lg">{point.title}</CardTitle>
-                <CardDescription className="text-xs">{point.description}</CardDescription>
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl font-bold">{point.title}</CardTitle>
+                  <Badge variant="outline" className="text-[8px] font-black uppercase">{point.priority}</Badge>
+                </div>
+                <CardDescription className="text-xs font-medium">{point.description}</CardDescription>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-2">
               <Button 
                 variant="outline" 
-                className="w-full rounded-full border-2 font-bold justify-start h-12 hover:bg-muted/50" 
+                className="w-full rounded-2xl border-2 font-black justify-between h-14 hover:bg-muted/50 transition-colors text-sm" 
                 asChild
               >
                 <a href={`mailto:${point.email}?subject=${encodeURIComponent(point.subject)}`}>
-                  <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
-                  {point.email}
+                  <div className="flex items-center">
+                    <Mail className="mr-3 h-4 w-4 text-muted-foreground" />
+                    {point.email}
+                  </div>
+                  <ChevronRight className="h-4 w-4 opacity-30" />
                 </a>
               </Button>
             </CardContent>
@@ -89,23 +112,53 @@ export default function ContactPage() {
         ))}
       </div>
 
-      <Card className="border-none bg-primary text-primary-foreground p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <MessageSquare className="h-48 w-48" />
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
+          <MapPin className="h-8 w-8 text-primary" />
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Office</h4>
+          <p className="text-sm font-medium">Area 47, Lilongwe, Malawi</p>
+        </Card>
+        <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
+          <Clock className="h-8 w-8 text-primary" />
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Hours</h4>
+          <p className="text-sm font-medium">Mon - Sat: 8:00 AM - 5:00 PM</p>
+        </Card>
+        <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
+          <LifeBuoy className="h-8 w-8 text-primary" />
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Response</h4>
+          <p className="text-sm font-medium">Within 24 Hours</p>
+        </Card>
+      </div>
+
+      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+          <MessageSquare className="h-64 w-64" />
         </div>
-        <div className="relative z-10 text-center space-y-4">
-          <h2 className="text-2xl font-bold">Fast Response via WhatsApp</h2>
-          <p className="opacity-80 max-w-md mx-auto">For urgent verification issues or payment support, our WhatsApp line is monitored 24/7.</p>
-          <Button className="rounded-full bg-secondary text-secondary-foreground font-bold px-10 h-14 text-lg hover:scale-105 transition-transform" asChild>
-            <a href="https://wa.me/0987066051" target="_blank">Message Us on WhatsApp</a>
+        <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+          <div className="bg-white/20 p-4 rounded-3xl animate-pulse">
+            <MessageSquare className="h-10 w-10" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Fast WhatsApp Support</h2>
+            <p className="opacity-80 max-w-md mx-auto text-lg leading-relaxed">
+              For urgent verification issues or payment support, our WhatsApp line is monitored by human experts.
+            </p>
+          </div>
+          <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
+            <a href="https://wa.me/0987066051" target="_blank">Message Us Now</a>
           </Button>
         </div>
       </Card>
 
-      <footer className="text-center py-6 border-t mt-8">
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">
+      <footer className="text-center py-10 border-t mt-8">
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-2">
           Managed by Petediano Tech • Lilongwe, Malawi
         </p>
+        <div className="flex justify-center gap-6 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
+          <Link href="/privacy" className="hover:text-primary">Privacy</Link>
+          <Link href="/terms" className="hover:text-primary">Terms</Link>
+          <Link href="/pricing" className="hover:text-primary">Pricing</Link>
+        </div>
       </footer>
     </div>
   );
