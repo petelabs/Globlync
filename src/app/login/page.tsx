@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, LogIn, Sparkles, Wand2, Loader2 } from "lucide-react";
+import { Mail, Lock, LogIn, Sparkles, Wand2, Loader2, Gift } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -83,6 +84,15 @@ function LoginContent() {
             referralCount: increment(1),
             updatedAt: serverTimestamp()
           }).catch(() => {});
+
+          // Notification to inviter
+          const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
+          addDoc(inviterNotifRef, {
+            type: "profile_update",
+            message: "New Referral! Someone joined Globlync using your link. You're closer to earning your Pro status!",
+            isRead: false,
+            createdAt: serverTimestamp()
+          }).catch(() => {});
         }
       }
 
@@ -94,13 +104,13 @@ function LoginContent() {
         username: `worker_${uid.substring(0, 5)}`,
         tradeSkill: "",
         bio: "",
-        trustScore: 0,
+        trustScore: referralCode ? 10 : 0, // Starter points for joining via referral
         referralCode: newCode,
         invitedBy,
         referralCount: 0,
         activeBenefits: [],
         badgeIds: [],
-        onboardingCompleted: false, // Start tutorial for new users
+        onboardingCompleted: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -110,7 +120,9 @@ function LoginContent() {
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
       await addDoc(notifRef, {
         type: "app",
-        message: "Welcome to Globlync! Get Pro for only MWK 400 if you upgrade within the next 5 hours. Your support helps cover AI, storage, and maintenance.",
+        message: referralCode 
+          ? "Welcome! You've received 10 starter Trust Points for joining via invitation. Start building your portfolio today!" 
+          : "Welcome to Globlync! Start by logging your manual work to build an evidence-based professional reputation.",
         isRead: false,
         createdAt: serverTimestamp()
       });
@@ -192,31 +204,33 @@ function LoginContent() {
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center py-12 px-4">
       {referralCode && (
-        <div className="mb-6 bg-secondary/10 border-2 border-secondary p-4 rounded-2xl flex items-center gap-3 animate-bounce shadow-lg">
-          <Sparkles className="h-6 w-6 text-secondary" />
+        <div className="mb-8 bg-primary/10 border-2 border-primary/20 p-6 rounded-[2rem] flex items-center gap-4 animate-in slide-in-from-top-4 duration-500 shadow-xl">
+          <div className="bg-primary p-3 rounded-2xl shadow-lg">
+            <Gift className="h-6 w-6 text-primary-foreground" />
+          </div>
           <div className="text-left">
-            <p className="text-xs font-black uppercase text-secondary">Invited Professional</p>
-            <p className="text-[10px] font-medium opacity-80 leading-tight">Complete sign up to unlock your starter reputation points.</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary">Invitation Active</p>
+            <p className="text-sm font-bold leading-tight mt-0.5">Join via link to unlock <br/>10 starter Trust Points!</p>
           </div>
         </div>
       )}
-      <Card className="w-full max-w-md border-none shadow-2xl">
-        <CardHeader className="space-y-1 text-center">
+      <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+        <CardHeader className="space-y-1 text-center bg-muted/30 pb-10 pt-10">
           <div className="flex justify-center mb-6">
             <Logo className="scale-125" />
           </div>
-          <CardDescription>
-            {isSignUp ? "Create an account to build your reputation" : "Sign in to manage your worker profile"}
+          <CardDescription className="font-medium text-sm">
+            {isSignUp ? "Create a verified professional account" : "Sign in to manage your worker profile"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="grid gap-6 p-8">
           <Button 
             variant="outline" 
-            className="w-full rounded-full py-6 border-2 font-bold hover:bg-muted/50 transition-colors" 
+            className="w-full rounded-full py-8 border-2 font-black text-base hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center" 
             onClick={handleGoogleLogin} 
             disabled={isLoading}
           >
-            <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+            <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -225,50 +239,50 @@ function LoginContent() {
             Continue with Google
           </Button>
           
-          <div className="flex gap-2 p-1 bg-muted rounded-full mt-2">
-            <button className={cn("flex-1 py-2 text-xs font-bold rounded-full transition-all", authMode === "password" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("password")}>Password</button>
-            <button className={cn("flex-1 py-2 text-xs font-bold rounded-full transition-all", authMode === "magic-link" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("magic-link")}>Magic Link</button>
+          <div className="flex gap-2 p-1.5 bg-muted rounded-full">
+            <button className={cn("flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all", authMode === "password" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("password")}>Password</button>
+            <button className={cn("flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all", authMode === "magic-link" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("magic-link")}>Magic Link</button>
           </div>
 
           {authMode === "password" ? (
             <form onSubmit={handleEmailAuth} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input id="email" type="email" placeholder="m@example.com" className="pl-10 h-12" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Mail className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
+                  <Input id="email" type="email" placeholder="professional@gmail.com" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password", className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input id="password" type="password" className="pl-10 h-12" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <Lock className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
+                  <Input id="password" type="password" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
               </div>
-              <Button className="w-full h-12 rounded-full font-bold" type="submit" disabled={isLoading}>{isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}</Button>
+              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>{isLoading ? "Verifying..." : isSignUp ? "Create Account" : "Sign In"}</Button>
             </form>
           ) : (
             <form onSubmit={handleMagicLinkSignIn} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="magic-email">Email</Label>
+                <Label htmlFor="magic-email" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input id="magic-email" type="email" placeholder="m@example.com" className="pl-10 h-12" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Mail className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
+                  <Input id="magic-email" type="email" placeholder="professional@gmail.com" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
-              <Button className="w-full h-12 rounded-full font-bold" type="submit" disabled={isLoading}>{isLoading ? "Sending..." : "Send Magic Link"}<Wand2 className="ml-2 h-4 w-4" /></Button>
+              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>{isLoading ? "Sending..." : "Send Magic Link"}<Wand2 className="ml-3 h-5 w-5" /></Button>
             </form>
           )}
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <p className="text-center text-sm text-muted-foreground w-full">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-semibold hover:underline">{isSignUp ? "Sign In" : "Sign Up"}</button>
+        <CardFooter className="flex flex-col gap-6 p-8 pt-0">
+          <p className="text-center text-sm font-medium text-muted-foreground w-full">
+            {isSignUp ? "Already part of the network?" : "New to the platform?"}{" "}
+            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Sign Up Free"}</button>
           </p>
-          <div className="flex gap-4 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <div className="flex justify-center gap-6 text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em] opacity-50">
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
           </div>
         </CardFooter>
       </Card>

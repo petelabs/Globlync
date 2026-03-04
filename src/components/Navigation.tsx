@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -16,7 +17,7 @@ import {
   ChevronDown,
   Gift,
   Award,
-  Menu
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -81,7 +82,9 @@ export function Navigation() {
 
   const { data: unreadNotifications } = useCollection(unreadQuery);
   const unreadCount = unreadNotifications?.length || 0;
-  const hasGrowthBadge = profile?.badgeIds?.includes('growth-champion');
+  
+  // Growth badge for navigation visual
+  const isGrowthChampion = profile?.badgeIds?.includes('growth-champion');
 
   const handleLogout = async () => {
     try {
@@ -111,21 +114,21 @@ export function Navigation() {
           <div className="flex-1 flex justify-center px-4 max-w-md">
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-10 px-4 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
+              className="w-full justify-start text-muted-foreground rounded-full h-11 px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
               onClick={() => router.push('/search')}
             >
-              <Search className="h-4 w-4 mr-2" />
-              <span className="text-xs sm:text-sm font-medium">Search pros...</span>
+              <Search className="h-4 w-4 mr-3" />
+              <span className="text-xs sm:text-sm font-bold tracking-tight">Search Verified Professionals...</span>
             </Button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {user ? (
               <>
-                <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden sm:flex">
+                <Link href="/notifications" className="relative p-2.5 hover:bg-muted rounded-full transition-colors hidden sm:flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground border-2 border-background">
+                    <span className="absolute right-1.5 top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-secondary text-[9px] font-black text-secondary-foreground border-2 border-background">
                       {unreadCount}
                     </span>
                   )}
@@ -133,55 +136,58 @@ export function Navigation() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild id="nav-user-menu">
-                    <button className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-all outline-none">
+                    <button className="flex items-center gap-3 p-1.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
-                        <Avatar className="h-9 w-9 border-2 border-primary/20">
+                        <Avatar className="h-9 w-9 border-2 border-primary/20 shadow-sm">
                           <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-bold">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                          <AvatarFallback className="bg-primary/10 text-primary font-black uppercase">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
-                        {hasGrowthBadge && (
-                          <div className="absolute -top-1 -right-1 bg-pink-500 rounded-full p-0.5 border-2 border-white shadow-sm">
-                            <Award className="h-2 w-2 text-white" />
+                        {isGrowthChampion && (
+                          <div className="absolute -top-1 -right-1 bg-pink-500 rounded-full p-1 border-2 border-white shadow-xl animate-pulse">
+                            <Sparkles className="h-2 w-2 text-white" />
                           </div>
                         )}
                       </div>
                       <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 mt-2 p-2 rounded-2xl shadow-2xl border-none" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal px-2 py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
+                  <DropdownMenuContent className="w-72 mt-2 p-3 rounded-[1.5rem] shadow-2xl border-none animate-in fade-in zoom-in-95" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal p-3 bg-muted/30 rounded-2xl mb-2">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12 border-2 border-primary/10">
                           <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`} />
                         </Avatar>
                         <div className="flex flex-col space-y-0.5">
-                          <p className="text-sm font-bold leading-none">{user.displayName || "Professional"}</p>
-                          <p className="text-[10px] font-medium text-muted-foreground mt-1 truncate max-w-[140px]">{user.email}</p>
+                          <p className="text-sm font-black leading-none">{user.displayName || "Professional"}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{profile?.tradeSkill || "New Worker"}</p>
+                          </div>
                         </div>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="mx-[-8px] my-2" />
-                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
-                      <Link href="/dashboard"><LayoutDashboard className="mr-3 h-4 w-4 text-primary" />Dashboard</Link>
+                    <DropdownMenuSeparator className="mx-[-8px] my-1" />
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
+                      <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />Hub Overview</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
-                      <Link href="/referrals"><Gift className="mr-3 h-4 w-4 text-secondary" />Invite & Earn</Link>
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
+                      <Link href="/referrals"><Gift className="mr-3 h-5 w-5 text-secondary" />Invite Peers</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
-                      <Link href="/profile"><User className="mr-3 h-4 w-4 text-primary" />My Profile</Link>
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
+                      <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />Professional ID</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-lg cursor-pointer py-2.5">
-                      <Link href="/settings"><Settings className="mr-3 h-4 w-4 text-primary" />Settings</Link>
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
+                      <Link href="/settings"><Settings className="mr-3 h-5 w-5 text-primary" />Preferences</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="mx-[-8px] my-2" />
-                    <DropdownMenuItem className="text-destructive font-bold cursor-pointer rounded-lg py-2.5" onClick={handleLogout}>
-                      <LogOut className="mr-3 h-4 w-4" />Log Out
+                    <DropdownMenuSeparator className="mx-[-8px] my-1" />
+                    <DropdownMenuItem className="text-destructive font-black cursor-pointer rounded-xl py-3 px-4 text-sm mt-1" onClick={handleLogout}>
+                      <LogOut className="mr-3 h-5 w-5" />Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild className="rounded-full shadow-lg font-bold px-4 sm:px-6" size="sm">
+              <Button asChild className="rounded-full shadow-lg font-black px-6 sm:px-8 h-11" size="sm">
                 <Link href="/login"><LogIn className="h-4 w-4 mr-2 hidden sm:inline" />Sign In</Link>
               </Button>
             )}
@@ -189,8 +195,7 @@ export function Navigation() {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/90 backdrop-blur-xl md:hidden h-16 safe-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/90 backdrop-blur-xl md:hidden h-18 safe-bottom">
         <div className="flex h-full items-center justify-around px-2">
           {navItems.map((item) => {
             if (item.authRequired && !user) return null;
@@ -201,14 +206,14 @@ export function Navigation() {
                 key={item.href} 
                 href={item.href} 
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 transition-all flex-1 h-full", 
+                  "flex flex-col items-center justify-center gap-1.5 transition-all flex-1 h-full", 
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}
               >
-                <div className={cn("p-1.5 rounded-xl transition-colors", isActive && "bg-primary/10")}>
+                <div className={cn("p-2 rounded-xl transition-all duration-300", isActive && "bg-primary/10 scale-110")}>
                   <Icon className={cn("h-6 w-6", isActive && "fill-primary/20")} />
                 </div>
-                <span className="text-[9px] font-bold tracking-tight uppercase">{item.label}</span>
+                <span className="text-[9px] font-black tracking-tight uppercase">{item.label}</span>
               </Link>
             );
           })}
@@ -216,19 +221,19 @@ export function Navigation() {
             <Link 
               href="/notifications" 
               className={cn(
-                "flex flex-col items-center justify-center gap-1 transition-all flex-1 h-full relative", 
+                "flex flex-col items-center justify-center gap-1.5 transition-all flex-1 h-full relative", 
                 pathname === "/notifications" ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <div className={cn("p-1.5 rounded-xl transition-colors", pathname === "/notifications" && "bg-primary/10")}>
+              <div className={cn("p-2 rounded-xl transition-all duration-300", pathname === "/notifications" && "bg-primary/10 scale-110")}>
                 <Bell className="h-6 w-6" />
                 {unreadCount > 0 && (
-                  <span className="absolute right-4 top-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-secondary text-[8px] font-black text-secondary-foreground border border-background">
+                  <span className="absolute right-4 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[8px] font-black text-secondary-foreground border-2 border-background shadow-lg">
                     {unreadCount}
                   </span>
                 )}
               </div>
-              <span className="text-[9px] font-bold tracking-tight uppercase">Alerts</span>
+              <span className="text-[9px] font-black tracking-tight uppercase">Alerts</span>
             </Link>
           )}
         </div>
