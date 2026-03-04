@@ -4,15 +4,15 @@
 
 @layer base {
   :root {
-    --background: 0 0% 99%; /* #FDFDFD */
-    --foreground: 173 100% 10%; /* Very dark teal for text */
+    --background: 0 0% 99%;
+    --foreground: 173 100% 10%;
     --card: 0 0% 100%;
     --card-foreground: 173 100% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 173 100% 10%;
-    --primary: 173 100% 24%; /* #00796B - Deep Teal */
+    --primary: 173 100% 24%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 43 100% 51%; /* #FFC107 - Golden Yellow */
+    --secondary: 43 100% 51%;
     --secondary-foreground: 0 0% 10%;
     --muted: 173 10% 95%;
     --muted-foreground: 173 20% 40%;
@@ -57,9 +57,11 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground font-body transition-colors duration-300;
+    @apply bg-background text-foreground font-body transition-colors duration-300 antialiased;
+    text-rendering: optimizeLegibility;
   }
 }
 
@@ -67,6 +69,14 @@
   .no-animations, .no-animations * {
     animation: none !important;
     transition: none !important;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   @keyframes shimmer {
@@ -108,5 +118,13 @@
 
   .animate-link-right {
     animation: link-connect-right 5s ease-in-out infinite;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

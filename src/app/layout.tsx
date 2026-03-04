@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
-import Script from 'next/script';
 
 export const viewport: Viewport = {
   themeColor: '#00796B',
@@ -13,6 +12,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 }
 
 export const metadata: Metadata = {
@@ -90,10 +90,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background text-foreground">
+      <body className="font-body antialiased bg-background text-foreground overflow-x-hidden">
         <FirebaseClientProvider>
           <Navigation />
-          <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-24 pt-20 md:pb-6 md:pt-24">
+          <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-28 pt-20 md:pb-12 md:pt-28">
             {children}
           </main>
           <OnboardingTutorial />
