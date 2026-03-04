@@ -1,12 +1,13 @@
+
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
 import { doc, serverTimestamp } from "firebase/firestore";
 import { usePathname, useRouter } from "next/navigation";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Sparkles, X, ArrowUp, ArrowDown, User, Camera, Check } from "lucide-react";
+import { ChevronRight, Sparkles, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Step = {
@@ -29,7 +30,7 @@ const TUTORIAL_STEPS: Step[] = [
   {
     id: "goto-profile",
     title: "Find Your Profile",
-    message: "Tap on your profile icon to start customizing your professional identity.",
+    message: "Tap on your profile icon in the navigation bar to start customizing your professional identity.",
     path: "/dashboard",
     targetId: "nav-user-menu",
     arrow: "up"
@@ -87,7 +88,6 @@ export function OnboardingTutorial() {
     }
   }, [currentStepIdx, pathname]);
 
-  // Update rect on scroll/resize
   useEffect(() => {
     const handleUpdate = () => {
       const step = TUTORIAL_STEPS[currentStepIdx ?? -1];
@@ -137,19 +137,22 @@ export function OnboardingTutorial() {
 
   const currentStep = TUTORIAL_STEPS[currentStepIdx];
   const isWrongPage = pathname !== currentStep.path;
+  
+  // Decide where to put the card so it doesn't cover the spotlight
+  const cardPositionClass = rect && rect.top < 400 ? "bottom-10" : "top-10";
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-      {/* Dimmed Background Backdrop */}
+    <div className="fixed inset-0 z-[1000] pointer-events-none">
+      {/* Dark Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity pointer-events-auto" 
         onClick={handleSkip}
       />
 
       {/* Spotlight Effect */}
       {rect && !isWrongPage && (
         <div 
-          className="absolute border-[3px] border-secondary shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] rounded-xl pointer-events-none transition-all duration-500 ease-in-out"
+          className="absolute border-4 border-secondary shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] rounded-xl pointer-events-none transition-all duration-500 ease-in-out"
           style={{
             top: rect.top - 8,
             left: rect.left - 8,
@@ -159,52 +162,51 @@ export function OnboardingTutorial() {
         >
           {/* Animated Arrow */}
           {currentStep.arrow === "up" && (
-            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center">
-              <ArrowUp className="h-10 w-10 text-secondary" />
+            <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center">
+              <ArrowUp className="h-12 w-12 text-secondary" />
             </div>
           )}
           {currentStep.arrow === "down" && (
-            <div className="absolute -top-16 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center">
-              <ArrowDown className="h-10 w-10 text-secondary" />
+            <div className="absolute -top-20 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center">
+              <ArrowDown className="h-12 w-12 text-secondary" />
             </div>
           )}
         </div>
       )}
 
       {/* Tutorial Card */}
-      <Card className={cn(
-        "relative w-full max-w-sm shadow-2xl border-none animate-in zoom-in-95 duration-300",
-        rect && !isWrongPage ? "mt-48" : ""
-      )}>
-        <CardHeader className="text-center pb-2">
-          <div className="flex justify-center mb-4">
-            <div className="bg-primary/10 p-3 rounded-2xl">
-              <Sparkles className="h-8 w-8 text-primary" />
+      <div className={cn("absolute left-1/2 -translate-x-1/2 w-full max-w-xs px-4 transition-all duration-500 pointer-events-auto", cardPositionClass)}>
+        <Card className="shadow-2xl border-none animate-in zoom-in-95 duration-300">
+          <CardHeader className="text-center pb-2">
+            <div className="flex justify-center mb-2">
+              <div className="bg-primary/10 p-2 rounded-xl">
+                <Sparkles className="h-6 w-6 text-primary" />
+              </div>
             </div>
-          </div>
-          <CardTitle className="text-xl font-bold">{currentStep.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center text-sm text-muted-foreground leading-relaxed px-6">
-          {currentStep.message}
-          {isWrongPage && (
-             <p className="mt-4 text-xs font-bold text-primary animate-pulse flex items-center justify-center gap-1">
-               <ChevronRight className="h-4 w-4" /> Tap to navigate to {currentStep.path.replace('/', '')}
-             </p>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col gap-3 pt-4">
-          <Button 
-            className="w-full rounded-full h-12 font-bold shadow-lg" 
-            onClick={isWrongPage ? () => router.push(currentStep.path) : handleNext}
-          >
-            {currentStepIdx === TUTORIAL_STEPS.length - 1 ? "Finish Tutorial" : isWrongPage ? "Navigate Now" : "Continue"}
-            {currentStepIdx < TUTORIAL_STEPS.length - 1 && !isWrongPage && <ChevronRight className="ml-2 h-4 w-4" />}
-          </Button>
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={handleSkip}>
-            Skip for now
-          </Button>
-        </CardFooter>
-      </Card>
+            <CardTitle className="text-lg font-bold">{currentStep.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center text-xs text-muted-foreground leading-relaxed px-4">
+            {currentStep.message}
+            {isWrongPage && (
+               <p className="mt-2 text-[10px] font-black text-primary animate-pulse flex items-center justify-center gap-1">
+                 <ChevronRight className="h-3 w-3" /> Auto-navigating to {currentStep.path.replace('/', '')}...
+               </p>
+            )}
+          </CardContent>
+          <CardFooter className="flex flex-col gap-2 pt-2">
+            <Button 
+              className="w-full rounded-full h-10 font-bold shadow-lg text-sm" 
+              onClick={isWrongPage ? () => router.push(currentStep.path) : handleNext}
+            >
+              {currentStepIdx === TUTORIAL_STEPS.length - 1 ? "Finish Tutorial" : "Continue"}
+              {currentStepIdx < TUTORIAL_STEPS.length - 1 && <ChevronRight className="ml-1 h-4 w-4" />}
+            </Button>
+            <Button variant="ghost" size="sm" className="text-[10px] text-muted-foreground h-6" onClick={handleSkip}>
+              Skip Tutorial
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }

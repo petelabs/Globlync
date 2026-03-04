@@ -167,6 +167,7 @@ export default function ProfilePage() {
   };
 
   const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/public/${user?.uid}` : "";
+  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || `https://picsum.photos/seed/${user?.uid}/200/200`;
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
@@ -195,14 +196,14 @@ export default function ProfilePage() {
             <CardContent className="flex flex-col items-center gap-4">
               <div className="relative">
                 <Avatar className="h-32 w-32 border-4 border-primary shadow-xl">
-                  <AvatarImage src={user?.photoURL || `https://picsum.photos/seed/${user?.uid}/200/200`} />
+                  <AvatarImage src={displayPhoto} />
                   <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
                 <Button 
                   id="profile-camera-btn"
                   size="icon" 
                   variant="secondary" 
-                  className="absolute bottom-0 right-0 rounded-full shadow-md border border-border"
+                  className="absolute bottom-0 right-0 rounded-full shadow-md border border-border pointer-events-auto"
                 >
                   <Camera className="h-4 w-4" />
                 </Button>
@@ -237,7 +238,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="md:col-span-2">
-          <form onSubmit={handleUpdate} className="grid gap-6">
+          <div className="grid gap-6">
             <Card className="border-none shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Professional Details</CardTitle>
@@ -392,15 +393,15 @@ export default function ProfilePage() {
               <CardFooter className="bg-muted/10">
                 <Button 
                   id="profile-save-btn"
-                  type="submit" 
-                  className="w-full rounded-full py-6 text-lg shadow-lg font-bold" 
+                  onClick={handleUpdate}
+                  className="w-full rounded-full py-6 text-lg shadow-lg font-bold pointer-events-auto" 
                   disabled={usernameStatus === "taken"}
                 >
                   Save All Changes
                 </Button>
               </CardFooter>
             </Card>
-          </form>
+          </div>
         </div>
       </div>
     </div>

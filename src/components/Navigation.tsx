@@ -83,8 +83,8 @@ export function Navigation() {
   const { data: unreadNotifications } = useCollection(unreadQuery);
   const unreadCount = unreadNotifications?.length || 0;
   
-  // Growth badge for navigation visual
   const isGrowthChampion = profile?.badgeIds?.includes('growth-champion');
+  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || `https://picsum.photos/seed/${user?.uid}/100/100`;
 
   const handleLogout = async () => {
     try {
@@ -139,7 +139,7 @@ export function Navigation() {
                     <button className="flex items-center gap-3 p-1.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
                         <Avatar className="h-9 w-9 border-2 border-primary/20 shadow-sm">
-                          <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`} />
+                          <AvatarImage src={displayPhoto} />
                           <AvatarFallback className="bg-primary/10 text-primary font-black uppercase">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
                         {isGrowthChampion && (
@@ -155,7 +155,7 @@ export function Navigation() {
                     <DropdownMenuLabel className="font-normal p-3 bg-muted/30 rounded-2xl mb-2">
                       <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12 border-2 border-primary/10">
-                          <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/100/100`} />
+                          <AvatarImage src={displayPhoto} />
                         </Avatar>
                         <div className="flex flex-col space-y-0.5">
                           <p className="text-sm font-black leading-none">{user.displayName || "Professional"}</p>
