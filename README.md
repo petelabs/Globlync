@@ -3,6 +3,12 @@
 
 Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation.
 
+## 🎨 Branding & Logo Setup (Action Required)
+To show your professional logo in the app:
+1. Save your logo image as **`logo.png`**.
+2. Upload/Place it in the **`public/`** folder of this project.
+3. The app is already coded to automatically detect and display it in the Header, Hero, and Login screens.
+
 ## 🛡️ Verification Ready (Google Cloud Console)
 **Code Status**: Updated for fast verification.
 - **Sensitive Scopes**: None. The app does NOT request access to Cloud Platform or Storage.
@@ -23,13 +29,8 @@ To show "Globlync" instead of your project ID in the Google popup:
 - Navigate to **APIs & Services** > **OAuth consent screen**.
 - Set **App name** to "Globlync".
 - Set your **User support email** and **Developer contact info**.
-- **Note**: The technical domain below the name will remain the Firebase ID until you buy a custom domain (e.g., `.com`). You cannot technically verify a `.vercel.app` domain for this specific Google identity step.
 
-### 3. Domain Verification Note
-- You **cannot** verify the DNS records for a `.vercel.app` domain in Firebase (the step asking for TXT/CNAME records). 
-- **Don't worry**: Your app will still work! It will just send emails from the default Firebase address. To use a custom sender, you would need a custom domain (e.g., `.com`).
-
-### 4. Professional Magic Link Template
+### 3. Professional Magic Link Template
 To make copying easier on mobile:
 1. Open the file **`docs/magic-link-template.html`** in this editor.
 2. Use "Select All" to copy the entire code.

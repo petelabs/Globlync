@@ -1,7 +1,7 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,12 +28,12 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
+  const [logoError, setLogoError] = useState(false);
   
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  // Handle incoming magic link
   useEffect(() => {
     if (typeof window !== "undefined" && isSignInWithEmailLink(auth, window.location.href)) {
       let emailForLink = window.localStorage.getItem('emailForSignIn');
@@ -62,7 +62,6 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
-    // Use standard provider with non-sensitive scopes (default)
     const provider = new GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
@@ -139,18 +138,27 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-none shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-primary/10 p-3 rounded-2xl">
-              <ShieldCheck className="h-10 w-10 text-primary" />
+            <div className="bg-primary/10 p-4 rounded-3xl relative h-20 w-20 flex items-center justify-center">
+              {!logoError ? (
+                <Image 
+                  src="/logo.png" 
+                  alt="Globlync Logo" 
+                  fill 
+                  className="object-contain p-2 rounded-2xl"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <ShieldCheck className="h-12 w-12 text-primary" />
+              )}
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome to Globlync</CardTitle>
+          <CardTitle className="text-2xl font-black italic tracking-tighter">Globlync</CardTitle>
           <CardDescription>
             {isSignUp ? "Create an account to build your reputation" : "Sign in to manage your worker profile"}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid grid-cols-1 gap-4">
-            {/* Official Sign in with Google Button */}
             <Button 
               variant="outline" 
               className="w-full rounded-full py-6 border-2 font-bold hover:bg-muted/50 transition-colors" 
@@ -272,16 +280,12 @@ export default function LoginPage() {
               {isSignUp ? "Sign In" : "Sign Up"}
             </button>
           </p>
+          <div className="flex gap-4 text-[10px] text-muted-foreground uppercase font-bold tracking-widest pt-2">
+            <Link href="/privacy" className="hover:text-primary">Privacy</Link>
+            <Link href="/terms" className="hover:text-primary">Terms</Link>
+          </div>
         </CardFooter>
       </Card>
-
-      <div className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-        <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-        <span>•</span>
-        <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-        <span>•</span>
-        <a href="mailto:globlync.pro@gmail.com" className="hover:text-primary transition-colors">Contact Support</a>
-      </div>
     </div>
   );
 }

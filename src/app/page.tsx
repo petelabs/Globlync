@@ -1,6 +1,7 @@
-
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -22,6 +23,7 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 
 export default function Home() {
   const db = useFirestore();
+  const [logoError, setLogoError] = useState(false);
 
   const appRatingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -39,12 +41,28 @@ export default function Home() {
     <div className="flex flex-col gap-16 py-6">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
+        <div className="mb-4 relative h-32 w-32 animate-in zoom-in duration-700">
+          {!logoError ? (
+            <Image 
+              src="/logo.png" 
+              alt="Globlync Logo" 
+              fill 
+              className="object-contain"
+              priority
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <div className="h-32 w-32 bg-primary/10 rounded-3xl flex items-center justify-center">
+              <ShieldCheck className="h-16 w-16 text-primary" />
+            </div>
+          )}
+        </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-pulse">
           <Sparkles className="h-4 w-4" />
           <span>Portable, AI-Verified Reputation</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Trust is the new <span className="text-primary">Currency.</span>
+          Trust is the new <span className="text-primary italic">Currency.</span>
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
           Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof.
@@ -134,8 +152,12 @@ export default function Home() {
       <footer className="text-center py-12 border-t mt-12">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-2 text-primary font-bold">
-            <ShieldCheck className="h-6 w-6" />
-            <span>Globlync</span>
+            {!logoError ? (
+              <Image src="/logo.png" alt="Logo" width={24} height={24} className="rounded" onError={() => setLogoError(true)} />
+            ) : (
+              <ShieldCheck className="h-6 w-6" />
+            )}
+            <span className="italic font-black tracking-tighter">Globlync</span>
           </div>
           <p className="text-xs text-muted-foreground uppercase tracking-widest font-black">
             Built by Petediano Tech

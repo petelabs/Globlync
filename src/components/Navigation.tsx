@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   Home, 
   Briefcase, 
@@ -29,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export function Navigation() {
   const pathname = usePathname();
@@ -36,6 +38,7 @@ export function Navigation() {
   const { user } = useUser();
   const auth = useAuth();
   const { toast } = useToast();
+  const [logoError, setLogoError] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -65,8 +68,19 @@ export function Navigation() {
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-card/80 backdrop-blur-lg h-16">
         <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0">
-            <ShieldCheck className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-primary hidden sm:block">Globlync</span>
+            {!logoError ? (
+              <Image 
+                src="/logo.png" 
+                alt="Globlync Logo" 
+                width={32} 
+                height={32} 
+                className="rounded-lg"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            )}
+            <span className="text-xl font-black text-primary hidden sm:block tracking-tighter italic">Globlync</span>
           </Link>
           
           <div className="flex-1 flex justify-center px-4 max-w-md">
