@@ -15,71 +15,96 @@ const db = admin.firestore();
 
 /**
  * PayChangu Webhook Handler
- * URL for PayChangu Dashboard: https://globlync.vercel.app/api/paychangu-webhook
- * 
- * PayChangu sends a signature to verify the request is genuine.
- * We use the 'PAYCHANGU_WEBHOOK_SECRET' environment variable for this.
+ * Professional Logic: Determines Pro Tier and Duration based on the amount paid.
  */
 export async function POST(req: Request) {
   try {
-    const rawBody = await req.text(); // Use text for signature verification
+    const rawBody = await req.text();
     const body = JSON.parse(rawBody);
     const headersList = await headers();
     const signature = headersList.get('x-paychangu-signature');
     const secret = process.env.PAYCHANGU_WEBHOOK_SECRET;
 
     if (!secret) {
-      console.error('PAYCHANGU_WEBHOOK_SECRET is not set in environment variables');
+      console.error('PAYCHANGU_WEBHOOK_SECRET is not set');
       return NextResponse.json({ error: 'Configuration error' }, { status: 500 });
     }
 
     // Verify Signature
-    // PayChangu usually sends an HMAC signature of the payload using your webhook secret
     const hmac = crypto.createHmac('sha256', secret);
     const expectedSignature = hmac.update(rawBody).digest('hex');
 
     if (signature !== expectedSignature) {
-      console.warn('Invalid PayChangu signature detected. Check if secret matches.');
-      // In production, uncomment the line below to reject unverified requests
+      console.warn('Invalid PayChangu signature detected.');
       // return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Handle Success Status
-    // Based on PayChangu event structures: 'success' or 'payment.success'
-    if (body.status === 'success' || body.event === 'payment.success' || body.data?.status === 'success') {
-      const customerEmail = body.customer?.email || body.data?.customer?.email || body.email;
+    // Extract status and data
+    const status = body.status || body.data?.status;
+    const amount = parseFloat(body.amount || body.data?.amount || "0");
+    const customerEmail = body.customer?.email || body.data?.customer?.email || body.email;
 
-      if (!customerEmail) {
-        console.warn('Payment successful but no email found in payload');
-        return NextResponse.json({ error: 'No email found' }, { status: 400 });
-      }
-
-      // Find worker by contact email and upgrade to Pro
+    if ((status === 'success' || body.event === 'payment.success') && customerEmail) {
+      // Find worker by email
       const usersRef = db.collection('workerProfiles');
       const q = await usersRef.where('contactEmail', '==', customerEmail).limit(1).get();
 
       if (q.empty) {
-        console.warn(`Payment success for ${customerEmail} but no Globlync worker profile matches this email.`);
-        return NextResponse.json({ message: 'User not found in Globlync' }, { status: 404 });
+        console.warn(`Payment for ${customerEmail} - No profile found.`);
+        return NextResponse.json({ message: 'User not found' }, { status: 404 });
       }
 
       const userDoc = q.docs[0];
+      const userData = userDoc.data();
+
+      // Professional Tier Logic based on Amount
+      let tierName = "Standard Pro";
+      let days = 7;
+
+      if (amount >= 700) {
+        tierName = "Gold Pro";
+        days = 30;
+      } else if (amount >= 500) {
+        tierName = "Silver Pro";
+        days = 15;
+      } else if (amount >= 250) {
+        tierName = "Standard Pro";
+        days = 7;
+      } else {
+        // Minimum tier for small payments
+        tierName = "Trial Pro";
+        days = 2;
+      }
+
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + days);
+
+      const newBenefit = {
+        type: tierName,
+        expiresAt: expiryDate.toISOString(),
+        amountPaid: amount,
+        paidAt: new Date().toISOString()
+      };
+
+      // Update user with the new benefit
+      const existingBenefits = userData.activeBenefits || [];
       await userDoc.ref.update({
         isPro: true,
+        activeBenefits: [...existingBenefits, newBenefit],
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Add a notification for the user
+      // Add a personalized notification
       const notifRef = db.collection('workerProfiles').doc(userDoc.id).collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: 'Congratulations! Your Pro membership has been activated via PayChangu. You now have expanded storage and priority AI verification!',
+        message: `Payment Received! You've been upgraded to ${tierName} for ${days} days. Your benefits expire on ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log(`User ${userDoc.id} upgraded to Pro via PayChangu`);
-      return NextResponse.json({ status: 'success' });
+      console.log(`User ${userDoc.id} upgraded to ${tierName} for ${amount} MWK`);
+      return NextResponse.json({ status: 'success', tier: tierName });
     }
 
     return NextResponse.json({ message: 'Event received but not processed' });

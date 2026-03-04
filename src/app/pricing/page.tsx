@@ -13,7 +13,8 @@ import {
   Globe, 
   Clock,
   Sparkles,
-  CreditCard
+  CreditCard,
+  Info
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -58,7 +59,10 @@ export default function PricingPage() {
   }, [db, user?.uid]);
 
   const { data: profile } = useDoc(workerRef);
-  const isPro = profile?.isPro || (profile?.referralCount || 0) >= 10;
+  
+  // Check if any benefit is currently active
+  const activeBenefit = profile?.activeBenefits?.find((b: any) => new Date(b.expiresAt) > new Date());
+  const isPro = !!activeBenefit || (profile?.referralCount || 0) >= 10;
 
   return (
     <div className="flex flex-col gap-12 py-8 max-w-5xl mx-auto px-4">
@@ -68,9 +72,17 @@ export default function PricingPage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter sm:text-6xl text-primary">Upgrade Your Reputation</h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-          Support the platform that builds your career. Your contributions help us maintain high-speed storage and AI verification.
+          Support the platform that builds your career. Your tier is automatically detected based on the amount you pay.
         </p>
       </header>
+
+      {activeBenefit && (
+        <Card className="bg-secondary/10 border-2 border-secondary/30 rounded-[2rem] p-6 text-center animate-in zoom-in-95">
+          <Badge className="bg-secondary text-secondary-foreground font-black mb-2">ACTIVE PLAN</Badge>
+          <h3 className="text-xl font-bold">You are currently {activeBenefit.type}</h3>
+          <p className="text-sm text-muted-foreground">Your professional benefits expire on <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
+        </Card>
+      )}
 
       <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {PLANS.map((plan) => (
@@ -107,15 +119,25 @@ export default function PricingPage() {
                   <CreditCard className="mr-2 h-4 w-4" /> Pay with PayChangu
                 </a>
               </Button>
-              <Button variant="outline" className="w-full rounded-full font-bold h-10 text-xs" asChild>
-                <a href={`https://wa.me/0987066051?text=${encodeURIComponent(`I want to upgrade to ${plan.name} via WhatsApp. Account: ${profile?.username}`)}`} target="_blank">
-                  Pay via WhatsApp
-                </a>
-              </Button>
+              <p className="text-[9px] text-center text-muted-foreground mt-2 px-4">
+                Enter at least <b>MWK {plan.price}</b> on the checkout page to unlock this specific tier.
+              </p>
             </CardFooter>
           </Card>
         ))}
       </section>
+
+      <Card className="border-none bg-muted/30 p-6 rounded-[2rem] flex items-start gap-4">
+        <div className="bg-primary/10 p-3 rounded-2xl">
+          <Info className="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <h4 className="font-bold text-sm">How automatic detection works</h4>
+          <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+            When you click "Pay with PayChangu", you can choose your amount. Our system reads the final amount paid and instantly upgrades your account. For example, paying 700 MWK gives you 30 days of Gold Pro. Always use the email address associated with your Globlync account.
+          </p>
+        </div>
+      </Card>
 
       <section className="bg-primary text-primary-foreground rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10">
