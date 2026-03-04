@@ -1,13 +1,13 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Mail, Lock, LogIn, Sparkles, Wand2 } from "lucide-react";
-import { useAuth } from "@/firebase";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
+import { Mail, Lock, LogIn, Sparkles, Wand2 } from "lucide-react";
+import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
   signInWithPopup, 
@@ -17,11 +17,12 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink
 } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Logo } from "@/components/Navigation";
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -31,8 +32,12 @@ export default function LoginPage() {
   const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
   
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  const referralCode = searchParams.get('ref');
 
   useEffect(() => {
     if (typeof window !== "undefined" && isSignInWithEmailLink(auth, window.location.href)) {
@@ -43,10 +48,9 @@ export default function LoginPage() {
       if (emailForLink) {
         setIsLoading(true);
         signInWithEmailLink(auth, emailForLink, window.location.href)
-          .then(() => {
+          .then((result) => {
             window.localStorage.removeItem('emailForSignIn');
-            router.push("/dashboard");
-            toast({ title: "Success", description: "You are now signed in!" });
+            handlePostAuth(result.user.uid);
           })
           .catch((error: any) => {
             toast({
@@ -54,11 +58,60 @@ export default function LoginPage() {
               title: "Link Verification Failed",
               description: error.message,
             });
-          })
-          .finally(() => setIsLoading(false));
+            setIsLoading(false);
+          });
       }
     }
   }, [auth, router, toast]);
+
+  const handlePostAuth = async (uid: string) => {
+    if (!db) return;
+    
+    // Check if profile exists
+    const profileRef = doc(db, "workerProfiles", uid);
+    const snap = await getDoc(profileRef);
+    
+    if (!snap.exists()) {
+      // Create profile with referral data if present
+      let invitedBy = "";
+      if (referralCode) {
+        const refRef = doc(db, "referralCodes", referralCode);
+        const refSnap = await getDoc(refRef);
+        if (refSnap.exists()) {
+          invitedBy = refSnap.data().uid;
+          // Increment inviter's count
+          const inviterRef = doc(db, "workerProfiles", invitedBy);
+          updateDoc(inviterRef, {
+            referralCount: increment(1),
+            updatedAt: serverTimestamp()
+          });
+        }
+      }
+
+      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      await setDoc(profileRef, {
+        id: uid,
+        name: auth.currentUser?.displayName || "New Worker",
+        username: `worker_${uid.substring(0, 5)}`,
+        tradeSkill: "",
+        bio: "",
+        trustScore: 0,
+        referralCode: newCode,
+        invitedBy,
+        referralCount: 0,
+        activeBenefits: [],
+        badgeIds: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Register code
+      await setDoc(doc(db, "referralCodes", newCode), { uid });
+    }
+
+    router.push("/dashboard");
+    toast({ title: "Welcome to Globlync!" });
+  };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -66,20 +119,16 @@ export default function LoginPage() {
     provider.addScope('email');
     provider.addScope('profile');
     provider.addScope('openid');
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
 
     try {
-      await signInWithPopup(auth, provider);
-      router.push("/dashboard");
+      const result = await signInWithPopup(auth, provider);
+      await handlePostAuth(result.user.uid);
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login Failed",
         description: error.message,
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -116,25 +165,31 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
+      let result;
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        result = await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        result = await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push("/dashboard");
+      await handlePostAuth(result.user.uid);
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Authentication Failed",
         description: error.message,
       });
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center py-12 px-4">
+      {referralCode && (
+        <div className="mb-6 bg-secondary/10 border-2 border-secondary p-3 rounded-2xl flex items-center gap-3 animate-bounce">
+          <Sparkles className="h-5 w-5 text-secondary" />
+          <p className="text-xs font-bold">You were invited! Complete sign up to unlock rewards.</p>
+        </div>
+      )}
       <Card className="w-full max-w-md border-none shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-6">
@@ -153,46 +208,18 @@ export default function LoginPage() {
               disabled={isLoading}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
               Continue with Google
             </Button>
           </div>
           
           <div className="flex gap-2 p-1 bg-muted rounded-full mt-2">
-            <button 
-              className={cn(
-                "flex-1 py-2 text-xs font-bold rounded-full transition-all",
-                authMode === "password" ? "bg-white shadow-sm text-primary" : "text-muted-foreground"
-              )}
-              onClick={() => setAuthMode("password")}
-            >
-              Password
-            </button>
-            <button 
-              className={cn(
-                "flex-1 py-2 text-xs font-bold rounded-full transition-all",
-                authMode === "magic-link" ? "bg-white shadow-sm text-primary" : "text-muted-foreground"
-              )}
-              onClick={() => setAuthMode("magic-link")}
-            >
-              Magic Link
-            </button>
+            <button className={cn("flex-1 py-2 text-xs font-bold rounded-full transition-all", authMode === "password" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("password")}>Password</button>
+            <button className={cn("flex-1 py-2 text-xs font-bold rounded-full transition-all", authMode === "magic-link" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("magic-link")}>Magic Link</button>
           </div>
 
           {authMode === "password" ? (
@@ -201,34 +228,17 @@ export default function LoginPage() {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    className="pl-10 h-12"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="email" type="email" placeholder="m@example.com" className="pl-10 h-12" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    className="pl-10 h-12"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="password" type="password" className="pl-10 h-12" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
               </div>
-              <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
-              </Button>
+              <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>{isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}</Button>
             </form>
           ) : (
             <form onSubmit={handleMagicLinkSignIn} className="grid gap-4 animate-in fade-in duration-300">
@@ -236,41 +246,18 @@ export default function LoginPage() {
                 <Label htmlFor="magic-email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="magic-email"
-                    type="email"
-                    placeholder="m@example.com"
-                    className="pl-10 h-12"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="magic-email" type="email" placeholder="m@example.com" className="pl-10 h-12" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground text-center px-4">
-                We'll email you a one-time link that signs you in instantly. No password required.
-              </p>
-              <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Send Magic Link"}
-                <Wand2 className="ml-2 h-4 w-4" />
-              </Button>
+              <Button className="w-full h-12 rounded-full" type="submit" disabled={isLoading}>{isLoading ? "Sending..." : "Send Magic Link"}<Wand2 className="ml-2 h-4 w-4" /></Button>
             </form>
           )}
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <p className="text-center text-sm text-muted-foreground w-full">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary font-semibold hover:underline"
-            >
-              {isSignUp ? "Sign In" : "Sign Up"}
-            </button>
+            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-semibold hover:underline">{isSignUp ? "Sign In" : "Sign Up"}</button>
           </p>
-          <div className="flex gap-4 text-[10px] text-muted-foreground uppercase font-bold tracking-widest pt-2">
-            <Link href="/privacy" className="hover:text-primary">Privacy</Link>
-            <Link href="/terms" className="hover:text-primary">Terms</Link>
-          </div>
         </CardFooter>
       </Card>
     </div>

@@ -14,21 +14,17 @@ service cloud.firestore {
     match /workerProfiles/{workerId} {
       allow get, list: if true;
       allow create: if isOwner(workerId);
-      allow update: if isOwner(workerId);
+      allow update: if isOwner(workerId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'activeBenefits']));
       
       match /jobs/{jobId} {
-        // Clients need to be able to 'get' a job to verify it via the shared link
         allow get: if true;
         allow list: if isOwner(workerId);
         allow create, update: if isOwner(workerId);
-        // Allow public update for verification status only if you want to implement it that way, 
-        // but typically we do it via a restricted 'isVerified' update in the verification flow.
-        // For this MVP, we allow the update from the verification page logic.
         allow update: if true; 
       }
       match /ratings/{ratingId} {
         allow read: if true;
-        allow create: if true; // Clients don't need to be signed in to rate a verified job
+        allow create: if true;
         allow update, delete: if isOwner(workerId);
       }
       match /notifications/{notificationId} {
@@ -40,6 +36,11 @@ service cloud.firestore {
       allow get: if true;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /referralCodes/{code} {
+      allow get: if true;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
     }
 
     match /appRatings/{ratingId} {

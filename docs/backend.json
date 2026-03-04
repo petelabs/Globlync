@@ -40,6 +40,28 @@
           "type": "number",
           "description": "A real-time calculated score reflecting reputation."
         },
+        "referralCode": {
+          "type": "string",
+          "description": "Unique code for inviting others."
+        },
+        "invitedBy": {
+          "type": "string",
+          "description": "UID of the user who referred this worker."
+        },
+        "referralCount": {
+          "type": "number",
+          "description": "Number of active users referred."
+        },
+        "activeBenefits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "expiresAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
         "createdAt": {
           "type": "string",
           "description": "Creation timestamp.",
@@ -72,6 +94,12 @@
       "properties": {
         "uid": { "type": "string" }
       }
+    },
+    "ReferralCode": {
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -97,6 +125,14 @@
           "entityName": "Username",
           "schema": { "$ref": "#/backend/entities/Username" },
           "description": "Registry of unique usernames mapped to UIDs."
+        }
+      },
+      {
+        "path": "/referralCodes/{code}",
+        "definition": {
+          "entityName": "ReferralCode",
+          "schema": { "$ref": "#/backend/entities/ReferralCode" },
+          "description": "Registry of unique referral codes mapped to UIDs."
         }
       }
     ]

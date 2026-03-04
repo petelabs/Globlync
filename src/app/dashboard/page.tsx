@@ -16,7 +16,9 @@ import {
   Loader2,
   Sparkles,
   Heart,
-  X
+  X,
+  Users,
+  Gift
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
@@ -30,6 +32,7 @@ const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string 
   'first-job': { name: "First Verified Job", icon: Award, color: "text-blue-500" },
   'reliable-worker': { name: "Reliable Pro", icon: Award, color: "text-primary" },
   'perfect-streak': { name: "Customer Favorite", icon: Award, color: "text-secondary" },
+  'growth-champion': { name: "Growth Champion", icon: Users, color: "text-pink-500" },
 };
 
 export default function DashboardPage() {
@@ -67,7 +70,6 @@ export default function DashboardPage() {
   const { data: recentJobs, isLoading: isJobsLoading } = useCollection(recentJobsQuery);
   const { data: ratings } = useCollection(ratingsRef);
 
-  // Prompt logic: Show after 15 seconds if they have at least one job and haven't rated in this session
   useEffect(() => {
     const hasRated = localStorage.getItem(`rated_app_${user?.uid}`);
     if (allJobs && allJobs.length > 0 && !hasRated) {
@@ -89,7 +91,8 @@ export default function DashboardPage() {
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
       tier: (profile?.trustScore || 0) > 100 ? "Platinum" : (profile?.trustScore || 0) > 50 ? "Gold" : "Bronze",
-      badges: profile?.badgeIds || []
+      badges: profile?.badgeIds || [],
+      referrals: profile?.referralCount || 0
     };
   }, [allJobs, ratings, profile]);
 
@@ -102,7 +105,7 @@ export default function DashboardPage() {
       workerId: user.uid,
       workerName: user.displayName || "A Professional",
       score: appRating,
-      comment: appComment.substring(0, 100), // Enforce 100 char limit
+      comment: appComment.substring(0, 100),
       createdAt: serverTimestamp(),
     });
 
@@ -110,10 +113,7 @@ export default function DashboardPage() {
     setIsSubmittingRating(false);
     setShowRatingPrompt(false);
     
-    toast({
-      title: "Thank You!",
-      description: "We're happy to have you as part of Globlync.",
-    });
+    toast({ title: "Thank You!", description: "We're happy to have you as part of Globlync." });
   };
 
   if (!user) return null;
@@ -128,69 +128,36 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full" asChild>
             <Link href={`/public/${user.uid}`}>
-              <QrCode className="mr-2 h-4 w-4" />
-              View Public Page
+              <QrCode className="mr-2 h-4 w-4" /> View Public
             </Link>
           </Button>
           <Button size="sm" className="rounded-full shadow-lg" asChild>
             <Link href="/work-log">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Log New Job
+              <PlusCircle className="mr-2 h-4 w-4" /> Log Job
             </Link>
           </Button>
         </div>
       </header>
 
-      {/* Rate Us Prompt */}
-      {showRatingPrompt && (
-        <Card className="border-2 border-primary bg-primary/5 animate-in slide-in-from-top-4 relative overflow-hidden">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute top-2 right-2 h-6 w-6 rounded-full" 
-            onClick={() => setShowRatingPrompt(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary fill-primary" />
-              How are we doing?
-            </CardTitle>
-            <CardDescription>We'd love a 5-star rating if Globlync is helping your career!</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button 
-                  key={star} 
-                  onClick={() => setAppRating(star)}
-                  className="transition-transform hover:scale-110"
-                >
-                  <Star className={cn("h-8 w-8", star <= appRating ? "fill-secondary text-secondary" : "text-muted")} />
-                </button>
-              ))}
-            </div>
-            {appRating > 0 && (
-              <div className="space-y-3 animate-in fade-in">
-                <Textarea 
-                  placeholder="Tell us what you love (max 100 characters)" 
-                  className="text-xs resize-none"
-                  maxLength={100}
-                  value={appComment}
-                  onChange={(e) => setAppComment(e.target.value)}
-                />
-                <Button className="w-full rounded-full" onClick={handleAppRatingSubmit} disabled={isSubmittingRating}>
-                  {isSubmittingRating ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
-                  Submit Feedback
-                </Button>
+      <div className="grid gap-6 md:grid-cols-12">
+        {/* Referral CTA */}
+        <Card className="md:col-span-12 border-2 border-secondary bg-secondary/5 overflow-hidden">
+          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-center md:text-left">
+              <div className="bg-secondary p-4 rounded-2xl shadow-lg">
+                <Gift className="h-8 w-8 text-secondary-foreground" />
               </div>
-            )}
+              <div>
+                <h3 className="text-xl font-bold">Invite Friends, Earn Pro!</h3>
+                <p className="text-sm text-muted-foreground">You have invited {stats.referrals} workers. Invite more to unlock badges and ads-free experience.</p>
+              </div>
+            </div>
+            <Button className="rounded-full bg-secondary text-secondary-foreground font-bold px-8 h-12 hover:scale-105 transition-transform" asChild>
+              <Link href="/referrals">Invite & Earn</Link>
+            </Button>
           </CardContent>
         </Card>
-      )}
 
-      <div className="grid gap-6 md:grid-cols-12">
         {/* Trust Score Card */}
         <Card className="md:col-span-4 bg-primary text-primary-foreground border-none shadow-xl overflow-hidden relative">
           <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -204,18 +171,7 @@ export default function DashboardPage() {
             <div className="relative flex h-32 w-32 items-center justify-center">
               <svg className="h-full w-full" viewBox="0 0 100 100">
                 <circle className="text-white/20" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
-                <circle 
-                  className="text-secondary" 
-                  strokeWidth="8" 
-                  strokeDasharray={251.2} 
-                  strokeDashoffset={251.2 * (1 - Math.min(stats.trustScore / 250, 1))} 
-                  strokeLinecap="round" 
-                  stroke="currentColor" 
-                  fill="transparent" 
-                  r="40" 
-                  cx="50" 
-                  cy="50" 
-                />
+                <circle className="text-secondary" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - Math.min(stats.trustScore / 250, 1))} strokeLinecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
               </svg>
               <div className="absolute flex flex-col items-center">
                 <span className="text-4xl font-black">{stats.trustScore}</span>
@@ -233,7 +189,7 @@ export default function DashboardPage() {
         <Card className="md:col-span-8 border-none shadow-sm">
           <CardHeader>
             <CardTitle>Milestone Achievements</CardTitle>
-            <CardDescription>Earned based on verified work and client feedback</CardDescription>
+            <CardDescription>Earned based on verified work and community growth</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
             {stats.badges.length > 0 ? (
@@ -242,7 +198,7 @@ export default function DashboardPage() {
                 if (!badge) return null;
                 const Icon = badge.icon;
                 return (
-                  <div key={badgeId} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted/30 border w-24 text-center">
+                  <div key={badgeId} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted/30 border w-24 text-center group hover:scale-105 transition-transform">
                     <Icon className={cn("h-8 w-8", badge.color)} />
                     <span className="text-[10px] font-bold leading-tight">{badge.name}</span>
                   </div>
@@ -250,58 +206,7 @@ export default function DashboardPage() {
               })
             ) : (
               <div className="w-full text-center py-8 bg-muted/10 rounded-xl border border-dashed">
-                <p className="text-xs text-muted-foreground">Complete jobs to unlock your first achievement!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Jobs */}
-        <Card className="md:col-span-12 border-none shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Activity</CardTitle>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/work-log">Full History <ChevronRight className="ml-1 h-4 w-4" /></Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            {isJobsLoading ? (
-              <div className="flex justify-center py-10"><Loader2 className="animate-spin h-8 w-8 text-muted" /></div>
-            ) : recentJobs && recentJobs.length > 0 ? (
-              recentJobs.map((job) => (
-                <div key={job.id} className="flex items-center justify-between rounded-lg border p-4 shadow-sm transition-colors hover:bg-muted/30">
-                  <div className="flex items-center gap-4">
-                    <div className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border",
-                      job.isVerified ? "text-primary border-primary/20" : "text-muted-foreground"
-                    )}>
-                      {job.isVerified ? <CheckCircle2 className="h-6 w-6" /> : <History className="h-6 w-6" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold">{job.title}</h4>
-                        {job.aiVerified && (
-                          <span className="flex items-center gap-0.5 text-[8px] bg-primary/10 text-primary px-1 rounded-full font-bold">
-                            <Sparkles className="h-2 w-2" /> AI
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {job.isVerified ? "Verified" : "Pending Client Review"} • {format(new Date(job.dateCompleted), "MMM d")}
-                      </p>
-                    </div>
-                  </div>
-                  {job.isVerified && (
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-secondary text-secondary" />
-                      <span className="text-sm font-bold">5.0</span>
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-10 bg-muted/20 rounded-xl border-2 border-dashed">
-                <p className="text-sm text-muted-foreground">No recent jobs logged. Start by logging a job!</p>
+                <p className="text-xs text-muted-foreground">Complete jobs or invite friends to unlock badges!</p>
               </div>
             )}
           </CardContent>
