@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -109,6 +110,8 @@ function LoginContent() {
         activeBenefits: [],
         badgeIds: [],
         onboardingCompleted: false,
+        isPro: false, // Default isPro status
+        contactEmail: auth.currentUser?.email || "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -252,7 +255,7 @@ function LoginContent() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password" title="Password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
+                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
                   <Input id="password" type="password" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />

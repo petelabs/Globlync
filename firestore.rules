@@ -14,7 +14,14 @@ service cloud.firestore {
     match /workerProfiles/{workerId} {
       allow get, list: if true;
       allow create: if isOwner(workerId);
-      allow update: if isOwner(workerId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'activeBenefits']));
+      
+      // Prevent users from updating their own 'isPro' status
+      // Only internal logic/Admin SDK (like webhooks) can bypass this
+      allow update: if isOwner(workerId) 
+                   && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']);
+      
+      // Allow specific updates for reputation system
+      allow update: if isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'activeBenefits']);
       
       match /jobs/{jobId} {
         allow get, list: if true;

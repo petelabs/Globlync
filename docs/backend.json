@@ -44,6 +44,10 @@
           "type": "boolean",
           "description": "Whether the worker is currently available for hire."
         },
+        "isPro": {
+          "type": "boolean",
+          "description": "Whether the worker has an active Pro subscription."
+        },
         "whatsappNumber": {
           "type": "string",
           "description": "WhatsApp contact number."
