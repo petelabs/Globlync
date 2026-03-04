@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, LogIn, Sparkles, Wand2, Loader2, Gift } from "lucide-react";
+import { Mail, Lock, Sparkles, Wand2, Loader2, Gift } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -85,7 +84,6 @@ function LoginContent() {
             updatedAt: serverTimestamp()
           }).catch(() => {});
 
-          // Notification to inviter
           const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
           addDoc(inviterNotifRef, {
             type: "profile_update",
@@ -220,7 +218,7 @@ function LoginContent() {
             <Logo className="scale-125" />
           </div>
           <CardDescription className="font-medium text-sm">
-            {isSignUp ? "Create a verified professional account" : "Sign in to manage your worker profile"}
+            {isSignUp ? "Register your professional account" : "Sign in to your worker profile"}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 p-8">
@@ -254,7 +252,7 @@ function LoginContent() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
+                <Label htmlFor="password" title="Password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
                   <Input id="password" type="password" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
@@ -271,14 +269,14 @@ function LoginContent() {
                   <Input id="magic-email" type="email" placeholder="professional@gmail.com" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
-              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>{isLoading ? "Sending..." : "Send Magic Link"}<Wand2 className="ml-3 h-5 w-5" /></Button>
+              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>{isLoading ? "Sending..." : "Send Magic Link"}<Sparkles className="ml-3 h-5 w-5" /></Button>
             </form>
           )}
         </CardContent>
         <CardFooter className="flex flex-col gap-6 p-8 pt-0">
           <p className="text-center text-sm font-medium text-muted-foreground w-full">
-            {isSignUp ? "Already part of the network?" : "New to the platform?"}{" "}
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Sign Up Free"}</button>
+            {isSignUp ? "Already part of the network?" : "New professional?"}{" "}
+            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Register Free"}</button>
           </p>
           <div className="flex justify-center gap-6 text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em] opacity-50">
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

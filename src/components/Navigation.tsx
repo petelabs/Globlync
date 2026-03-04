@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -9,14 +8,12 @@ import {
   User, 
   Bell, 
   Search, 
-  LogIn,
   Settings,
   LogOut,
   LayoutDashboard,
   ClipboardCheck,
   ChevronDown,
   Gift,
-  Award,
   Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,18 +34,18 @@ import { collection, query, where, doc } from "firebase/firestore";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-1 sm:gap-2", className)}>
       <img 
         src="/logo.png" 
         alt="Logo" 
-        className="h-8 w-auto object-contain" 
+        className="h-7 w-auto sm:h-8 object-contain" 
         onError={(e) => (e.currentTarget.style.display = 'none')}
       />
-      <div className="flex items-center gap-1">
-        <span className="text-2xl font-black tracking-tighter italic text-primary">Glob</span>
-        <div className="relative flex items-center h-8 w-12 overflow-visible">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-primary absolute left-0 animate-link-left"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /></svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 text-secondary absolute right-0 animate-link-right"><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+      <div className="flex items-center gap-0.5 sm:gap-1">
+        <span className="text-xl sm:text-2xl font-black tracking-tighter italic text-primary">Glob</span>
+        <div className="relative flex items-center h-6 w-10 sm:h-8 sm:w-12 overflow-visible">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 sm:h-7 sm:w-7 text-primary absolute left-0 animate-link-left"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 sm:h-7 sm:w-7 text-secondary absolute right-0 animate-link-right"><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
         </div>
       </div>
     </div>
@@ -106,26 +103,26 @@ export function Navigation() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur-md h-16 safe-top">
-        <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-4">
+        <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-2 sm:px-4">
           <Link href="/" className="flex items-center gap-1 hover:opacity-90 transition-opacity shrink-0">
             <Logo />
           </Link>
           
-          <div className="flex-1 flex justify-center px-4 max-w-[180px] sm:max-w-xs md:max-w-sm">
+          <div className="flex-1 flex justify-center px-1 sm:px-4 max-w-[120px] sm:max-w-xs md:max-w-sm">
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-11 px-4 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
+              className="w-full justify-start text-muted-foreground rounded-full h-9 sm:h-11 px-2 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
               onClick={() => router.push('/search')}
             >
-              <Search className="h-4 w-4 mr-2 sm:mr-3 shrink-0" />
-              <span className="text-[10px] sm:text-xs font-bold tracking-tight truncate">Search Professionals...</span>
+              <Search className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-3 shrink-0" />
+              <span className="text-[8px] sm:text-xs font-bold tracking-tight truncate">Search...</span>
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             {user ? (
               <>
-                <Link href="/notifications" className="relative p-2.5 hover:bg-muted rounded-full transition-colors hidden sm:flex">
+                <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden sm:flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   {unreadCount > 0 && (
                     <span className="absolute right-1.5 top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-secondary text-[9px] font-black text-secondary-foreground border-2 border-background">
@@ -136,20 +133,19 @@ export function Navigation() {
 
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild id="nav-user-menu">
-                    <button className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
+                    <button className="flex items-center gap-1 p-0.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
-                        <Avatar className="h-9 w-9 border-2 border-primary/20 shadow-sm">
+                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-primary/20 shadow-sm">
                           <AvatarImage src={displayPhoto} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-black uppercase">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                          <AvatarFallback className="bg-primary/10 text-primary font-black uppercase text-xs">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
                         {isGrowthChampion && (
-                          <div className="absolute -top-1 -right-1 bg-pink-500 rounded-full p-1 border-2 border-white shadow-xl animate-pulse">
-                            <span className="sr-only">Growth Champion</span>
+                          <div className="absolute -top-1 -right-1 bg-pink-500 rounded-full p-0.5 sm:p-1 border-2 border-white shadow-xl animate-pulse">
                             <Sparkles className="h-2 w-2 text-white" />
                           </div>
                         )}
                       </div>
-                      <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
+                      <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hidden sm:block" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-72 mt-2 p-3 rounded-[1.5rem] shadow-2xl border-none animate-in fade-in zoom-in-95" align="end" forceMount>
@@ -188,8 +184,8 @@ export function Navigation() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild className="rounded-full shadow-lg font-black px-6 sm:px-8 h-11" size="sm">
-                <Link href="/login">Sign In</Link>
+              <Button asChild className="rounded-full shadow-lg font-black px-4 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm" size="sm">
+                <Link href="/login">Join Now</Link>
               </Button>
             )}
           </div>
