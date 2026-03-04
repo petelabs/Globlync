@@ -104,7 +104,7 @@ function LoginContent() {
         username: `worker_${uid.substring(0, 5)}`,
         tradeSkill: "",
         bio: "",
-        trustScore: referralCode ? 10 : 0, // Starter points for joining via referral
+        trustScore: referralCode ? 10 : 0,
         referralCode: newCode,
         invitedBy,
         referralCount: 0,
@@ -254,7 +254,7 @@ function LoginContent() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password", className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
+                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
                   <Input id="password" type="password" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
