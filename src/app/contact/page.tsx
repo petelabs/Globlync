@@ -115,8 +115,8 @@ export default function ContactPage() {
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
           <MapPin className="h-8 w-8 text-primary" />
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Office</h4>
-          <p className="text-sm font-medium">Area 47, Lilongwe, Malawi</p>
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Headquarters</h4>
+          <p className="text-sm font-medium">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">(Near Dzenje Secondary School)</span></p>
         </Card>
         <Card className="border-none bg-muted/30 p-6 flex flex-col items-center text-center gap-3">
           <Clock className="h-8 w-8 text-primary" />
@@ -141,7 +141,7 @@ export default function ContactPage() {
           <div className="space-y-2">
             <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Fast WhatsApp Support</h2>
             <p className="opacity-80 max-w-md mx-auto text-lg leading-relaxed">
-              For urgent verification issues or payment support, our WhatsApp line is monitored by human experts.
+              For urgent verification issues or payment support, our WhatsApp line is monitored by human experts in Mulanje.
             </p>
           </div>
           <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
@@ -152,7 +152,7 @@ export default function ContactPage() {
 
       <footer className="text-center py-10 border-t mt-8">
         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-2">
-          Managed by Petediano Tech • Lilongwe, Malawi
+          Managed by Petediano Tech • Mulanje, Malawi
         </p>
         <div className="flex justify-center gap-6 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
           <Link href="/privacy" className="hover:text-primary">Privacy</Link>

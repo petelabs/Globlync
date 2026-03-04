@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -211,7 +212,7 @@ export default function Home() {
               The portable digital reputation system for skilled professionals across Malawi.
             </p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
-              Built by Petediano Tech • Lilongwe
+              Built by Petediano Tech • Mulanje
             </p>
           </div>
 
