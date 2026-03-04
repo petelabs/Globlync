@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -15,7 +16,9 @@ import {
   ShieldCheck, 
   CheckCircle2,
   Lock,
-  Star
+  Star,
+  Facebook,
+  Twitter
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -52,17 +55,28 @@ export default function ReferralsPage() {
 
   const referralCount = profile?.referralCount || 0;
   const referralCode = profile?.referralCode || "";
-  // Use professional production domain
+  // High-Trust Original Link Format
   const referralUrl = `https://globlync.vercel.app/login?ref=${referralCode}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralUrl);
-    toast({ title: "Link Copied!", description: "Share your professional link to earn rewards." });
+    toast({ title: "Link Copied!", description: "Share your professional code to build your reputation." });
   };
 
   const shareWhatsApp = () => {
     const text = encodeURIComponent(`Join me on Globlync! Build your professional reputation and find more work. Sign up here: ${referralUrl}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  const shareFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralUrl)}`;
+    window.open(url, "_blank");
+  };
+
+  const shareTwitter = () => {
+    const text = encodeURIComponent(`Build your evidence-based professional reputation with me on Globlync!`);
+    const url = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(referralUrl)}`;
+    window.open(url, "_blank");
   };
 
   const shareNative = async () => {
@@ -114,26 +128,36 @@ export default function ReferralsPage() {
               <span>{referralCount} / {nextMilestone.count}</span>
             </div>
             <Progress value={progress} className="h-3 bg-white/20" />
-            <p className="text-[10px] opacity-80 italic">Invite {nextMilestone.count - referralCount} more to unlock: {nextMilestone.reward}</p>
+            <p className="text-[10px] opacity-80 italic">Invite {Math.max(0, nextMilestone.count - referralCount)} more to unlock: {nextMilestone.reward}</p>
           </div>
 
           <div className="bg-white/10 p-4 rounded-xl border border-white/20 backdrop-blur-sm">
-            <Label className="text-xs font-bold uppercase mb-2 block">Professional Invite Link</Label>
+            <Label className="text-xs font-bold uppercase mb-2 block">Your Original Invite Link</Label>
             <div className="flex items-center gap-2">
-              <code className="text-[10px] truncate flex-1 bg-black/20 p-2 rounded font-mono">{referralUrl}</code>
+              <code className="text-[10px] truncate flex-1 bg-black/20 p-2 rounded font-mono text-secondary">{referralUrl}</code>
               <Button size="icon" variant="ghost" className="hover:bg-white/20" onClick={copyLink}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex gap-2 relative z-10">
-          <Button className="flex-1 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-12" onClick={shareWhatsApp}>
-            <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
-          </Button>
-          <Button className="flex-1 rounded-full bg-white text-primary font-bold hover:bg-white/90 h-12" onClick={shareNative}>
-            <Share2 className="mr-2 h-4 w-4" /> Share Link
-          </Button>
+        <CardFooter className="flex flex-col gap-3 relative z-10">
+          <div className="flex gap-2 w-full">
+            <Button className="flex-1 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold h-12" onClick={shareWhatsApp}>
+              <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
+            </Button>
+            <Button className="flex-1 rounded-full bg-white text-primary font-bold hover:bg-white/90 h-12" onClick={shareNative}>
+              <Share2 className="mr-2 h-4 w-4" /> More Options
+            </Button>
+          </div>
+          <div className="flex justify-center gap-4 mt-2">
+            <button onClick={shareFacebook} className="p-3 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform shadow-md">
+              <Facebook className="h-5 w-5" />
+            </button>
+            <button onClick={shareTwitter} className="p-3 bg-black text-white rounded-full hover:scale-110 transition-transform shadow-md">
+              <Twitter className="h-5 w-5" />
+            </button>
+          </div>
         </CardFooter>
       </Card>
 
@@ -145,13 +169,14 @@ export default function ReferralsPage() {
             const Icon = m.icon;
             return (
               <Card key={i} className={cn(
-                "border-none shadow-sm transition-opacity",
-                !isUnlocked && "opacity-60"
+                "border-none shadow-sm transition-all",
+                !isUnlocked && "opacity-60 bg-muted/30",
+                isUnlocked && "border-2 border-primary/20 bg-primary/5"
               )}>
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className={cn(
-                    "h-12 w-12 rounded-xl flex items-center justify-center shrink-0",
-                    isUnlocked ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                    isUnlocked ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   )}>
                     {isUnlocked ? <CheckCircle2 className="h-6 w-6" /> : <Lock className="h-6 w-6" />}
                   </div>
