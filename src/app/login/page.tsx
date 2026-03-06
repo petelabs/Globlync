@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -22,9 +23,9 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 function LoginContent() {
-  // Swapped default state to true so "Create Account" is shown first
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -95,6 +96,11 @@ function LoginContent() {
         }
       }
 
+      // Assign a professional default avatar if no Google photo exists
+      const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
+      const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+      const profilePictureUrl = auth.currentUser?.photoURL || randomAvatar;
+
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
       await setDoc(profileRef, {
@@ -103,6 +109,7 @@ function LoginContent() {
         username: `worker_${uid.substring(0, 5)}`,
         tradeSkill: "",
         bio: "",
+        profilePictureUrl,
         trustScore: referralCode ? 10 : 0,
         referralCode: newCode,
         invitedBy,

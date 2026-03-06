@@ -82,7 +82,9 @@ export function Navigation() {
   const unreadCount = unreadNotifications?.length || 0;
   
   const isGrowthChampion = profile?.badgeIds?.includes('growth-champion');
-  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || `https://picsum.photos/seed/${user?.uid}/100/100`;
+  
+  // Display photo priority: Profile Record > Google Auth > Fallback Initials
+  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
 
   const handleLogout = async () => {
     try {
@@ -109,10 +111,10 @@ export function Navigation() {
             <Logo />
           </Link>
           
-          <div className="flex-1 flex justify-center px-2 max-w-[100px] sm:max-w-xs md:max-w-sm">
+          <div className="flex-1 flex justify-center px-2 max-w-[80px] sm:max-w-xs md:max-w-sm">
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-9 sm:h-11 px-2 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
+              className="w-full justify-start text-muted-foreground rounded-full h-9 px-2 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
               onClick={() => router.push('/search')}
             >
               <Search className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-3 shrink-0" />
@@ -120,7 +122,7 @@ export function Navigation() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-4 shrink-0 pr-1 sm:pr-0">
             {user ? (
               <>
                 <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden sm:flex">
@@ -137,7 +139,7 @@ export function Navigation() {
                     <button className="flex items-center gap-1 p-0.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
                         <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-primary/20 shadow-sm">
-                          <AvatarImage src={displayPhoto} />
+                          <AvatarImage src={displayPhoto} className="object-cover" />
                           <AvatarFallback className="bg-primary/10 text-primary font-black uppercase text-xs">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
                         {isGrowthChampion && (
@@ -153,7 +155,7 @@ export function Navigation() {
                     <DropdownMenuLabel className="font-normal p-3 bg-muted/30 rounded-2xl mb-2">
                       <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12 border-2 border-primary/10">
-                          <AvatarImage src={displayPhoto} />
+                          <AvatarImage src={displayPhoto} className="object-cover" />
                         </Avatar>
                         <div className="flex flex-col space-y-0.5">
                           <p className="text-sm font-black leading-none">{user.displayName || "Professional"}</p>

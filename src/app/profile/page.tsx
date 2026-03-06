@@ -167,7 +167,7 @@ export default function ProfilePage() {
   };
 
   const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/public/${user?.uid}` : "";
-  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || `https://picsum.photos/seed/${user?.uid}/200/200`;
+  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
@@ -196,8 +196,8 @@ export default function ProfilePage() {
             <CardContent className="flex flex-col items-center gap-4">
               <div className="relative">
                 <Avatar className="h-32 w-32 border-4 border-primary shadow-xl">
-                  <AvatarImage src={displayPhoto} />
-                  <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                  <AvatarImage src={displayPhoto} className="object-cover" />
+                  <AvatarFallback className="text-2xl font-black">{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
                 <Button 
                   id="profile-camera-btn"
