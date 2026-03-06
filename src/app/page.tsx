@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -31,6 +30,7 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { AdBanner } from "@/components/AdBanner";
 
 export default function Home() {
   const db = useFirestore();
@@ -85,6 +85,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Ad placement 1: Hero Bottom */}
+      <AdBanner id="hero-bottom-ad" className="max-w-4xl mx-auto w-full" />
+
       {/* Explicit Purpose Section (for Google Verification) */}
       <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10">
         <div className="max-w-4xl mx-auto space-y-8">
@@ -113,13 +116,11 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">Clients can instantly verify completed work using QR codes, creating an immutable record of success for the worker.</p>
             </div>
           </div>
-          <div className="pt-4 text-center">
-            <Link href="/privacy" className="text-primary font-black underline underline-offset-4 hover:opacity-80 transition-opacity">
-              Read our Privacy Commitment & Data Usage Policy
-            </Link>
-          </div>
         </div>
       </section>
+
+      {/* Ad placement 2: Mid-Content */}
+      <AdBanner id="mid-content-ad" className="max-w-4xl mx-auto w-full" />
 
       {/* New Workers Showcase */}
       {newcomers && newcomers.length > 0 && (
@@ -240,6 +241,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Ad placement 3: Footer Top */}
+      <AdBanner id="footer-top-ad" className="max-w-4xl mx-auto w-full mb-8" />
+
       {/* Footer Branding */}
       <footer className="bg-primary/5 py-16 border-t mt-12 px-6">
         <div className="max-w-screen-xl mx-auto">
@@ -304,9 +308,6 @@ export default function Home() {
               <Link href="/contact" className="hover:text-primary transition-colors">Headquarters</Link>
             </div>
           </div>
-          <p className="mt-4 text-center text-[9px] text-muted-foreground/50 max-w-2xl mx-auto font-medium">
-            Professional storage and AI recovery costs apply for Pro tiers. Managed by Petediano Tech in Mulanje, Dzenje Village.
-          </p>
         </div>
       </footer>
     </div>

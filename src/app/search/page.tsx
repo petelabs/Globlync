@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -26,6 +25,7 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, limit, orderBy } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { AdBanner } from "@/components/AdBanner";
 
 const SKILL_CATEGORIES = [
   { 
@@ -62,7 +62,6 @@ export default function SearchPage() {
 
   const discoveryQuery = useMemoFirebase(() => {
     if (!workersRef) return null;
-    // For MVP, we get a good sample and filter client-side for immediate results
     return query(workersRef, orderBy("trustScore", "desc"), limit(100));
   }, [workersRef]);
 
@@ -90,14 +89,6 @@ export default function SearchPage() {
       return matchesSearch && matchesCategory;
     });
   }, [allWorkers, searchTerm, selectedCategory]);
-
-  const newcomers = useMemo(() => {
-    if (!allWorkers) return [];
-    // Just show top 10 most recent from our pool
-    return [...allWorkers]
-      .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-      .slice(0, 10);
-  }, [allWorkers]);
 
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">
@@ -147,39 +138,8 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {newcomers.length > 0 && !searchTerm && !selectedCategory && (
-        <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="bg-secondary/20 p-1.5 rounded-lg">
-              <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
-            </div>
-            <h2 className="text-xl font-bold">New to Globlync</h2>
-          </div>
-          
-          <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-            {newcomers.map((worker) => (
-              <Link key={worker.id} href={`/public/${worker.id}`} className="shrink-0">
-                <Card className="w-48 border-none shadow-md hover:shadow-xl transition-shadow overflow-hidden bg-primary/5">
-                  <div className="h-32 w-full bg-muted relative">
-                    <img src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/200/200`} alt={worker.name} className="h-full w-full object-cover" />
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-1.5 py-0.5 rounded-full flex items-center gap-0.5 text-[10px] font-bold text-primary shadow-sm">
-                      <ShieldCheck className="h-3 w-3" /> {worker.trustScore || 0}
-                    </div>
-                  </div>
-                  <CardContent className="p-3">
-                    <h3 className="font-bold text-sm truncate">{worker.name}</h3>
-                    <p className="text-[10px] text-primary font-bold uppercase truncate">{worker.tradeSkill}</p>
-                    <div className="mt-2 flex items-center gap-1 text-[8px] text-muted-foreground font-bold">
-                      <Clock className="h-2 w-2" /> 
-                      {worker.createdAt?.seconds ? formatDistanceToNow(new Date(worker.createdAt.seconds * 1000), { addSuffix: true }) : "joined recently"}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Ad placement 4: Search results top */}
+      <AdBanner id="search-results-top-ad" className="w-full" />
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
@@ -211,10 +171,6 @@ export default function SearchPage() {
                         </div>
                       </div>
                       <p className="text-sm text-primary font-bold uppercase tracking-tight truncate mt-1">{worker.tradeSkill}</p>
-                      <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                        <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Location Verified</span>
-                        <span className="flex items-center gap-1 text-foreground"><Star className="h-3 w-3 text-secondary fill-secondary" /> 5.0 Rating</span>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -224,11 +180,13 @@ export default function SearchPage() {
             <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-2 border-dashed">
               <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-10" />
               <p className="text-muted-foreground font-medium">No results found for your search.</p>
-              <Button variant="link" onClick={() => {setSearchTerm(""); setSelectedCategory(null);}} className="mt-2 text-primary">Clear Filters</Button>
             </div>
           )}
         </div>
       </section>
+
+      {/* Ad placement 5: Search Footer */}
+      <AdBanner id="search-footer-ad" className="w-full mt-8" />
     </div>
   );
 }

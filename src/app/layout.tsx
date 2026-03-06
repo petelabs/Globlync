@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -30,8 +29,19 @@ export const metadata: Metadata = {
     url: 'https://globlync.vercel.app',
     title: 'Globlync | Professional Reputation',
     description: 'Verifiable trust for skilled manual workers in Malawi.',
-    images: [{ url: '/logo.png' }],
+    images: [{ 
+      url: '/og-image.png',
+      width: 1200,
+      height: 630,
+      alt: 'Globlync Professional Network'
+    }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Globlync | Professional Reputation',
+    description: 'Verifiable trust for skilled manual workers in Malawi.',
+    images: ['/og-image.png'],
+  }
 };
 
 export default function RootLayout({
