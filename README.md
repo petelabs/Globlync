@@ -12,10 +12,9 @@ To enable automatic "Pro" upgrades when someone pays:
    - Copy your **Secret Key** (from the API Keys section).
 
 2. **Vercel Environment Variables**:
-   - **PAYCHANGU_SECRET_KEY**: Paste your "Secret Key" here. This is used to verify payments directly with PayChangu.
-   - **PAYCHANGU_WEBHOOK_SECRET**: (Optional) Paste the "Webhook secret" if generated.
+   - **PAYCHANGU_SECRET_KEY**: Paste your "Secret Key" from PayChangu here.
+   - **FIREBASE_SERVICE_ACCOUNT**: (This is your unique Firebase Backend ID). Go to Firebase Console > Settings > Service Accounts > Generate New Private Key. Paste the ENTIRE JSON content here.
    - **GOOGLE_GENAI_API_KEY**: Add your Gemini API Key.
-   - **FIREBASE_SERVICE_ACCOUNT**: Add the contents of your Firebase Service Account JSON file (Generated in Firebase Console > Settings > Service Accounts).
 
 3. **How Tiers Work**:
    - The system automatically detects the tier based on the amount paid:
