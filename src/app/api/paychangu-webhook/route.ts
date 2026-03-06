@@ -32,19 +32,13 @@ export async function POST(req: Request) {
     const headersList = await headers();
     
     // Extract data from the payload
-    // PayChangu payloads can vary, we check standard locations
     const data = body.data || body;
     const txRef = data.tx_ref || data.reference || data.id;
     const customerEmail = data.customer?.email || data.email;
     const amount = parseFloat(data.amount || "0");
-    const status = data.status;
 
     console.log(`[Webhook] Received payment notification for ${customerEmail}. Reference: ${txRef}`);
 
-    /**
-     * Step 1: Secure Verification
-     * We try signature first, then fallback to API verification
-     */
     let isVerified = false;
 
     // A. Try Signature Verification
@@ -60,10 +54,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // B. Fallback: API Verification (The most reliable method)
+    // B. Fallback: API Verification (Using Secret Key from API Keys section)
     const secretKey = process.env.PAYCHANGU_SECRET_KEY;
     if (!isVerified && secretKey && txRef) {
-      console.log('[Webhook] Attempting API verification fallback...');
+      console.log('[Webhook] Attempting API verification fallback via PayChangu API...');
       try {
         const verifyRes = await fetch(`https://api.paychangu.com/payment-verification/${txRef}`, {
           headers: {
@@ -85,26 +79,26 @@ export async function POST(req: Request) {
     }
 
     if (!isVerified) {
-      console.warn('[Webhook] Could not verify payment source. Transaction ignored for security.');
+      console.warn('[Webhook] Could not verify payment source. Transaction ignored.');
       return NextResponse.json({ message: 'Verification failed' }, { status: 401 });
     }
 
     /**
-     * Step 2: Update User Status
+     * Step 2: Update User Status based on Amount Paid
      */
     if (customerEmail) {
       const usersRef = db.collection('workerProfiles');
       const q = await usersRef.where('contactEmail', '==', customerEmail).limit(1).get();
 
       if (q.empty) {
-        console.warn(`[Webhook] No Globlync profile found for email: ${customerEmail}`);
+        console.warn(`[Webhook] No profile found for email: ${customerEmail}`);
         return NextResponse.json({ message: 'User not found' });
       }
 
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // Tier Logic
+      // Professional Tier Logic
       let tierName = "Standard Pro";
       let days = 7;
 
@@ -118,6 +112,7 @@ export async function POST(req: Request) {
         tierName = "Standard Pro";
         days = 7;
       } else {
+        // Micro-payment safety net
         tierName = "Trial Pro";
         days = 2;
       }
@@ -133,7 +128,6 @@ export async function POST(req: Request) {
         txRef: txRef
       };
 
-      // Update user
       const existingBenefits = userData.activeBenefits || [];
       await userDoc.ref.update({
         isPro: true,
@@ -141,20 +135,20 @@ export async function POST(req: Request) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Add notification
+      // Notify the user in-app
       const notifRef = db.collection('workerProfiles').doc(userDoc.id).collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `Payment Verified! You've been upgraded to ${tierName} for ${days} days. Expiry: ${expiryDate.toLocaleDateString()}. Reference: ${txRef}`,
+        message: `Payment Verified! You've been upgraded to ${tierName} for ${days} days. Amount: MWK ${amount}. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log(`[Webhook] Successfully upgraded ${customerEmail} to ${tierName}`);
+      console.log(`[Webhook] Upgraded ${customerEmail} to ${tierName}`);
       return NextResponse.json({ status: 'success' });
     }
 
-    return NextResponse.json({ message: 'No email found in payload' });
+    return NextResponse.json({ message: 'No email found' });
   } catch (error: any) {
     console.error('[Webhook Error]:', error.message);
     return NextResponse.json({ error: 'Internal Error' }, { status: 500 });

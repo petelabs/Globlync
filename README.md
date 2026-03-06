@@ -7,38 +7,29 @@ Globlync is a professional platform designed for informal workers (plumbers, ele
 To enable automatic "Pro" upgrades when someone pays:
 
 1. **PayChangu Dashboard**:
-   - Go to your [PayChangu Dashboard](https://dashboard.paychangu.com/).
    - Set **Webhook URL** to: `https://globlync.vercel.app/api/paychangu-webhook`
-   - Ensure the "Receive Webhook Notifications" toggle is **ON**.
+   - Ensure "Receive Webhook Notifications" is **ON**.
    - Copy your **Secret Key** (from the API Keys section).
 
 2. **Vercel Environment Variables**:
-   - Go to your project settings in Vercel.
-   - **PAYCHANGU_SECRET_KEY**: Add your PayChangu "Secret Key" (The API Key). This is used to verify transactions securely if the webhook signature is unavailable.
-   - **PAYCHANGU_WEBHOOK_SECRET**: (Optional) Add the "Webhook secret" if PayChangu generates it for you.
-   - **GOOGLE_GENAI_API_KEY**: Add your Gemini API Key for AI verification features.
-   - **FIREBASE_SERVICE_ACCOUNT**: Add the contents of your Firebase Service Account JSON file.
+   - **PAYCHANGU_SECRET_KEY**: Paste your "Secret Key" here. This is used to verify payments directly with PayChangu.
+   - **PAYCHANGU_WEBHOOK_SECRET**: (Optional) Paste the "Webhook secret" if generated.
+   - **GOOGLE_GENAI_API_KEY**: Add your Gemini API Key.
+   - **FIREBASE_SERVICE_ACCOUNT**: Add the contents of your Firebase Service Account JSON file (Generated in Firebase Console > Settings > Service Accounts).
 
-3. **How it Works**:
-   - Users choose their amount on your PayChangu link: [https://pay.paychangu.com/SC-c9Mara](https://pay.paychangu.com/SC-c9Mara)
-   - They MUST use the same email address they used to sign up for Globlync.
-   - The system automatically detects the tier:
+3. **How Tiers Work**:
+   - The system automatically detects the tier based on the amount paid:
      - **700+ MWK**: Gold Pro (30 Days)
      - **500+ MWK**: Silver Pro (15 Days)
      - **250+ MWK**: Standard Pro (7 Days)
      - **Under 250 MWK**: Trial Pro (2 Days)
+   - *Note: Payments are non-refundable.*
 
-## 🎨 Branding & Assets
-- Save your logo as `logo.png` in the `public/` folder.
-- Save your app icons as `icon-192.png` and `icon-512.png` in the `public/` folder.
-- These are automatically used for the PWA and navigation.
-
-## 🛡️ Verification
-- **Privacy Policy**: `https://globlync.vercel.app/privacy`
-- **Terms**: `https://globlync.vercel.app/terms`
-- **Purpose**: Bridge the trust gap in the Malawian labor market via AI-verified work logs.
+## 🎨 Branding & Icons
+Your branding files are correctly placed in the `public/` folder:
+- `logo.png`
+- `icon-192.png`
+- `icon-512.png`
 
 ## 🚀 Deployment
-- Connect your GitHub repo to Vercel.
-- The app will automatically build and deploy.
-- All Firebase Security Rules are managed automatically.
+Connect your GitHub repo to Vercel. Ensure all environment variables are set before your first payment test.
