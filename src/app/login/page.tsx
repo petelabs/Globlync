@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -25,9 +24,10 @@ import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 
 function LoginContent() {
+  // Swapped default state to true so "Create Account" is shown first
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
   
@@ -110,7 +110,7 @@ function LoginContent() {
         activeBenefits: [],
         badgeIds: [],
         onboardingCompleted: false,
-        isPro: false, // Default isPro status
+        isPro: false,
         contactEmail: auth.currentUser?.email || "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

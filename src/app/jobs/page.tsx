@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -19,19 +18,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-const JOB_LISTINGS = [
-  {
-    id: "dzenje-cook-1",
-    title: "School Cooker",
-    employer: "Dzenje Secondary School",
-    location: "Mulanje, Southern Region, Malawi",
-    type: "Full-time",
-    description: "Responsible for preparing nutritious meals for students and staff. Must maintain hygiene standards and manage kitchen inventory.",
-    applicationEmail: "dzenjeCDSS@gmail.com",
-    postedDate: "2024-03-20",
-    salary: "Negotiable"
-  }
-];
+const JOB_LISTINGS: any[] = [];
 
 export default function JobsBoardPage() {
   const [searchTerm, setSearchTerm] = useState("");
