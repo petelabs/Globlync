@@ -10,13 +10,14 @@ To enable automatic "Pro" upgrades when someone pays:
    - Go to your [PayChangu Dashboard](https://dashboard.paychangu.com/).
    - Set **Webhook URL** to: `https://globlync.vercel.app/api/paychangu-webhook`
    - Ensure the "Receive Webhook Notifications" toggle is **ON**.
-   - Copy the **Webhook secret**.
+   - Copy your **Secret Key** (from the API Keys section).
 
 2. **Vercel Environment Variables**:
    - Go to your project settings in Vercel.
-   - Add `PAYCHANGU_WEBHOOK_SECRET` = (Your Webhook Secret from PayChangu).
-   - Add `GOOGLE_GENAI_API_KEY` = (Your Gemini API Key for AI verification).
-   - Add `FIREBASE_SERVICE_ACCOUNT` = (The content of your Firebase Service Account JSON file).
+   - **PAYCHANGU_SECRET_KEY**: Add your PayChangu "Secret Key" (The API Key). This is used to verify transactions securely if the webhook signature is unavailable.
+   - **PAYCHANGU_WEBHOOK_SECRET**: (Optional) Add the "Webhook secret" if PayChangu generates it for you.
+   - **GOOGLE_GENAI_API_KEY**: Add your Gemini API Key for AI verification features.
+   - **FIREBASE_SERVICE_ACCOUNT**: Add the contents of your Firebase Service Account JSON file.
 
 3. **How it Works**:
    - Users choose their amount on your PayChangu link: [https://pay.paychangu.com/SC-c9Mara](https://pay.paychangu.com/SC-c9Mara)
