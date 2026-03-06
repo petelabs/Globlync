@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -16,13 +15,17 @@ import {
   Zap,
   ShieldCheck,
   Medal,
-  ThumbsUp
+  ThumbsUp,
+  Lightbulb,
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { generateDailyTip, DailyTipOutput } from "@/ai/flows/generate-daily-tip-flow";
 
 const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string; description: string }> = {
   'first-job': { 
@@ -54,6 +57,8 @@ const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string;
 export default function DashboardPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const [dailyTip, setDailyTip] = useState<DailyTipOutput | null>(null);
+  const [isTipLoading, setIsTipLoading] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -73,6 +78,15 @@ export default function DashboardPage() {
   const { data: profile } = useDoc(workerRef);
   const { data: allJobs } = useCollection(jobsRef);
   const { data: ratings } = useCollection(ratingsRef);
+
+  useEffect(() => {
+    if (profile?.tradeSkill && !dailyTip) {
+      setIsTipLoading(true);
+      generateDailyTip({ trade: profile.tradeSkill })
+        .then(setDailyTip)
+        .finally(() => setIsTipLoading(false));
+    }
+  }, [profile?.tradeSkill]);
 
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
@@ -118,29 +132,63 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {!isPro && (
-        <Card className="border-none bg-primary text-primary-foreground shadow-2xl overflow-hidden relative group rounded-[2rem]">
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-            <Zap className="h-32 w-32" />
+      <div className="grid gap-6 md:grid-cols-12">
+        {/* AI Daily Tip Card */}
+        <Card className="md:col-span-12 border-none bg-primary/5 rounded-[2rem] overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Lightbulb className="h-32 w-32" />
           </div>
-          <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 text-center md:text-left">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="bg-white/20 p-5 rounded-3xl shadow-inner">
-                <Crown className="h-10 w-10 text-secondary" />
+          <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-6">
+              <div className="bg-primary/10 p-4 rounded-2xl">
+                <Lightbulb className="h-8 w-8 text-primary animate-pulse" />
               </div>
-              <div>
-                <h3 className="text-2xl font-black tracking-tight">Boost Your Career!</h3>
-                <p className="text-sm opacity-80 max-w-md">Unlock 10 HD photos per job, priority AI verification, and a professional Pro badge. Help cover our storage and AI costs.</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Daily Expert Advice</span>
+                  {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                </div>
+                {dailyTip ? (
+                  <>
+                    <h3 className="text-xl font-black tracking-tight">{dailyTip.tipTitle}</h3>
+                    <p className="text-sm text-muted-foreground max-w-xl">{dailyTip.tipContent}</p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-black tracking-tight">Growth is a Daily Habit</h3>
+                    <p className="text-sm text-muted-foreground">Keep logging your work to build the most trusted profile in your area.</p>
+                  </>
+                )}
               </div>
             </div>
-            <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-14 text-lg hover:scale-105 transition-transform shadow-xl" asChild>
-              <Link href="/pricing">Upgrade to Pro</Link>
+            <Button variant="ghost" className="rounded-full text-primary font-bold group-hover:translate-x-1 transition-transform" asChild>
+              <Link href="/profile">Update Trade <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardContent>
         </Card>
-      )}
 
-      <div className="grid gap-6 md:grid-cols-12">
+        {!isPro && (
+          <Card className="md:col-span-12 border-none bg-primary text-primary-foreground shadow-2xl overflow-hidden relative group rounded-[2rem]">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+              <Zap className="h-32 w-32" />
+            </div>
+            <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="bg-white/20 p-5 rounded-3xl shadow-inner">
+                  <Crown className="h-10 w-10 text-secondary" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight">Boost Your Career!</h3>
+                  <p className="text-sm opacity-80 max-w-md">Unlock 10 HD photos per job, priority AI verification, and a professional Pro badge. Help cover our storage and AI costs.</p>
+                </div>
+              </div>
+              <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-14 text-lg hover:scale-105 transition-transform shadow-xl" asChild>
+                <Link href="/pricing">Upgrade to Pro</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="md:col-span-12 border-none bg-accent/30 rounded-[2rem] overflow-hidden">
           <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-6 text-center md:text-left">
