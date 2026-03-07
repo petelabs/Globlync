@@ -82,15 +82,15 @@ export default function JobsBoardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden">
-      <header className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden w-full">
+      <header className="flex flex-col gap-6 w-full">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Find Your Next Move.</h1>
           <p className="text-muted-foreground text-sm font-medium">Explore national vacancies and global remote roles verified for Malawian professionals.</p>
         </div>
         
-        <div className="space-y-4">
-          <div className="relative group">
+        <div className="space-y-4 w-full">
+          <div className="relative group w-full">
             <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
               placeholder="Search keywords (Developer, Designer, Plumber)..." 
@@ -122,7 +122,7 @@ export default function JobsBoardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full">
           <Card className="p-4 bg-primary/5 border-none flex items-center gap-3">
             <div className="bg-primary/10 p-2 rounded-lg">
               <Users className="h-4 w-4 text-primary" />
@@ -144,7 +144,7 @@ export default function JobsBoardPage() {
         </div>
       </header>
 
-      <div className="my-2">
+      <div className="my-2 w-full">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
       </div>
 
@@ -167,13 +167,13 @@ export default function JobsBoardPage() {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
               />
               <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full">
-                <CardHeader className="pb-2">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0 w-full">
-                      <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight">
+                <CardHeader className="pb-2 w-full">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 w-full">
+                    <div className="flex-1 min-w-0 w-full overflow-hidden">
+                      <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight w-full">
                         <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
                       </CardTitle>
-                      <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground">
+                      <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground w-full">
                         <Building2 className="h-4 w-4 shrink-0" />
                         <span className="truncate">{job.company_name}</span>
                       </div>
@@ -183,8 +183,8 @@ export default function JobsBoardPage() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 flex-1">
-                  <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground">
+                <CardContent className="space-y-4 flex-1 w-full">
+                  <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground w-full">
                     <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
                       <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <span className="truncate max-w-[120px]">{job.location}</span>
@@ -198,12 +198,12 @@ export default function JobsBoardPage() {
                       <span>Global</span>
                     </div>
                   </div>
-                  <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium">
+                  <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full">
                     {job.description ? job.description.replace(/<[^>]*>?/gm, '') : "Check full details on the application page."}
                   </p>
                 </CardContent>
-                <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4">
-                  <Button className="w-full sm:flex-1 rounded-full px-8 font-black shadow-lg bg-primary h-12 text-white hover:bg-primary/90" asChild>
+                <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4 w-full">
+                  <Button className="w-full sm:flex-1 rounded-full px-8 font-black shadow-lg bg-primary h-12 text-white hover:bg-primary/90 flex items-center justify-center" asChild>
                     <a href={job.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Apply Now
@@ -228,23 +228,23 @@ export default function JobsBoardPage() {
             <Button variant="ghost" className="mt-4 text-primary font-black uppercase tracking-tighter" onClick={() => setSearchTerm("")}>Show all listings</Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 w-full">
             {[1, 2, 3].map(i => (
-              <Card key={i} className="h-48 animate-pulse bg-muted/20 border-none rounded-3xl" />
+              <Card key={i} className="h-48 animate-pulse bg-muted/20 border-none rounded-3xl w-full" />
             ))}
           </div>
         )}
       </section>
 
-      <div className="mt-4">
+      <div className="mt-4 w-full">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
       </div>
 
-      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group w-full">
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Sparkles className="h-48 w-48 md:h-64 md:w-64" />
         </div>
-        <div className="relative z-10 space-y-6">
+        <div className="relative z-10 space-y-6 w-full">
           <div className="space-y-2">
             <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Verified <br/><span className="text-secondary italic">Excellence.</span></h3>
             <p className="text-sm md:text-base opacity-80 max-w-md leading-relaxed">
