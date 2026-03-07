@@ -23,7 +23,8 @@ import {
   Eye,
   Briefcase,
   Trophy,
-  ChevronRight
+  ChevronRight,
+  ClipboardCheck
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
@@ -91,7 +92,7 @@ export default function DashboardPage() {
         .then(setDailyTip)
         .finally(() => setIsTipLoading(false));
     }
-  }, [profile?.tradeSkill]);
+  }, [profile?.tradeSkill, dailyTip]);
 
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 

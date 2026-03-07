@@ -13,9 +13,6 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink
 } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
@@ -79,7 +76,6 @@ function LoginContent() {
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
       const finalName = manualName || auth.currentUser?.displayName || "New Worker";
-      // Auto-placeholder username if not provided: globlync_firstname_lastname
       const fallbackUsername = `globlync_${finalName.toLowerCase().replace(/\s+/g, '_')}_${uid.substring(0, 4)}`;
       const finalUsername = manualUsername?.toLowerCase() || fallbackUsername;
 
@@ -87,7 +83,7 @@ function LoginContent() {
         id: uid,
         name: finalName,
         username: finalUsername,
-        lastUsernameUpdate: serverTimestamp(),
+        // Remove lastUsernameUpdate initially so the first profile edit isn't locked for 14 days
         tradeSkill: "",
         bio: "",
         profilePictureUrl,
@@ -144,7 +140,6 @@ function LoginContent() {
 
     try {
       if (isSignUp) {
-        // Check if username is taken first
         const nameRef = doc(db!, "usernames", desiredUsername.toLowerCase());
         const nameSnap = await getDoc(nameRef);
         if (nameSnap.exists()) {

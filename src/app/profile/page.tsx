@@ -83,6 +83,7 @@ export default function ProfilePage() {
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const [isAreasOpen, setIsAreasOpen] = useState(false);
   const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -137,7 +138,7 @@ export default function ProfilePage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewProfilePic(reader.result as string);
-        toast({ title: "Photo Ready", description: "Save your profile to update your ID permanently." });
+        toast({ title: "Photo Selected", description: "Remember to tap 'Save Professional Profile' at the bottom to apply changes." });
       };
       reader.readAsDataURL(file);
     }
@@ -153,7 +154,7 @@ export default function ProfilePage() {
     const nameRef = doc(db, "usernames", val.toLowerCase());
     const snap = await getDoc(nameRef);
     
-    if (snap.exists()) {
+    if (snap.exists() && snap.data().uid !== user?.uid) {
       setUsernameStatus("taken");
     } else {
       setUsernameStatus("available");
@@ -170,8 +171,8 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!workerRef || !db || !user) return;
 
+    setIsSaving(true);
     const data: any = {
-      name: profile?.name || user.displayName || "Worker",
       tradeSkill: trade,
       bio: bio,
       isAvailable,
@@ -182,36 +183,46 @@ export default function ProfilePage() {
       updatedAt: serverTimestamp(),
     };
 
-    if (username !== profile?.username) {
-      if (!canChangeUsername) {
-        toast({ variant: "destructive", title: "Wait a bit", description: `You can only change your username once every 2 weeks. Next change: ${nextChangeDate?.toLocaleDateString()}` });
-        return;
+    try {
+      if (username.toLowerCase() !== profile?.username?.toLowerCase()) {
+        if (!canChangeUsername) {
+          toast({ variant: "destructive", title: "Wait a bit", description: `Username lock is active. Next change: ${nextChangeDate?.toLocaleDateString()}` });
+          setIsSaving(false);
+          return;
+        }
+
+        const nameRef = doc(db, "usernames", username.toLowerCase());
+        const snap = await getDoc(nameRef);
+        if (snap.exists() && snap.data().uid !== user.uid) {
+          toast({ variant: "destructive", title: "Username Taken", description: "Please pick another username." });
+          setIsSaving(false);
+          return;
+        }
+        
+        await setDoc(nameRef, { uid: user.uid });
+        if (profile?.username) {
+          await deleteDoc(doc(db, "usernames", profile.username.toLowerCase()));
+        }
+        data.username = username.toLowerCase();
+        data.lastUsernameUpdate = serverTimestamp();
       }
 
-      const nameRef = doc(db, "usernames", username.toLowerCase());
-      const snap = await getDoc(nameRef);
-      if (snap.exists() && snap.data().uid !== user.uid) {
-        toast({ variant: "destructive", title: "Username Taken", description: "Please pick another username." });
-        return;
+      if (newProfilePic) {
+        data.profilePictureUrl = newProfilePic;
       }
-      await setDoc(nameRef, { uid: user.uid });
-      if (profile?.username) {
-        await deleteDoc(doc(db, "usernames", profile.username.toLowerCase()));
-      }
-      data.username = username.toLowerCase();
-      data.lastUsernameUpdate = serverTimestamp();
+
+      await updateDocumentNonBlocking(workerRef, data);
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your professional status has been saved successfully.",
+      });
+      setNewProfilePic(null);
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Save Failed", description: err.message });
+    } finally {
+      setIsSaving(false);
     }
-
-    if (newProfilePic) {
-      data.profilePictureUrl = newProfilePic;
-    }
-
-    updateDocumentNonBlocking(workerRef, data);
-
-    toast({
-      title: "Profile Updated",
-      description: "Your professional status is now synchronized.",
-    });
   };
 
   const handleGenerateBio = async () => {
@@ -231,7 +242,6 @@ export default function ProfilePage() {
     }
   };
 
-  const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/public/${user?.uid}` : "";
   const displayPhoto = newProfilePic || profile?.profilePictureUrl || user?.photoURL || "";
 
   return (
@@ -484,9 +494,10 @@ export default function ProfilePage() {
                 <Button 
                   id="profile-save-btn"
                   onClick={handleUpdate}
+                  disabled={isSaving || usernameStatus === "taken"}
                   className="w-full rounded-full py-6 text-lg shadow-lg font-black pointer-events-auto" 
-                  disabled={usernameStatus === "taken"}
                 >
+                  {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
                   Save Professional Profile
                 </Button>
               </CardFooter>
