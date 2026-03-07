@@ -41,8 +41,8 @@ export function Logo({ className }: { className?: string }) {
       <div className="bg-primary p-1.5 rounded-xl shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
         <LinkIcon className="h-5 w-5 text-white" />
       </div>
-      <div className="flex flex-col -space-y-1">
-        <span className="text-xl font-black tracking-tighter italic text-primary">Globlync</span>
+      <div className="flex flex-col -space-y-1 text-left">
+        <span className="text-xl font-black tracking-tighter text-primary">Globlync</span>
         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">National Network</span>
       </div>
     </div>
