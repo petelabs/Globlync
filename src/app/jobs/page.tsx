@@ -83,7 +83,7 @@ export default function JobsBoardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-4 overflow-x-hidden">
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden">
       <header className="flex flex-col gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Find Your Next Move.</h1>
@@ -163,21 +163,21 @@ export default function JobsBoardPage() {
 
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job, idx) => (
-            <div key={job.slug || idx} className="w-full">
+            <div key={job.slug || idx} className="w-full max-w-full">
               <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
               />
-              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full hover:-translate-y-0.5 border-l-4 border-l-transparent hover:border-l-primary">
+              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary">
                 <CardHeader className="pb-2">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 max-w-full">
                       <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight">
                         <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
                       </CardTitle>
                       <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground">
                         <Building2 className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{job.company_name}</span>
+                        <span className="truncate max-w-[200px]">{job.company_name}</span>
                       </div>
                     </div>
                     <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full">
@@ -185,19 +185,19 @@ export default function JobsBoardPage() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
+                <CardContent className="space-y-4 max-w-full overflow-hidden">
+                  <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md shrink-0">
                       <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-                      <span className="truncate max-w-[150px]">{job.location}</span>
+                      <span className="truncate max-w-[120px]">{job.location}</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md shrink-0">
                       <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-                      <span>Updated recently</span>
+                      <span>Updated</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md shrink-0">
                       <Globe className="h-3.5 w-3.5 shrink-0" />
-                      <span>Arbeitnow Global</span>
+                      <span>Global</span>
                     </div>
                   </div>
                   <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium">
@@ -205,13 +205,13 @@ export default function JobsBoardPage() {
                   </p>
                 </CardContent>
                 <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4">
-                  <Button className="w-full sm:w-auto rounded-full px-8 font-black shadow-lg bg-primary" asChild>
+                  <Button className="w-full sm:w-auto rounded-full px-8 font-black shadow-lg bg-primary h-12" asChild>
                     <a href={job.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Apply for Position
                     </a>
                   </Button>
-                  <Button variant="ghost" size="sm" className="w-full sm:w-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary" asChild>
+                  <Button variant="ghost" size="sm" className="w-full sm:w-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary h-10" asChild>
                     <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report listing</a>
                   </Button>
                 </CardFooter>
@@ -242,7 +242,7 @@ export default function JobsBoardPage() {
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
       </div>
 
-      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden mx-2 sm:mx-0 group">
+      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Sparkles className="h-48 w-48 md:h-64 md:w-64" />
         </div>

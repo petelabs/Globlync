@@ -106,23 +106,33 @@ export function Navigation() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur-md h-16 safe-top">
-        <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-2 sm:px-4">
+        <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-3 sm:px-4">
           <Link href="/" className="flex items-center gap-1 hover:opacity-90 transition-opacity shrink-0">
             <Logo className="scale-90 sm:scale-100" />
           </Link>
           
-          <div className="flex-1 flex justify-center px-4 md:px-8 max-w-md">
+          <div className="flex-1 flex justify-center px-2 sm:px-4 md:px-8 max-w-md">
+            {/* Full bar for desktop/tablet */}
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-10 px-4 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2 border-primary/10 hover:border-primary/30 group" 
+              className="hidden sm:flex w-full justify-start text-muted-foreground rounded-full h-10 px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2 border-primary/10 hover:border-primary/30 group" 
               onClick={() => router.push('/search')}
             >
               <Search className="h-4 w-4 mr-3 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
-              <span className="text-xs sm:text-sm font-bold tracking-tight truncate">Search national network...</span>
+              <span className="text-sm font-bold tracking-tight truncate">Search national network...</span>
+            </Button>
+            {/* Simple icon for small mobile */}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="sm:hidden rounded-full h-10 w-10 text-primary/60 hover:text-primary hover:bg-primary/5" 
+              onClick={() => router.push('/search')}
+            >
+              <Search className="h-5 w-5" />
             </Button>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-4 shrink-0 pr-1 sm:pr-0">
+          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             {user ? (
               <>
                 {!isPro && (
@@ -203,7 +213,7 @@ export function Navigation() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild className="rounded-full shadow-lg font-black px-3 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm whitespace-nowrap" size="sm">
+              <Button asChild className="rounded-full shadow-lg font-black px-4 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm whitespace-nowrap" size="sm">
                 <Link href="/login">Join Now</Link>
               </Button>
             )}
