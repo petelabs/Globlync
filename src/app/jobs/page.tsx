@@ -15,10 +15,13 @@ import {
   Building2,
   ChevronRight,
   Info,
-  MessageSquare
+  MessageSquare,
+  Users,
+  GraduationCap
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
+import Link from "next/link";
 
 const JOB_LISTINGS: any[] = [];
 
@@ -36,16 +39,37 @@ export default function JobsBoardPage() {
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
       <header className="flex flex-col gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Find Work</h1>
-          <p className="text-muted-foreground">Available opportunities for skilled workers across Malawi.</p>
+          <h1 className="text-3xl font-black tracking-tight">National Job Board</h1>
+          <p className="text-muted-foreground">Opportunities for formal & informal skilled workers across all 28 districts of Malawi.</p>
         </div>
         
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <Card className="p-4 bg-primary/5 border-none flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Users className="h-4 w-4 text-primary" />
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-widest">Informal Sector</div>
+          </Card>
+          <Card className="p-4 bg-primary/5 border-none flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Building2 className="h-4 w-4 text-primary" />
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-widest">Formal Sector</div>
+          </Card>
+          <Card className="p-4 bg-primary/5 border-none flex items-center gap-3 col-span-2 md:col-span-1">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <GraduationCap className="h-4 w-4 text-primary" />
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-widest">Job Seekers</div>
+          </Card>
+        </div>
+
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
             <Input 
-              placeholder="Search jobs anywhere in Malawi..." 
-              className="pl-10 h-12 rounded-full shadow-sm"
+              placeholder="Search by trade or district (e.g. Mzuzu, Mason)..." 
+              className="pl-12 h-14 rounded-2xl shadow-sm border-2 text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -85,7 +109,7 @@ export default function JobsBoardPage() {
                 <p className="text-sm leading-relaxed">{job.description}</p>
               </CardContent>
               <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4">
-                <Button className="w-full sm:w-auto rounded-full px-6" asChild>
+                <Button className="w-full sm:w-auto rounded-full px-6 font-bold" asChild>
                   <a href={`mailto:${job.applicationEmail}`}>
                     <Mail className="mr-2 h-4 w-4" />
                     Apply via Email
@@ -95,29 +119,37 @@ export default function JobsBoardPage() {
             </Card>
           ))
         ) : (
-          <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
-            <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-10" />
-            <p className="text-muted-foreground">No matching job listings found in Malawi yet.</p>
+          <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed">
+            <Briefcase className="h-16 w-16 mx-auto mb-4 opacity-10" />
+            <p className="text-muted-foreground font-medium">No active listings currently. Join as a professional to build your reputation and be ready when they open!</p>
+            <Button variant="ghost" className="mt-4 text-primary font-bold" asChild>
+              <Link href="/login">Create My Profile <ChevronRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
           </div>
         )}
       </section>
 
       <AdBanner id={NATIVE_AD_ID} className="w-full mt-4" />
 
-      <Card className="border-none bg-primary/5 text-primary text-center p-8 rounded-[2.5rem]">
-        <h3 className="font-bold text-xl mb-2">Want to post a job?</h3>
-        <p className="text-sm opacity-80 mb-6">Reach thousands of verified skilled workers across Malawi.</p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button variant="outline" className="rounded-full border-primary" asChild>
-            <a href="https://wa.me/0987066051" target="_blank">
-              <MessageSquare className="mr-2 h-4 w-4" /> Message on WhatsApp
-            </a>
-          </Button>
-          <Button variant="outline" className="rounded-full border-primary" asChild>
-            <a href="mailto:globlync.pro@gmail.com">
-              <Mail className="mr-2 h-4 w-4" /> Email Headquarters
-            </a>
-          </Button>
+      <Card className="border-none bg-primary text-primary-foreground p-10 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10">
+          <Sparkles className="h-32 w-32" />
+        </div>
+        <div className="relative z-10 space-y-4">
+          <h3 className="font-black text-2xl tracking-tighter">Are you an Employer or Advertiser?</h3>
+          <p className="text-sm opacity-80 max-w-lg">Reach thousands of verified professionals and job seekers across Malawi. Advertise your brand or post vacancies directly on our national network.</p>
+          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+            <Button variant="secondary" className="rounded-full font-black px-8" asChild>
+              <a href="https://wa.me/0987066051" target="_blank">
+                <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp Us
+              </a>
+            </Button>
+            <Button variant="outline" className="rounded-full font-black px-8 bg-transparent border-white hover:bg-white/10" asChild>
+              <a href="mailto:globlync+ads@gmail.com">
+                <Mail className="mr-2 h-4 w-4" /> Advertising Inquiries
+              </a>
+            </Button>
+          </div>
         </div>
       </Card>
     </div>

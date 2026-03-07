@@ -23,7 +23,9 @@ import {
   LifeBuoy,
   Briefcase,
   MapPin,
-  Info
+  Info,
+  Building2,
+  Search as SearchIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -59,7 +61,6 @@ export default function Home() {
   const { data: testimonials } = useCollection(appRatingsQuery);
   const { data: newcomers, isLoading: isNewcomersLoading } = useCollection(newcomersQuery);
 
-  // User's specific native banner zone ID
   const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
 
   return (
@@ -71,17 +72,17 @@ export default function Home() {
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-pulse">
           <Sparkles className="h-4 w-4" />
-          <span>Portable, AI-Verified Reputation</span>
+          <span>National Reputation for Every Professional</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
           Trust is the new <span className="animate-shimmer-text italic">Currency.</span>
         </h1>
-        <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-          Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof, anywhere in Malawi.
+        <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl">
+          Globlync connects formal and informal workers, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
-            <Link href="/login">Build Your Profile</Link>
+            <Link href="/login">Join the Network</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg" asChild>
             <Link href="/search">Find Verified Pros</Link>
@@ -97,27 +98,41 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex flex-col items-center text-center gap-4">
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
-              Our Mission & Purpose
+              National Purpose
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">Empowering the Malawian Labor Market</h2>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">For Every Professional in Malawi</h2>
             <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              Globlync is a national professional reputation platform designed specifically for informal workers across Malawi. Our purpose is to bridge the trust gap between skilled manual professionals and their clients through transparent, evidence-based job verification and AI-assisted portfolio building.
+              Whether you are an informal artisan, a formal specialist, or an advertiser looking to reach thousands, Globlync is your national hub. We bridge the trust gap with transparent verification for the entire Malawian labor market.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="bg-white p-8 rounded-[2rem] shadow-sm space-y-3 border border-primary/5">
-              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center">
-                <ShieldCheck className="text-primary h-6 w-6" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
+                <Users className="text-primary h-6 w-6" />
               </div>
-              <h3 className="font-bold text-xl">National Reputation</h3>
-              <p className="text-sm text-muted-foreground">We provide workers with a portable digital ID that proves their skills and reliability to any employer, from Lilongwe to Blantyre.</p>
+              <h3 className="font-bold text-sm">Informal Workers</h3>
+              <p className="text-[10px] text-muted-foreground">Artisans and manual workers building portable trust.</p>
             </div>
-            <div className="bg-white p-8 rounded-[2rem] shadow-sm space-y-3 border border-primary/5">
-              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center">
-                <CheckCircle className="text-primary h-6 w-6" />
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
+                <Building2 className="text-primary h-6 w-6" />
               </div>
-              <h3 className="font-bold text-xl">Job Verification</h3>
-              <p className="text-sm text-muted-foreground">Clients can instantly verify completed work using QR codes, creating an immutable record of success for the worker.</p>
+              <h3 className="font-bold text-sm">Formal Sector</h3>
+              <p className="text-[10px] text-muted-foreground">Professional specialists verifying their expertise.</p>
+            </div>
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
+                <SearchIcon className="text-primary h-6 w-6" />
+              </div>
+              <h3 className="font-bold text-sm">Job Seekers</h3>
+              <p className="text-[10px] text-muted-foreground">Individuals seeking opportunities across the country.</p>
+            </div>
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
+                <Sparkles className="text-primary h-6 w-6" />
+              </div>
+              <h3 className="font-bold text-sm">Advertisers</h3>
+              <p className="text-[10px] text-muted-foreground">Businesses connecting with a national audience.</p>
             </div>
           </div>
         </div>
@@ -134,7 +149,7 @@ export default function Home() {
               <div className="bg-secondary/20 p-1.5 rounded-lg">
                 <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
               </div>
-              <h2 className="text-2xl font-black tracking-tight">Professionals Across Malawi</h2>
+              <h2 className="text-2xl font-black tracking-tight">Nationwide Professionals</h2>
             </div>
             <Button variant="ghost" size="sm" className="text-primary font-bold" asChild>
               <Link href="/search">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
@@ -158,7 +173,7 @@ export default function Home() {
                   <CardContent className="p-4">
                     <h3 className="font-bold text-sm truncate">{worker.name}</h3>
                     <p className="text-[10px] text-primary font-black uppercase tracking-tighter truncate mt-0.5">
-                      {worker.tradeSkill || "Skilled Professional"}
+                      {worker.tradeSkill || "Verified Professional"}
                     </p>
                     <div className="mt-3 flex items-center gap-1.5 text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
                       <Clock className="h-3 w-3" /> 
@@ -213,30 +228,30 @@ export default function Home() {
 
       {/* How it Works */}
       <section className="py-12">
-        <h2 className="text-3xl font-bold text-center mb-12">The 3-Step Trust Loop</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Building National Trust</h2>
         <div className="grid gap-8 md:grid-cols-3">
           {[
             {
               step: "01",
-              title: "Log Your Work",
-              desc: "Snap a photo and describe the job. Our AI analyzes the proof instantly.",
+              title: "Create Your Profile",
+              desc: "Sign up as a formal or informal worker. Upload a professional photo to build instant trust.",
               icon: Sparkles
             },
             {
               step: "02",
-              title: "Client Scan",
-              desc: "Show your QR code. Clients confirm completion in one tap—no login required.",
+              title: "Log & Verify",
+              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise nationwide.",
               icon: QrCode
             },
             {
               step: "03",
-              title: "Build Score",
-              desc: "Every verified job boosts your Trust Score and unlocks professional badges.",
+              title: "Scale Your Career",
+              desc: "Your verifiable reputation attracts higher-paying jobs and better advertising opportunities.",
               icon: Award
             }
           ].map((item, i) => (
             <div key={i} className="relative p-8 rounded-3xl bg-card border shadow-sm flex flex-col items-center text-center">
-              <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-black px-3 py-1 rounded-full">STEP {item.step}</span>
+              <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-black px-3 py-1 rounded-full">PHASE {item.step}</span>
               <item.icon className="h-12 w-12 text-primary mb-6" />
               <h3 className="text-xl font-bold mb-3">{item.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
@@ -252,64 +267,50 @@ export default function Home() {
       <footer className="bg-primary/5 py-16 border-t mt-12 px-6">
         <div className="max-w-screen-xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-24">
-            {/* Column 1: Brand */}
             <div className="space-y-6 text-center md:text-left">
               <Logo className="justify-center md:justify-start" />
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
-                Building a verifiable manual labor market for all of Malawi.
+                Building a verifiable labor market for every professional in Malawi.
               </p>
               <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
-                <MapPin className="h-3 w-3" /> Headquarters: Mulanje, Malawi
+                <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (National Coverage)
               </div>
             </div>
 
-            {/* Column 2: Quick Links */}
             <div className="space-y-6 text-center md:text-left">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Company</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Platform</h4>
               <nav className="flex flex-col gap-3">
-                <Link href="/contact" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">About Us</Link>
-                <Link href="/privacy" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
-                <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Pricing</Link>
+                <Link href="/search" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Find Professionals</Link>
+                <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Find Work</Link>
+                <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Advertising</Link>
               </nav>
             </div>
 
-            {/* Column 3: Support */}
             <div className="space-y-6 text-center md:text-left">
               <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Support</h4>
               <nav className="flex flex-col gap-3">
-                <a href="mailto:globlync+support@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                  <LifeBuoy className="h-3.5 w-3.5" /> Help Desk
-                </a>
-                <a href="mailto:globlync+dev@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Report Bug
-                </a>
-                <Link href="/contact" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                  <ChevronRight className="h-3.5 w-3.5" /> Contact Center
-                </Link>
+                <Link href="/contact" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Contact Us</Link>
+                <Link href="/privacy" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
               </nav>
             </div>
 
-            {/* Column 4: Business */}
             <div className="space-y-6 text-center md:text-left">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Partners</h4>
-              <nav className="flex flex-col gap-3">
-                <a href="mailto:globlync+ads@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                  <Briefcase className="h-3.5 w-3.5" /> Advertising
-                </a>
-                <a href="mailto:globlync+info@gmail.com" className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                  <Mail className="h-3.5 w-3.5" /> General Inquiries
-                </a>
-              </nav>
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Office</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Petediano Tech<br/>
+                Dzenje Village, Mulanje<br/>
+                Republic of Malawi
+              </p>
             </div>
           </div>
 
           <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
             <p>© 2026 Petediano Tech • Malawi</p>
             <div className="flex gap-6">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-              <Link href="/contact" className="hover:text-primary transition-colors">Headquarters</Link>
+              <Link href="/contact" className="hover:text-primary transition-colors">Report an Ad</Link>
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
             </div>
           </div>
         </div>

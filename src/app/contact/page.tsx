@@ -15,7 +15,8 @@ import {
   Clock,
   ExternalLink,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -31,13 +32,22 @@ const CONTACT_POINTS = [
     priority: "High"
   },
   {
-    title: "Advertising",
-    description: "Connect with our network of verified manual workers across Malawi.",
+    title: "Advertising & Partnerships",
+    description: "Connect with our network or place your own business ads across Malawi.",
     email: "globlync+ads@gmail.com",
     subject: "Globlync Partnership Inquiry",
     icon: Briefcase,
     color: "bg-primary/10 text-primary",
     priority: "Normal"
+  },
+  {
+    title: "Report an Advertisement",
+    description: "Spotted an inappropriate, broken, or suspicious ad? Let us know.",
+    email: "globlync+adsreport@gmail.com",
+    subject: "Globlync Ad Report",
+    icon: AlertTriangle,
+    color: "bg-orange-500/10 text-orange-500",
+    priority: "Urgent"
   },
   {
     title: "Technical Issues",
@@ -46,16 +56,7 @@ const CONTACT_POINTS = [
     subject: "Globlync Bug Report",
     icon: ShieldAlert,
     color: "bg-destructive/10 text-destructive",
-    priority: "Urgent"
-  },
-  {
-    title: "General Inquiries",
-    description: "Feedback, suggestions, or just want to say hi? We're listening.",
-    email: "globlync+info@gmail.com",
-    subject: "Globlync General Inquiry",
-    icon: Info,
-    color: "bg-secondary/10 text-secondary",
-    priority: "Normal"
+    priority: "High"
   }
 ];
 
@@ -68,13 +69,13 @@ export default function ContactPage() {
         </Button>
         <div className="space-y-2">
           <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 mb-2">
-            Professional Support
+            National Network Support
           </Badge>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
             Get in <span className="text-primary italic">Touch.</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Headquartered in Mulanje, building the future of manual labor across all of Malawi. We support every verified professional nationwide.
+            Headquartered in Mulanje, serving professionals and businesses across all of Malawi. Reach out to our dedicated teams for specific needs.
           </p>
         </div>
       </header>
@@ -125,15 +126,15 @@ export default function ContactPage() {
           <div className="bg-primary/10 p-4 rounded-full mb-2">
             <Clock className="h-6 w-6 text-primary" />
           </div>
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Office Hours</h4>
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Response Hours</h4>
           <p className="text-sm font-medium">Mon - Sat: 8:00 AM - 5:00 PM</p>
         </Card>
         <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
           <div className="bg-primary/10 p-4 rounded-full mb-2">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Response Time</h4>
-          <p className="text-sm font-medium">Within 24 Hours</p>
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">National Coverage</h4>
+          <p className="text-sm font-medium">Supporting All 28 Districts</p>
         </Card>
       </div>
 
@@ -146,9 +147,9 @@ export default function ContactPage() {
             <MessageSquare className="h-10 w-10" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Fast WhatsApp Support</h2>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Instant WhatsApp Support</h2>
             <p className="opacity-80 max-w-md mx-auto text-lg leading-relaxed">
-              For urgent verification issues or payment support across Malawi, our WhatsApp line is monitored by human experts at our Mulanje HQ.
+              For urgent verification, advertising inquiries, or broken ad reports across Malawi, our WhatsApp line is monitored by human experts.
             </p>
           </div>
           <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
@@ -164,7 +165,7 @@ export default function ContactPage() {
         <div className="flex justify-center gap-8 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
           <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
           <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
-          <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
+          <Link href="/pricing" className="hover:text-primary transition-colors">Advertising</Link>
         </div>
       </footer>
     </div>
