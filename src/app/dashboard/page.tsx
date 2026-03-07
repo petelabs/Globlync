@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -123,7 +124,7 @@ export default function DashboardPage() {
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tighter flex items-center gap-2">
-            Professional Hub
+            My Dashboard
             {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 rounded-full font-black text-[10px] uppercase"><Crown className="h-3 w-3 mr-1" /> VIP Member</Badge>}
           </h1>
           <p className="text-muted-foreground text-sm">Manage your reputation and national professional visibility.</p>

@@ -9,7 +9,7 @@ import {
   User, 
   Bell, 
   Search, 
-  Settings,
+  Settings as SettingsIcon,
   LogOut,
   LayoutDashboard,
   ClipboardCheck,
@@ -38,7 +38,7 @@ import { collection, query, where, doc } from "firebase/firestore";
 export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div className="bg-primary p-1.5 rounded-xl shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+      <div className="bg-primary p-1.5 rounded-xl shadow-lg rotate-0 transition-transform">
         <LinkIcon className="h-5 w-5 text-white" />
       </div>
       <div className="flex flex-col -space-y-1 text-left">
@@ -183,7 +183,7 @@ export function Navigation() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="mx-[-8px] my-1" />
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />Hub Overview</Link>
+                      <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />Dashboard</Link>
                     </DropdownMenuItem>
                     {!isPro && (
                       <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
@@ -191,13 +191,13 @@ export function Navigation() {
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/referrals"><Gift className="mr-3 h-5 w-5 text-secondary" />Invite Peers</Link>
+                      <Link href="/referrals"><Gift className="mr-3 h-5 w-5 text-secondary" />Invite Others</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />Professional ID</Link>
+                      <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />My Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/settings"><Settings className="mr-3 h-5 w-5 text-primary" />Preferences</Link>
+                      <Link href="/settings"><SettingsIcon className="mr-3 h-5 w-5 text-primary" />Settings</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="mx-[-8px] my-1" />
                     <DropdownMenuItem className="text-destructive font-black cursor-pointer rounded-xl py-3 px-4 text-sm mt-1" onClick={handleLogout}>

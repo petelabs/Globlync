@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User } from "lucide-react";
+import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User, CheckCircle2 } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -29,6 +29,7 @@ function LoginContent() {
   const [fullName, setFullName] = useState("");
   const [desiredUsername, setDesiredUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   
   const auth = useAuth();
   const db = useFirestore();
@@ -83,7 +84,6 @@ function LoginContent() {
         id: uid,
         name: finalName,
         username: finalUsername,
-        // Remove lastUsernameUpdate initially so the first profile edit isn't locked for 14 days
         tradeSkill: "",
         bio: "",
         profilePictureUrl,
@@ -106,14 +106,17 @@ function LoginContent() {
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
       await addDoc(notifRef, {
         type: "app",
-        message: "Welcome to Globlync! Start by logging your manual work to build an evidence-based professional reputation.",
+        message: "Welcome to Globlync! Start by logging your work to build an evidence-based professional reputation.",
         isRead: false,
         createdAt: serverTimestamp()
       });
     }
 
-    router.push("/dashboard");
-    toast({ title: "Welcome to Globlync!" });
+    setIsSuccess(true);
+    setTimeout(() => {
+      router.push("/dashboard");
+      toast({ title: "Welcome to Globlync!" });
+    }, 1500);
   };
 
   const handleGoogleLogin = async () => {
@@ -160,6 +163,21 @@ function LoginContent() {
     }
   };
 
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 animate-in fade-in zoom-in-95 duration-500 text-center px-4">
+        <div className="bg-primary/10 p-8 rounded-full shadow-2xl animate-bounce">
+          <CheckCircle2 className="h-20 w-20 text-primary" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-4xl font-black tracking-tighter">Success!</h2>
+          <p className="text-muted-foreground text-lg font-medium">Preparing your professional dashboard...</p>
+        </div>
+        <Loader2 className="h-6 w-6 animate-spin text-primary opacity-50" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid lg:grid-cols-2 min-h-[80vh] items-center gap-12 py-12 px-4 max-w-6xl mx-auto">
       <div className="space-y-8 text-center lg:text-left">
@@ -190,6 +208,14 @@ function LoginContent() {
       </div>
 
       <div className="relative">
+        {isLoading && !isSuccess && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-[3rem] animate-in fade-in duration-300">
+             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+             <p className="font-black text-primary uppercase tracking-widest text-xs">
+                {isSignUp ? "Creating Account..." : "Signing In..."}
+             </p>
+          </div>
+        )}
         <Card className="border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
           <CardHeader className="bg-muted/30 pb-8 pt-10 text-center">
             <CardDescription className="font-bold text-sm">

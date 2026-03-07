@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -47,8 +48,7 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
-// Optimized limits for Firestore document size (1MB limit)
-const IMAGE_SIZE_LIMIT = 800 * 1024; // 800KB to be safe
+const IMAGE_SIZE_LIMIT = 800 * 1024; // 800KB
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -245,7 +245,7 @@ export default function ProfilePage() {
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">Manage Profile</h1>
+          <h1 className="text-3xl font-black tracking-tight">My Profile</h1>
           <p className="text-muted-foreground text-sm">Control your professional identity and availability.</p>
         </div>
         <div className="flex gap-2">
