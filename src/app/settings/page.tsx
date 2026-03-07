@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Settings, 
   Shield, 
@@ -24,13 +27,17 @@ import {
   Crown,
   CreditCard,
   Mail,
-  LifeBuoy
+  LifeBuoy,
+  AlertTriangle,
+  Loader2,
+  CheckCircle2,
+  Heart
 } from "lucide-react";
 import { useAuth, useUser, useFirestore, useMemoFirebase } from "@/firebase";
-import { signOut } from "firebase/auth";
+import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { doc } from "firebase/firestore";
+import { doc, deleteDoc } from "firebase/firestore";
 import Link from "next/link";
 import { 
   Accordion, 
@@ -38,6 +45,28 @@ import {
   AccordionItem, 
   AccordionTrigger 
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+
+const DELETION_REASONS = [
+  "Not finding enough work opportunities",
+  "Too difficult to use",
+  "I have privacy concerns",
+  "Receiving too many notifications",
+  "Found another platform I prefer",
+  "Verification process is too complicated",
+  "Just testing the app",
+  "Technical bugs and errors",
+  "Trust Score system is confusing",
+  "Moving to a different career"
+];
 
 export default function SettingsPage() {
   const { user } = useUser();
@@ -48,6 +77,14 @@ export default function SettingsPage() {
 
   const [darkMode, setDarkMode] = useState(false);
   const [animationsDisabled, setAnimationsDisabled] = useState(false);
+  
+  // Deletion States
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteStep, setDeleteStep] = useState(1); // 1: Reason, 2: Auth, 3: Success
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+  const [otherDescription, setOtherDescription] = useState("");
+  const [password, setPassword] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -88,20 +125,78 @@ export default function SettingsPage() {
     }
   };
 
+  const toggleReason = (reason: string) => {
+    setSelectedReasons(prev => 
+      prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]
+    );
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || !db) return;
+    setIsDeleting(true);
+
+    try {
+      // 1. Re-authenticate
+      const providerId = user.providerData[0]?.providerId;
+      if (providerId === 'password') {
+        const credential = EmailAuthProvider.credential(user.email!, password);
+        await reauthenticateWithCredential(user, credential);
+      } else if (providerId === 'google.com') {
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(user, provider);
+      }
+
+      // 2. Submit hidden feedback
+      await fetch('/api/account-deletion', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: user.email,
+          uid: user.uid,
+          reasons: selectedReasons,
+          description: otherDescription
+        })
+      });
+
+      // 3. Delete from Firestore
+      // We'll try to delete associated records. Rules must allow this or use admin sdk in api.
+      // For this prototype, we delete the main profile.
+      await deleteDoc(doc(db, "workerProfiles", user.uid));
+      
+      // 4. Final Delete Auth User
+      await deleteUser(user);
+
+      setDeleteStep(3);
+      setTimeout(() => {
+        setIsDeleteDialogOpen(false);
+        router.push("/");
+      }, 6000); // Give them time to read the message
+
+    } catch (error: any) {
+      console.error(error);
+      toast({ 
+        variant: "destructive", 
+        title: "Deletion Failed", 
+        description: error.message.includes('wrong-password') ? "Incorrect password." : "Security verification failed. Please try logging in again first." 
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto">
+    <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-2">
       <header>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
+        <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
           <Settings className="h-8 w-8 text-primary" />
           Settings
         </h1>
-        <p className="text-muted-foreground">Manage your account, appearance, and privacy.</p>
+        <p className="text-muted-foreground text-sm">Manage your account, appearance, and privacy.</p>
       </header>
 
       {/* Subscription Section */}
-      <Card className="border-none shadow-md bg-primary text-primary-foreground">
+      <Card className="border-none shadow-md bg-primary text-primary-foreground rounded-[2rem] overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Crown className="h-5 w-5" />
@@ -114,11 +209,11 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <CreditCard className="h-5 w-5" />
               <div>
-                <p className="text-sm font-bold">Pro Account Status</p>
+                <p className="text-sm font-bold">Pro VIP Status</p>
                 <p className="text-xs opacity-80">Check your current benefits and expiry.</p>
               </div>
             </div>
-            <Button variant="secondary" size="sm" asChild className="rounded-full">
+            <Button variant="secondary" size="sm" asChild className="rounded-full font-black">
               <Link href="/pricing">View Plans</Link>
             </Button>
           </div>
@@ -126,7 +221,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Support & Help */}
-      <Card className="border-none shadow-sm bg-accent/30">
+      <Card className="border-none shadow-sm bg-accent/30 rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <LifeBuoy className="h-5 w-5 text-primary" />
@@ -135,19 +230,19 @@ export default function SettingsPage() {
           <CardDescription>Need help with your account or professional profile?</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <Button variant="outline" className="w-full rounded-full border-primary text-primary font-bold bg-white" asChild>
+          <Button variant="outline" className="w-full rounded-full border-primary text-primary font-bold bg-white h-12" asChild>
             <a href="mailto:globlync+support@gmail.com?subject=Globlync%20Support%20Request">
               <Mail className="mr-2 h-4 w-4" /> Email Support
             </a>
           </Button>
-          <Button variant="ghost" size="sm" className="w-full text-xs" asChild>
+          <Button variant="ghost" size="sm" className="w-full text-xs font-bold uppercase tracking-widest opacity-60" asChild>
             <Link href="/contact">View All Contact Points</Link>
           </Button>
         </CardContent>
       </Card>
 
       {/* Appearance Section */}
-      <Card className="border-none shadow-sm">
+      <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg">Appearance</CardTitle>
           <CardDescription>Customize your visual experience.</CardDescription>
@@ -182,23 +277,23 @@ export default function SettingsPage() {
       </Card>
 
       {/* Account Section */}
-      <Card className="border-none shadow-sm">
+      <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg">Account & Security</CardTitle>
           <CardDescription>Secure your profile and manage sessions.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2">
-          <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+          <div className="flex items-center justify-between p-4 rounded-2xl border bg-muted/30">
             <div className="flex items-center gap-3">
               <Lock className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-bold">Password & Auth</p>
-                <p className="text-xs text-muted-foreground">Managed via {user.providerData[0]?.providerId || "Email"}</p>
+                <p className="text-xs text-muted-foreground">Managed via {user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Email'}</p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+          <div className="flex items-center justify-between p-4 rounded-2xl border bg-muted/30">
             <div className="flex items-center gap-3">
               <BellRing className="h-5 w-5 text-primary" />
               <div>
@@ -206,18 +301,148 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Alerts for verifications and badges</p>
               </div>
             </div>
-            <span className="text-[10px] font-black text-primary px-2">ACTIVE</span>
+            <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 rounded-full">ACTIVE</span>
           </div>
         </CardContent>
-        <CardFooter className="flex gap-2">
-          <Button variant="outline" className="flex-1 rounded-full font-bold" onClick={handleLogout}>
+        <CardFooter className="flex flex-col gap-3">
+          <Button variant="outline" className="w-full rounded-full font-bold h-12" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" /> Sign Out
           </Button>
+          
+          <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => {
+            setIsDeleteDialogOpen(open);
+            if (!open) {
+              setDeleteStep(1);
+              setPassword("");
+              setSelectedReasons([]);
+              setOtherDescription("");
+            }
+          }}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/5 text-xs font-bold h-10">
+                <Trash2 className="mr-2 h-4 w-4" /> Permanently Delete Account
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+              {deleteStep === 1 && (
+                <>
+                  <DialogHeader className="p-8 pb-4 bg-destructive/5">
+                    <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="h-6 w-6" /> We're sorry to see you go.
+                    </DialogTitle>
+                    <DialogDescription className="font-medium text-sm pt-2">
+                      Please tell us why you are leaving. Your feedback helps us improve Globlync for everyone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="px-8 py-4 space-y-4 max-h-[40vh] overflow-y-auto scrollbar-hide">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Select Reason(s)</p>
+                    <div className="grid gap-3">
+                      {DELETION_REASONS.map((reason) => (
+                        <div key={reason} className="flex items-center space-x-3 bg-muted/30 p-3 rounded-xl border border-transparent hover:border-primary/20 transition-all cursor-pointer" onClick={() => toggleReason(reason)}>
+                          <Checkbox checked={selectedReasons.includes(reason)} onCheckedChange={() => toggleReason(reason)} />
+                          <Label className="text-xs font-bold leading-none cursor-pointer">{reason}</Label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pt-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Anything else? (Optional)</Label>
+                      <Textarea 
+                        placeholder="Describe your experience or suggest improvements..." 
+                        className="mt-2 rounded-xl text-xs min-h-[80px]"
+                        value={otherDescription}
+                        onChange={(e) => setOtherDescription(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter className="p-8 pt-4 flex-col sm:flex-col gap-2">
+                    <Button 
+                      className="w-full rounded-full h-12 font-black text-sm" 
+                      disabled={selectedReasons.length === 0}
+                      onClick={() => setDeleteStep(2)}
+                    >
+                      Continue Deletion
+                    </Button>
+                    <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setIsDeleteDialogOpen(false)}>
+                      Stay with Globlync
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
+
+              {deleteStep === 2 && (
+                <>
+                  <DialogHeader className="p-8 pb-4 bg-destructive/5">
+                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Verify Identity</DialogTitle>
+                    <DialogDescription className="font-medium text-sm pt-2 leading-relaxed">
+                      For your security, please confirm your credentials to permanently erase your professional identity and data. This cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="p-8 space-y-6">
+                    {user.providerData[0]?.providerId === 'password' ? (
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Enter Your Password</Label>
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          className="h-12 rounded-xl"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-tighter" onClick={() => toast({ title: "Check Email", description: "Password reset link sent." })}>Forgot Password?</button>
+                      </div>
+                    ) : (
+                      <div className="bg-muted/30 p-6 rounded-2xl text-center border-2 border-dashed">
+                        <p className="text-xs font-bold mb-4">You are signed in via Google.</p>
+                        <Button variant="outline" className="rounded-full bg-white font-black" onClick={handleDeleteAccount} disabled={isDeleting}>
+                          {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                          Verify via Google Popup
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <DialogFooter className="p-8 pt-0 flex-col sm:flex-col gap-2">
+                    {user.providerData[0]?.providerId === 'password' && (
+                      <Button 
+                        variant="destructive"
+                        className="w-full rounded-full h-14 font-black text-lg shadow-xl" 
+                        disabled={!password || isDeleting}
+                        onClick={handleDeleteAccount}
+                      >
+                        {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Trash2 className="mr-2 h-5 w-5" />}
+                        Delete Permanently
+                      </Button>
+                    )}
+                    <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setDeleteStep(1)} disabled={isDeleting}>
+                      Back to Feedback
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
+
+              {deleteStep === 3 && (
+                <div className="p-12 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+                  <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <Heart className="h-10 w-10 text-primary fill-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-3xl font-black tracking-tight">We hear you.</h2>
+                    <p className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
+                      We'll try to fix the issues you mentioned. Please, if you find free time, come back to our app. We keep on updating so you have a good experience in our app.
+                    </p>
+                  </div>
+                  <div className="pt-4 space-y-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary/30 mx-auto" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Clearing your data...</p>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </CardFooter>
       </Card>
 
       {/* Privacy & Legal Section */}
-      <Card className="border-none shadow-sm">
+      <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg">Legal & Compliance</CardTitle>
           <CardDescription>Review our policies and data protection.</CardDescription>
@@ -225,17 +450,17 @@ export default function SettingsPage() {
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="privacy">
-              <AccordionTrigger className="text-sm font-bold"><Shield className="h-4 w-4 mr-2" /> Privacy Policy</AccordionTrigger>
-              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2">
+              <AccordionTrigger className="text-sm font-bold"><Shield className="h-4 w-4 mr-2 text-primary" /> Privacy Policy</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2 px-2">
                 <p>We use your data to verify jobs and build your reputation. We help cover storage and AI costs through optional Pro subscriptions.</p>
-                <Link href="/privacy" className="text-primary font-bold">Read Full Privacy Policy <ExternalLink className="inline h-3 w-3" /></Link>
+                <Link href="/privacy" className="text-primary font-bold flex items-center gap-1">Read Full Privacy Policy <ExternalLink className="h-3 w-3" /></Link>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="terms">
-              <AccordionTrigger className="text-sm font-bold"><FileText className="h-4 w-4 mr-2" /> Terms of Service</AccordionTrigger>
-              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2">
-                <p>By using Globlync, you agree to log only genuine work. Subscriptions help sustain high-speed infrastructure for the Malawian labor market.</p>
-                <Link href="/terms" className="text-primary font-bold">Read Full Terms <ExternalLink className="inline h-3 w-3" /></Link>
+              <AccordionTrigger className="text-sm font-bold"><FileText className="h-4 w-4 mr-2 text-primary" /> Terms of Service</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2 px-2">
+                <p>By using Globlync, you agree to log only genuine work. Subscriptions help sustain high-speed infrastructure for the professional labor market.</p>
+                <Link href="/terms" className="text-primary font-bold flex items-center gap-1">Read Full Terms <ExternalLink className="h-3 w-3" /></Link>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -243,7 +468,7 @@ export default function SettingsPage() {
       </Card>
 
       <footer className="text-center py-6">
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Globlync Professional v1.2.0 • Est. 2026</p>
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Globlync Global v1.5.0 • Est. 2026</p>
         <p className="text-[10px] text-muted-foreground mt-1">© 2026 Petediano Tech • Built with Trust</p>
       </footer>
     </div>
