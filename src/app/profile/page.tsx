@@ -26,8 +26,7 @@ import {
   Mail,
   Phone,
   Crown,
-  Zap,
-  Lock
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -40,7 +39,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { formatDistanceToNow } from "date-fns";
 
 const MALAWI_DISTRICTS = [
   "Chitipa", "Karonga", "Likoma", "Mzimba", "Nkhata Bay", "Rumphi", "Mzuzu City",
@@ -48,8 +46,7 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
-// Increased to 3MB for free users
-const IMAGE_SIZE_LIMIT = 3 * 1024 * 1024; 
+const IMAGE_SIZE_LIMIT = 3 * 1024 * 1024; // 3MB
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -96,28 +93,6 @@ export default function ProfilePage() {
       setServiceAreas(profile.serviceAreas || []);
     }
   }, [profile, user?.email]);
-
-  const canChangeUsername = useMemo(() => {
-    if (!profile?.lastUsernameUpdate) return true;
-    const lastUpdate = profile.lastUsernameUpdate?.seconds 
-      ? new Date(profile.lastUsernameUpdate.seconds * 1000) 
-      : new Date(profile.lastUsernameUpdate);
-    
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - lastUpdate.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 14;
-  }, [profile?.lastUsernameUpdate]);
-
-  const nextChangeDate = useMemo(() => {
-    if (!profile?.lastUsernameUpdate) return null;
-    const lastUpdate = profile.lastUsernameUpdate?.seconds 
-      ? new Date(profile.lastUsernameUpdate.seconds * 1000) 
-      : new Date(profile.lastUsernameUpdate);
-    const date = new Date(lastUpdate);
-    date.setDate(date.getDate() + 14);
-    return date;
-  }, [profile?.lastUsernameUpdate]);
 
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
@@ -183,12 +158,6 @@ export default function ProfilePage() {
 
     try {
       if (username.toLowerCase() !== profile?.username?.toLowerCase()) {
-        if (!canChangeUsername) {
-          toast({ variant: "destructive", title: "Username Locked", description: `Available in ${formatDistanceToNow(nextChangeDate!)}` });
-          setIsSaving(false);
-          return;
-        }
-
         const nameRef = doc(db, "usernames", username.toLowerCase());
         const snap = await getDoc(nameRef);
         if (snap.exists() && snap.data().uid !== user.uid) {
@@ -202,7 +171,6 @@ export default function ProfilePage() {
           await deleteDoc(doc(db, "usernames", profile.username.toLowerCase()));
         }
         data.username = username.toLowerCase();
-        data.lastUsernameUpdate = serverTimestamp();
       }
 
       if (newProfilePic) {
@@ -337,11 +305,6 @@ export default function ProfilePage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="username">Public Username</Label>
-                    {!canChangeUsername && nextChangeDate && (
-                      <Badge variant="outline" className="text-[8px] font-black uppercase text-muted-foreground flex items-center gap-1">
-                        <Lock className="h-2 w-2" /> Changes locked for {formatDistanceToNow(nextChangeDate)}
-                      </Badge>
-                    )}
                   </div>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -349,7 +312,6 @@ export default function ProfilePage() {
                       id="username" 
                       placeholder="e.g. john_plumber"
                       value={username} 
-                      disabled={!canChangeUsername}
                       onChange={(e) => {
                         setUsername(e.target.value);
                         checkUsername(e.target.value);
@@ -357,8 +319,7 @@ export default function ProfilePage() {
                       className={cn(
                         "pl-10 h-12 rounded-xl",
                         usernameStatus === "available" && "border-green-500",
-                        usernameStatus === "taken" && "border-destructive",
-                        !canChangeUsername && "bg-muted cursor-not-allowed opacity-50"
+                        usernameStatus === "taken" && "border-destructive"
                       )} 
                     />
                     <div className="absolute right-3 top-3.5">
