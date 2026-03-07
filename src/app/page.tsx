@@ -67,7 +67,7 @@ export default function Home() {
           <span>Professional Reputation for Every Malawian Expert</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Trust is the new <span className="text-primary font-black">Currency.</span>
+          Trust is the new <span className="text-primary font-black animate-shimmer-text">Currency.</span>
         </h1>
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
           Globlync connects formal and informal <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
