@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +46,9 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
+const FREE_UPLOAD_LIMIT = 1.5 * 1024 * 1024; // 1.5MB
+const PRO_UPLOAD_LIMIT = 5 * 1024 * 1024; // 5MB
+
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -57,6 +59,7 @@ export default function ProfilePage() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -76,6 +79,7 @@ export default function ProfilePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const [isAreasOpen, setIsAreasOpen] = useState(false);
+  const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -89,6 +93,30 @@ export default function ProfilePage() {
       setServiceAreas(profile.serviceAreas || []);
     }
   }, [profile, user?.email]);
+
+  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const limit = isPro ? PRO_UPLOAD_LIMIT : FREE_UPLOAD_LIMIT;
+      if (file.size > limit) {
+        toast({
+          variant: "destructive",
+          title: "File Too Large",
+          description: `Free users are limited to 1.5MB. Your photo is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Upgrade to VIP for 5MB uploads!`,
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewProfilePic(reader.result as string);
+        toast({ title: "Photo Ready", description: "Save your profile to update your ID permanently." });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const checkUsername = async (val: string) => {
     if (!db || !val || val.length < 3 || val === profile?.username) {
@@ -130,7 +158,7 @@ export default function ProfilePage() {
       }
     }
 
-    const data = {
+    const data: any = {
       name: user.displayName || "Worker",
       username: username.toLowerCase(),
       tradeSkill: trade,
@@ -142,6 +170,10 @@ export default function ProfilePage() {
       serviceAreas,
       updatedAt: serverTimestamp(),
     };
+
+    if (newProfilePic) {
+      data.profilePictureUrl = newProfilePic;
+    }
 
     updateDocumentNonBlocking(workerRef, data);
 
@@ -169,25 +201,24 @@ export default function ProfilePage() {
   };
 
   const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/public/${user?.uid}` : "";
-  const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
-  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+  const displayPhoto = newProfilePic || profile?.profilePictureUrl || user?.photoURL || "";
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Manage Profile</h1>
+          <h1 className="text-3xl font-black tracking-tight">Manage Profile</h1>
           <p className="text-muted-foreground text-sm">Control your professional identity and availability.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild className="rounded-full hidden sm:flex">
+          <Button variant="outline" size="sm" asChild className="rounded-full hidden sm:flex font-bold">
             <Link href={`/public/${user?.uid}`}>
               <ExternalLink className="mr-2 h-4 w-4" /> View Public
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild className="rounded-full">
             <Link href="/settings">
-              <Settings className="mr-2 h-4 w-4" /> Settings
+              <Settings className="h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -197,29 +228,33 @@ export default function ProfilePage() {
         <div className="md:col-span-1 space-y-6">
           <Card className="border-none shadow-sm text-center pt-6 overflow-hidden">
             <CardContent className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-32 w-32 border-4 border-primary shadow-xl">
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                <Avatar className="h-32 w-32 border-4 border-primary shadow-xl group-hover:opacity-80 transition-opacity">
                   <AvatarImage src={displayPhoto} className="object-cover" />
                   <AvatarFallback className="text-2xl font-black">{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="h-8 w-8 text-white" />
+                </div>
                 <Button 
                   id="profile-camera-btn"
                   size="icon" 
                   variant="secondary" 
-                  className="absolute bottom-0 right-0 rounded-full shadow-md border border-border pointer-events-auto"
+                  className="absolute bottom-0 right-0 rounded-full shadow-md border border-border"
                 >
                   <Camera className="h-4 w-4" />
                 </Button>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
               </div>
               <div>
                 <h2 className="text-xl font-bold">{user?.displayName || "Skilled Pro"}</h2>
-                <Badge variant={isAvailable ? "default" : "secondary"} className="mt-1">
-                  {isAvailable ? "Available for Hire" : "Busy"}
+                <Badge variant={isAvailable ? "default" : "secondary"} className="mt-1 font-black">
+                  {isAvailable ? "Available for Hire" : "Currently Busy"}
                 </Badge>
               </div>
             </CardContent>
             <div className="bg-muted/30 p-4 border-t flex items-center justify-between">
-              <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase">Toggle Status</Label>
+              <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase tracking-widest">Visibility</Label>
               <Switch id="availability-toggle" checked={isAvailable} onCheckedChange={setIsAvailable} />
             </div>
           </Card>
@@ -242,7 +277,7 @@ export default function ProfilePage() {
               <p className="text-xs font-medium leading-relaxed opacity-90">
                 {isPro 
                   ? "Your VIP status is currently active. You have full access to HD photos and AI verification priority." 
-                  : "Unlock 10 HD photos per job, AI verification priority, and a professional VIP badge on your profile."}
+                  : "Unlock 5MB photos, AI verification priority, and a professional VIP badge on your profile."}
               </p>
               {!isPro && (
                 <Button variant="secondary" className="w-full rounded-full font-black shadow-lg" asChild>
@@ -252,7 +287,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-md bg-muted/50">
+          <Card className="border-none shadow-md bg-muted/50 hidden md:block">
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-sm font-bold flex items-center justify-center gap-2">
                 <QrCode className="h-4 w-4" />
@@ -273,7 +308,7 @@ export default function ProfilePage() {
             <Card className="border-none shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Professional Details</CardTitle>
-                <CardDescription>Keep your skills and locations updated for clients.</CardDescription>
+                <CardDescription>Keep your skills and locations updated for clients across Malawi.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-2">
@@ -289,7 +324,7 @@ export default function ProfilePage() {
                         checkUsername(e.target.value);
                       }}
                       className={cn(
-                        "pl-10 h-12",
+                        "pl-10 h-12 rounded-xl",
                         usernameStatus === "available" && "border-green-500",
                         usernameStatus === "taken" && "border-destructive"
                       )} 
@@ -311,7 +346,7 @@ export default function ProfilePage() {
                       placeholder="e.g. Master Electrician"
                       value={trade} 
                       onChange={(e) => setTrade(e.target.value)}
-                      className="pl-10 h-12" 
+                      className="pl-10 h-12 rounded-xl" 
                     />
                   </div>
                 </div>
@@ -319,7 +354,7 @@ export default function ProfilePage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="bio">Professional Summary</Label>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateBio} disabled={isGenerating}>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateBio} disabled={isGenerating} className="text-primary font-bold">
                       {isGenerating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
                       AI Polish
                     </Button>
@@ -329,7 +364,7 @@ export default function ProfilePage() {
                     placeholder="Describe your years of experience and top services..."
                     value={bio} 
                     onChange={(e) => setBio(e.target.value)}
-                    className="min-h-[100px]" 
+                    className="min-h-[100px] rounded-xl" 
                   />
                 </div>
 
@@ -337,14 +372,14 @@ export default function ProfilePage() {
                   <Label>Service Areas ({serviceAreas.length} selected)</Label>
                   <div className="flex flex-wrap gap-1 mb-2">
                     {serviceAreas.slice(0, 5).map(area => (
-                      <Badge key={area} variant="secondary" className="text-[8px]">{area}</Badge>
+                      <Badge key={area} variant="secondary" className="text-[8px] font-black">{area}</Badge>
                     ))}
                     {serviceAreas.length > 5 && <Badge variant="outline" className="text-[8px]">+{serviceAreas.length - 5} more</Badge>}
                   </div>
                   <Collapsible open={isAreasOpen} onOpenChange={setIsAreasOpen} className="w-full space-y-2">
                     <CollapsibleTrigger asChild>
-                      <Button variant="outline" size="sm" className="w-full justify-between">
-                        <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Select Districts</span>
+                      <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-xl">
+                        <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Select Districts</span>
                         <ChevronDown className={cn("h-4 w-4 transition-transform", isAreasOpen && "rotate-180")} />
                       </Button>
                     </CollapsibleTrigger>
@@ -375,7 +410,7 @@ export default function ProfilePage() {
             <Card className="border-none shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Direct Contact Information</CardTitle>
-                <CardDescription>Allow clients to reach you instantly. These will be visible on your public profile.</CardDescription>
+                <CardDescription>Allow clients to reach you instantly. Visible on your public profile.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
                 <div className="grid gap-2">
@@ -387,7 +422,7 @@ export default function ProfilePage() {
                       placeholder="e.g. 0987066051"
                       value={whatsapp} 
                       onChange={(e) => setWhatsapp(e.target.value)}
-                      className="pl-10 h-12" 
+                      className="pl-10 h-12 rounded-xl" 
                     />
                   </div>
                 </div>
@@ -401,7 +436,7 @@ export default function ProfilePage() {
                       placeholder="e.g. 0987066051"
                       value={phone} 
                       onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 h-12" 
+                      className="pl-10 h-12 rounded-xl" 
                     />
                   </div>
                 </div>
@@ -416,7 +451,7 @@ export default function ProfilePage() {
                       placeholder="e.g. worker@gmail.com"
                       value={contactEmail} 
                       onChange={(e) => setContactEmail(e.target.value)}
-                      className="pl-10 h-12" 
+                      className="pl-10 h-12 rounded-xl" 
                     />
                   </div>
                 </div>
@@ -425,10 +460,10 @@ export default function ProfilePage() {
                 <Button 
                   id="profile-save-btn"
                   onClick={handleUpdate}
-                  className="w-full rounded-full py-6 text-lg shadow-lg font-bold pointer-events-auto" 
+                  className="w-full rounded-full py-6 text-lg shadow-lg font-black pointer-events-auto" 
                   disabled={usernameStatus === "taken"}
                 >
-                  Save All Changes
+                  Save Professional Profile
                 </Button>
               </CardFooter>
             </Card>

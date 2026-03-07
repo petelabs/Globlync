@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -70,15 +69,15 @@ export default function Home() {
         <div className="mb-4 animate-in zoom-in duration-700">
           <Logo className="scale-[2.5] mb-8" />
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-pulse">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-float">
           <Sparkles className="h-4 w-4" />
           <span>National Reputation for Every Professional</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Trust is the new <span className="animate-shimmer-text italic">Currency.</span>
+          Trust is the new <span className="animate-shimmer-text italic font-black">Currency.</span>
         </h1>
-        <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl">
-          Globlync connects formal and informal workers, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
+        <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
+          Globlync connects formal and informal <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
@@ -106,28 +105,28 @@ export default function Home() {
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <Users className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Informal Workers</h3>
               <p className="text-[10px] text-muted-foreground">Artisans and manual workers building portable trust.</p>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <Building2 className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Formal Sector</h3>
               <p className="text-[10px] text-muted-foreground">Professional specialists verifying their expertise.</p>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <SearchIcon className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Job Seekers</h3>
               <p className="text-[10px] text-muted-foreground">Individuals seeking opportunities across the country.</p>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center">
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <Sparkles className="text-primary h-6 w-6" />
               </div>

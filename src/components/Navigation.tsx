@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -109,17 +108,17 @@ export function Navigation() {
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur-md h-16 safe-top">
         <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-2 sm:px-4">
           <Link href="/" className="flex items-center gap-1 hover:opacity-90 transition-opacity shrink-0">
-            <Logo />
+            <Logo className="scale-90 sm:scale-100" />
           </Link>
           
-          <div className="flex-1 flex justify-center px-2 max-w-[80px] sm:max-w-xs md:max-w-sm">
+          <div className="flex-1 flex justify-center px-4 md:px-8 max-w-md">
             <Button 
               variant="outline" 
-              className="w-full justify-start text-muted-foreground rounded-full h-9 px-2 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2" 
+              className="w-full justify-start text-muted-foreground rounded-full h-10 px-4 sm:px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2 border-primary/10 hover:border-primary/30 group" 
               onClick={() => router.push('/search')}
             >
-              <Search className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-3 shrink-0" />
-              <span className="text-[8px] sm:text-xs font-bold tracking-tight truncate">Search...</span>
+              <Search className="h-4 w-4 mr-3 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
+              <span className="text-xs sm:text-sm font-bold tracking-tight truncate">Search national network...</span>
             </Button>
           </div>
 
