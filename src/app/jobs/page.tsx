@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +19,8 @@ import {
   GraduationCap,
   Loader2,
   ExternalLink,
-  Globe
+  Globe,
+  Sparkles
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
@@ -184,7 +184,7 @@ export default function JobsBoardPage() {
           <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed">
             <Briefcase className="h-16 w-16 mx-auto mb-4 opacity-10" />
             <p className="text-muted-foreground font-medium">No matches found. Try searching for broader terms like "Worker" or "Professional".</p>
-            <Button variant="ghost" className="mt-4 text-primary font-bold" onClick={() => setSearchTerm("")}>View All Listings</Button>
+            <Button variant="ghost" className="mt-4 text-primary font-bold" onClick={() => {setSearchTerm(""); setSelectedCategory(null);}}>View All Listings</Button>
           </div>
         ) : (
           <div className="space-y-4">
