@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,9 +52,12 @@ const PLANS = [
   }
 ];
 
+const PAYMENT_LINK = "https://pay.paychangu.com/SC-c9Mara";
+
 export default function PricingPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const [timeLeft, setTimeLeft] = useState("");
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -65,14 +68,34 @@ export default function PricingPage() {
   
   const activeBenefit = profile?.activeBenefits?.find((b: any) => new Date(b.expiresAt) > new Date());
 
-  // Calculate 24h discount eligibility
-  const isEligibleForDiscount = useMemo(() => {
-    if (!profile?.createdAt) return false;
-    const joinedAt = new Date(profile.createdAt.seconds * 1000);
-    const now = new Date();
-    const diff = now.getTime() - joinedAt.getTime();
-    return diff < 24 * 60 * 60 * 1000;
-  }, [profile]);
+  // Calculate 24h discount eligibility and countdown
+  useEffect(() => {
+    if (!profile?.createdAt) return;
+    
+    const interval = setInterval(() => {
+      const createdAtDate = profile.createdAt.seconds 
+        ? new Date(profile.createdAt.seconds * 1000) 
+        : new Date(profile.createdAt);
+      
+      const expiresAt = new Date(createdAtDate.getTime() + 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const diff = expiresAt.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeLeft("");
+        clearInterval(interval);
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [profile?.createdAt]);
+
+  const isEligibleForDiscount = timeLeft !== "" && timeLeft !== "EXPIRED";
 
   return (
     <div className="flex flex-col gap-12 py-8 max-w-5xl mx-auto px-4">
@@ -80,42 +103,52 @@ export default function PricingPage() {
         <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-secondary">
           <Sparkles className="h-3 w-3" /> National Professional Network
         </div>
-        <h1 className="text-4xl font-black tracking-tighter sm:text-7xl text-primary italic">Go VIP.</h1>
+        <h1 className="text-4xl font-black tracking-tighter sm:text-7xl text-primary">Go VIP.</h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
           Support the platform that grows your reputation across Malawi. Select your tier by entering the amount on PayChangu.
         </p>
       </header>
 
       {isEligibleForDiscount && (
-        <Card className="bg-primary text-primary-foreground border-none rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Tag className="h-40 w-40 rotate-12" />
-          </div>
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-1">
-              <Badge className="bg-white text-primary font-black mb-2">NEW MEMBER OFFER</Badge>
-              <h2 className="text-3xl font-black tracking-tighter">20% Welcome Discount!</h2>
-              <p className="opacity-80 font-medium">Upgrade within 24 hours to claim your discount. Valid for any VIP tier.</p>
+        <a href={PAYMENT_LINK} target="_blank" className="block group">
+          <Card className="bg-primary text-primary-foreground border-none rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+              <Tag className="h-40 w-40 rotate-12" />
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-center px-6 py-3 bg-white/20 rounded-2xl border border-white/30 backdrop-blur-md">
-                <p className="text-[10px] font-black uppercase opacity-70">Pay Only</p>
-                <p className="text-3xl font-black">MWK 240</p>
-                <p className="text-[8px] font-bold">Standard VIP (30 Days)</p>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-1 text-center md:text-left">
+                <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
+                  <Badge className="bg-white text-primary font-black">NEW MEMBER OFFER</Badge>
+                  <div className="flex items-center gap-1.5 text-xs font-black bg-secondary text-secondary-foreground px-3 py-1 rounded-full animate-pulse">
+                    <Clock className="h-3 w-3" /> {timeLeft} LEFT
+                  </div>
+                </div>
+                <h2 className="text-3xl font-black tracking-tighter">20% Welcome Discount!</h2>
+                <p className="opacity-80 font-medium">Upgrade now to claim your discount. Valid for any VIP tier.</p>
+              </div>
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-center px-8 py-4 bg-white/20 rounded-2xl border border-white/30 backdrop-blur-md">
+                  <p className="text-[10px] font-black uppercase opacity-70">Claim For Only</p>
+                  <p className="text-4xl font-black">MWK 240</p>
+                  <p className="text-[8px] font-bold">Standard VIP (30 Days)</p>
+                </div>
+                <Button variant="secondary" className="rounded-full px-8 font-black shadow-lg pointer-events-none">
+                  Claim Discount Now
+                </Button>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </a>
       )}
 
       {activeBenefit && (
         <Card className="bg-secondary/10 border-4 border-secondary/30 rounded-[3rem] p-8 text-center animate-in zoom-in-95">
           <Badge className="bg-secondary text-secondary-foreground font-black mb-4 px-6 py-1.5 rounded-full">ACTIVE VIP STATUS</Badge>
-          <h3 className="text-3xl font-black flex items-center justify-center gap-3">
+          <h3 className="text-3xl font-black flex items-center justify-center gap-3 text-foreground">
             <Crown className="h-8 w-8 text-secondary fill-secondary" />
             You are {activeBenefit.type}
           </h3>
-          <p className="text-base text-muted-foreground mt-2">Your professional benefits are active until <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
+          <p className="text-base text-muted-foreground mt-2 font-medium">Your professional benefits are active until <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
         </Card>
       )}
 
@@ -164,11 +197,11 @@ export default function PricingPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-none bg-muted/30 p-8 rounded-[3rem] flex items-start gap-6">
-          <div className="bg-primary/10 p-4 rounded-3xl">
-            <Info className="h-8 w-8 text-primary" />
+          <div className="bg-primary/10 p-4 rounded-3xl text-primary">
+            <Info className="h-8 w-8" />
           </div>
           <div>
-            <h4 className="font-black text-lg mb-2">Flexible National Pricing</h4>
+            <h4 className="font-black text-lg mb-2 text-foreground">Flexible National Pricing</h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
               We absorb all transaction fees so you pay exactly what you see. Use any payment method on PayChangu (Airtel, Mpamba, Bank, Card).
             </p>
@@ -176,8 +209,8 @@ export default function PricingPage() {
         </Card>
 
         <Card className="border-none bg-destructive/5 p-8 rounded-[3rem] flex items-start gap-6 border-2 border-destructive/10">
-          <div className="bg-destructive/10 p-4 rounded-3xl">
-            <AlertTriangle className="h-8 w-8 text-destructive" />
+          <div className="bg-destructive/10 p-4 rounded-3xl text-destructive">
+            <AlertTriangle className="h-8 w-8" />
           </div>
           <div>
             <h4 className="font-black text-lg text-destructive mb-2">Professional Policy</h4>

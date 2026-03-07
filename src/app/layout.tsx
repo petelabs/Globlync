@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -5,7 +6,6 @@ import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
-import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 
 export const viewport: Viewport = {
   themeColor: '#00796B',
@@ -76,7 +76,6 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <OnboardingTutorial />
           <InstallPrompt />
           <Toaster />
         </FirebaseClientProvider>
