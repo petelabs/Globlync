@@ -70,10 +70,10 @@ function LoginContent() {
         }
       }
 
-      // Ensure we always have a placeholder avatar
+      // Professional Gradient Avatars (No stock images)
       const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
-      const fallbackAvatar = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop";
-      const randomAvatar = defaultAvatars.length > 0 ? defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)] : fallbackAvatar;
+      const fallbackTeal = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA3OTZCO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA0RDQwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
+      const randomAvatar = defaultAvatars.length > 0 ? defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)] : fallbackTeal;
       const profilePictureUrl = auth.currentUser?.photoURL || randomAvatar;
 
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;

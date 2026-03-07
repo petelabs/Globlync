@@ -2,20 +2,32 @@
   "placeholderImages": [
     {
       "id": "avatar-default-1",
-      "description": "Professional Male Skilled Worker Avatar",
-      "imageUrl": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW58ZW58MHx8fHwxNzcyMDM5NDI0fDA&ixlib=rb-4.1.0&q=80&w=400",
-      "imageHint": "professional man"
+      "description": "Professional Teal Gradient Avatar",
+      "imageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA3OTZCO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA0RDQwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=",
+      "imageHint": "teal gradient"
     },
     {
       "id": "avatar-default-2",
-      "description": "Professional Female Skilled Worker Avatar",
-      "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjB3b21hbnxlbnwwfHx8fDE3NzIwMzk0MjR8MA&ixlib=rb-4.1.0&q=80&w=400",
-      "imageHint": "professional woman"
+      "description": "Professional Amber Gradient Avatar",
+      "imageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcyIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDMTA3O3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBMDAwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMikiLz48L3N2Zz4=",
+      "imageHint": "amber gradient"
+    },
+    {
+      "id": "avatar-default-3",
+      "description": "Professional Slate Gradient Avatar",
+      "imageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImczIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWUyOTNiO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMGYxNzJhO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMykiLz48L3N2Zz4=",
+      "imageHint": "slate gradient"
+    },
+    {
+      "id": "avatar-default-4",
+      "description": "Professional Blue Gradient Avatar",
+      "imageUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9Imc0IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojM2I4MmY2O3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMWU0MGFmO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnNCkiLz48L3N2Zz4=",
+      "imageHint": "blue gradient"
     },
     {
       "id": "worker-1",
       "description": "Professional plumber at work",
-      "imageUrl": "https://images.unsplash.com/photo-1635221798248-8a3452ad07cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwbHVtYmVyJTIwcHJvZmVzc2lvbmFsfGVufDB8fHx8MTc3MjAzMzQ2OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1635221798248-8a3452ad07cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwbHVtYmVyJTIwcHJvZmVzc2lvbmFsfGVufDB8fHx8MTc3MjAzMzQ2OXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "plumber professional"
     },
     {
@@ -29,18 +41,6 @@
       "description": "Skilled carpenter building furniture",
       "imageUrl": "https://images.unsplash.com/photo-1626081062126-d3b192c1fcb0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjYXJwZW50ZXIlMjB3b29kd29ya2luZ3xlbnwwfHx8fDE3NzIwMzM0Njh8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "carpenter woodworking"
-    },
-    {
-      "id": "job-done-1",
-      "description": "Newly installed kitchen sink",
-      "imageUrl": "https://images.unsplash.com/photo-1657213077302-79e89564a042?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxraXRjaGVuJTIwcGx1bWJpbmd8ZW58MHx8fHwxNzcyMDMzNDY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "kitchen plumbing"
-    },
-    {
-      "id": "job-done-2",
-      "description": "Freshly painted modern living room",
-      "imageUrl": "https://images.unsplash.com/photo-1679939153545-95201a01fe5d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxob3VzZSUyMHBhaW50aW5nfGVufDB8fHx8MTc3MjAyNzEwMHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "house painting"
     }
   ]
 }
