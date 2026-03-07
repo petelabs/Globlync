@@ -20,12 +20,15 @@ import {
   Loader2,
   ExternalLink,
   Globe,
-  Sparkles
+  Sparkles,
+  X
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
 import Link from "next/link";
 import { getArbeitnowJobs } from "./actions";
+
+const SUGGESTED_KEYWORDS = ["Developer", "Designer", "Engineer", "Sales", "Manager", "Marketing"];
 
 export default function JobsBoardPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,11 +46,18 @@ export default function JobsBoardPage() {
     loadJobs();
   }, []);
 
-  const filteredJobs = externalJobs.filter(job => 
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredJobs = externalJobs.filter(job => {
+    const search = searchTerm.toLowerCase();
+    const title = (job.title || "").toLowerCase();
+    const company = (job.company_name || "").toLowerCase();
+    const location = (job.location || "").toLowerCase();
+    const description = (job.description || "").toLowerCase();
+
+    return title.includes(search) || 
+           company.includes(search) || 
+           location.includes(search) ||
+           description.includes(search);
+  });
 
   // Generate JSON-LD Schema for Google Search
   const generateSchemaMarkup = (job: any) => {
@@ -66,20 +76,53 @@ export default function JobsBoardPage() {
         "address": {
           "@type": "PostalAddress",
           "addressLocality": job.location,
-          "addressCountry": "MW" // Defaulting to Malawi for indexing or API location
+          "addressCountry": "MW" 
         }
       }
     };
   };
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-4">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight">National & Global Board</h1>
-          <p className="text-muted-foreground">Local Malawian opportunities supplemented by verified global remote roles.</p>
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-4 overflow-x-hidden">
+      <header className="flex flex-col gap-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Find Your Next Move.</h1>
+          <p className="text-muted-foreground text-sm font-medium">Explore national vacancies and global remote roles verified for Malawian professionals.</p>
         </div>
         
+        <div className="space-y-4">
+          <div className="relative group">
+            <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Input 
+              placeholder="Search keywords (Developer, Designer, Plumber)..." 
+              className="pl-12 h-16 rounded-2xl shadow-xl border-2 text-base w-full focus-visible:ring-primary"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm("")}
+                className="absolute right-4 top-5 p-1 hover:bg-muted rounded-full transition-colors"
+              >
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 px-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground self-center mr-2">Popular:</span>
+            {SUGGESTED_KEYWORDS.map(kw => (
+              <button
+                key={kw}
+                onClick={() => setSearchTerm(kw)}
+                className="px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold text-primary hover:bg-primary hover:text-white transition-all"
+              >
+                {kw}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <Card className="p-4 bg-primary/5 border-none flex items-center gap-3">
             <div className="bg-primary/10 p-2 rounded-lg">
@@ -100,119 +143,125 @@ export default function JobsBoardPage() {
             <div className="text-[10px] font-bold uppercase tracking-widest">Job Seekers</div>
           </Card>
         </div>
-
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-            <Input 
-              placeholder="Search by trade, company, or city..." 
-              className="pl-12 h-14 rounded-2xl shadow-sm border-2 text-base w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
       </header>
 
-      <AdBanner id={NATIVE_AD_ID} className="w-full mb-4" />
+      {/* Recommended Ad Tag placement: Between search and results */}
+      <div className="my-2">
+        <AdBanner id={NATIVE_AD_ID} className="w-full" />
+      </div>
 
       <section className="grid gap-4">
         <div className="flex items-center justify-between px-2 mb-2">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">Active Listings</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
+              {searchTerm ? `Search Results for "${searchTerm}"` : "Active Listings"}
+            </h2>
+            <Badge variant="outline" className="text-[10px] font-bold">{filteredJobs.length}</Badge>
+          </div>
           {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
         </div>
 
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job, idx) => (
             <div key={job.slug || idx} className="w-full">
-              {/* Inject JSON-LD Schema for each job */}
               <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
               />
-              <Card className="border-none shadow-sm hover:shadow-md transition-shadow overflow-hidden group w-full">
+              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full hover:-translate-y-0.5 border-l-4 border-l-transparent hover:border-l-primary">
                 <CardHeader className="pb-2">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words">
+                      <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight">
                         <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
                       </CardTitle>
-                      <div className="flex items-center gap-2 text-sm font-medium mt-1">
-                        <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground">
+                        <Building2 className="h-4 w-4 shrink-0" />
                         <span className="truncate">{job.company_name}</span>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0">
+                    <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full">
                       {job.remote ? "Remote" : "On-Site"}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <span className="truncate max-w-[150px]">{job.location}</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase">
-                      <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
+                      <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <span>Updated recently</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md">
                       <Globe className="h-3.5 w-3.5 shrink-0" />
                       <span>Arbeitnow Global</span>
                     </div>
                   </div>
-                  <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words">
+                  <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium">
                     {job.description ? job.description.replace(/<[^>]*>?/gm, '') : "Check full details on the application page."}
                   </p>
                 </CardContent>
                 <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4">
-                  <Button className="w-full sm:w-auto rounded-full px-8 font-black shadow-lg" asChild>
+                  <Button className="w-full sm:w-auto rounded-full px-8 font-black shadow-lg bg-primary" asChild>
                     <a href={job.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
-                      Apply Now
+                      Apply for Position
                     </a>
                   </Button>
-                  <Button variant="ghost" size="sm" className="w-full sm:w-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground" asChild>
-                    <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report Issue</a>
+                  <Button variant="ghost" size="sm" className="w-full sm:w-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary" asChild>
+                    <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report listing</a>
                   </Button>
                 </CardFooter>
               </Card>
             </div>
           ))
         ) : !isLoading ? (
-          <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed mx-2">
-            <Briefcase className="h-16 w-16 mx-auto mb-4 opacity-10" />
-            <p className="text-muted-foreground font-medium px-4">No matches found. Try searching for broader terms like "Worker" or "Professional".</p>
-            <Button variant="ghost" className="mt-4 text-primary font-bold" onClick={() => {setSearchTerm("");}}>View All Listings</Button>
+          <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed mx-2 flex flex-col items-center gap-4">
+            <div className="bg-white p-6 rounded-full shadow-inner">
+              <Search className="h-12 w-12 text-muted-foreground/30" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-muted-foreground font-black text-lg px-4">No results for "{searchTerm}"</p>
+              <p className="text-xs text-muted-foreground/60 px-4">Try searching for broader keywords like "Service", "Admin", or "Work".</p>
+            </div>
+            <Button variant="ghost" className="mt-4 text-primary font-black uppercase tracking-tighter" onClick={() => setSearchTerm("")}>Show all listings</Button>
           </div>
         ) : (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <Card key={i} className="h-48 animate-pulse bg-muted/20 border-none rounded-2xl" />
+              <Card key={i} className="h-48 animate-pulse bg-muted/20 border-none rounded-3xl" />
             ))}
           </div>
         )}
       </section>
 
-      <AdBanner id={NATIVE_AD_ID} className="w-full mt-4" />
+      <div className="mt-4">
+        <AdBanner id={NATIVE_AD_ID} className="w-full" />
+      </div>
 
-      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-10 rounded-[2.5rem] shadow-xl relative overflow-hidden mx-2 sm:mx-0">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Sparkles className="h-32 w-32" />
+      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden mx-2 sm:mx-0 group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+          <Sparkles className="h-48 w-48 md:h-64 md:w-64" />
         </div>
-        <div className="relative z-10 space-y-4">
-          <h3 className="font-black text-2xl tracking-tighter">Are you an Employer or Advertiser?</h3>
-          <p className="text-sm opacity-80 max-w-lg">Reach thousands of verified professionals across Malawi. Advertise your brand or post vacancies directly on our national network.</p>
+        <div className="relative z-10 space-y-6">
+          <div className="space-y-2">
+            <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Verified <br/><span className="text-secondary italic">Excellence.</span></h3>
+            <p className="text-sm md:text-base opacity-80 max-w-md leading-relaxed">
+              Reach thousands of verified professionals across Malawi. Advertise your brand or post vacancies directly on our national network.
+            </p>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Button variant="secondary" className="rounded-full font-black px-8 h-12 w-full sm:w-auto" asChild>
+            <Button variant="secondary" className="rounded-full font-black px-8 h-14 w-full sm:w-auto shadow-xl hover:scale-105 transition-transform" asChild>
               <a href="https://wa.me/0987066051" target="_blank">
-                <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp Us
+                <MessageSquare className="mr-2 h-5 w-5" /> WhatsApp Business
               </a>
             </Button>
-            <Button variant="outline" className="rounded-full font-black px-8 bg-transparent border-white hover:bg-white/10 h-12 w-full sm:w-auto" asChild>
+            <Button variant="outline" className="rounded-full font-black px-8 bg-transparent border-white hover:bg-white/10 h-14 w-full sm:w-auto" asChild>
               <a href="mailto:globlync+ads@gmail.com">
-                <Mail className="mr-2 h-4 w-4" /> Advertising Inquiries
+                <Mail className="mr-2 h-5 w-5" /> Ad Partnerships
               </a>
             </Button>
           </div>
