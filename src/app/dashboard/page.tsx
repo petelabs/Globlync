@@ -24,7 +24,8 @@ import {
   Briefcase,
   Trophy,
   ChevronRight,
-  ClipboardCheck
+  ClipboardCheck,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
@@ -32,33 +33,6 @@ import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { generateDailyTip, DailyTipOutput } from "@/ai/flows/generate-daily-tip-flow";
-
-const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string; description: string }> = {
-  'first-job': { 
-    name: "First Verified Job", 
-    icon: Medal, 
-    color: "text-blue-500 bg-blue-500/10",
-    description: "Successfully completed and verified your first job log."
-  },
-  'reliable-worker': { 
-    name: "Reliable Pro", 
-    icon: ShieldCheck, 
-    color: "text-primary bg-primary/10",
-    description: "Maintained a high trust score across 5+ verified jobs."
-  },
-  'perfect-streak': { 
-    name: "Customer Favorite", 
-    icon: ThumbsUp, 
-    color: "text-secondary bg-secondary/10",
-    description: "Received a 5-star rating on multiple consecutive jobs."
-  },
-  'growth-champion': { 
-    name: "Growth Leader", 
-    icon: Users, 
-    color: "text-pink-500 bg-pink-500/10",
-    description: "Invited 5+ peers to build the Globlync community."
-  },
-};
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -216,29 +190,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-4 border-none bg-muted/30 rounded-[2.5rem] overflow-hidden">
+        {/* NEW REWARD CENTER CARD */}
+        <Card className="md:col-span-4 border-none bg-secondary/10 rounded-[2.5rem] overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+            <Gift className="h-24 w-24" />
+          </div>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Briefcase className="h-4 w-4" /> Nearby Jobs
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-secondary flex items-center gap-2">
+              <Gift className="h-4 w-4" /> Reward Center
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="p-3 bg-white rounded-2xl border flex items-center justify-between">
-              <div className="space-y-0.5">
-                <p className="text-xs font-bold">Masonry Work</p>
-                <p className="text-[10px] text-muted-foreground">Lilongwe Area 25</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-primary" />
-            </div>
-            <div className="p-3 bg-white rounded-2xl border flex items-center justify-between opacity-50">
-              <div className="space-y-0.5">
-                <p className="text-xs font-bold">Solar Setup</p>
-                <p className="text-[10px] text-muted-foreground">Blantyre City</p>
-              </div>
-              <ChevronRight className="h-4 w-4" />
-            </div>
-            <Button variant="ghost" size="sm" className="w-full text-xs font-bold text-primary" asChild>
-              <Link href="/jobs">View National Board</Link>
+          <CardContent className="space-y-4 relative z-10">
+            <p className="text-[11px] font-medium leading-tight">Complete tasks to unlock <b>Free VIP</b> status.</p>
+            <Button size="sm" className="w-full rounded-full bg-secondary text-secondary-foreground font-black text-[10px]" asChild>
+              <Link href="/rewards">Earn Now <ChevronRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           </CardContent>
         </Card>
@@ -258,74 +223,15 @@ export default function DashboardPage() {
                   <p className="text-base opacity-80 max-w-lg">Unlock high-res uploads, national ranking boost, and a verified VIP badge for 30 days. Invest in your career growth today.</p>
                 </div>
               </div>
-              <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
-                <Link href="/pricing">Go VIP Now</Link>
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
+                  <Link href="/pricing">Go VIP Now</Link>
+                </Button>
+                <Link href="/rewards" className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 text-center">Or Earn it for Free</Link>
+              </div>
             </CardContent>
           </Card>
         )}
-
-        <Card className="md:col-span-4 bg-white border-none shadow-sm rounded-[3rem] overflow-hidden relative group">
-          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:rotate-12 transition-transform">
-            <Trophy className="h-24 w-24" />
-          </div>
-          <CardHeader>
-            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">National Ranking</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="relative flex h-48 w-48 items-center justify-center">
-              <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
-                <circle className="text-muted/10" strokeWidth="6" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
-                <circle className="text-primary" strokeWidth="6" strokeDasharray={263.8} strokeDashoffset={263.8 * (1 - Math.min(stats.trustScore / 250, 1))} strokeLinecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
-              </svg>
-              <div className="absolute flex flex-col items-center">
-                <span className="text-6xl font-black text-primary">{stats.trustScore}</span>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{stats.tier} Tier</span>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" className="mt-8 font-black text-primary" asChild>
-              <Link href="/search">View Leaderboard <ChevronRight className="ml-1 h-3 w-3" /></Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-8 border-none shadow-sm rounded-[3rem]">
-          <CardHeader>
-            <CardTitle className="text-2xl font-black">Professional Milestones</CardTitle>
-            <CardDescription>Verified badges earned through honest work and community leadership.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {stats.badges.length > 0 ? (
-              stats.badges.map((badgeId) => {
-                const badge = MILESTONE_BADGES[badgeId];
-                if (!badge) return null;
-                const Icon = badge.icon;
-                return (
-                  <div key={badgeId} className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-muted/20 border transition-all hover:scale-105 hover:shadow-md text-center group">
-                    <div className={cn("p-5 rounded-2xl shadow-sm transition-transform group-hover:rotate-12", badge.color)}>
-                      <Icon className="h-10 w-10" />
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black leading-tight uppercase tracking-tight block">{badge.name}</span>
-                      <p className="text-[8px] text-muted-foreground leading-tight">{badge.description}</p>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="col-span-full py-16 flex flex-col items-center text-center gap-4 bg-muted/10 rounded-[2.5rem] border-2 border-dashed">
-                <Award className="h-14 w-14 text-muted-foreground opacity-20" />
-                <div className="space-y-1 px-8">
-                  <p className="text-sm font-bold text-muted-foreground">No Milestones Yet</p>
-                  <p className="text-xs text-muted-foreground/60">Log your first verified job to unlock your professional badges.</p>
-                </div>
-                <Button variant="outline" size="sm" className="mt-4 rounded-full font-bold" asChild>
-                  <Link href="/work-log">Start Logging Work</Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

@@ -82,7 +82,6 @@ export function Navigation() {
   const unreadCount = unreadNotifications?.length || 0;
   
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
-  const isGrowthChampion = profile?.badgeIds?.includes('growth-champion');
   
   const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
 
@@ -99,7 +98,7 @@ export function Navigation() {
   const navItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
-    { label: "Invite", href: "/referrals", icon: Gift, authRequired: true },
+    { label: "Rewards", href: "/rewards", icon: Gift },
     { label: "Log Work", href: "/work-log", icon: ClipboardCheck, authRequired: true },
   ];
 
@@ -135,9 +134,9 @@ export function Navigation() {
               <>
                 {!isPro && (
                   <Button variant="ghost" size="sm" asChild className="hidden lg:flex text-secondary font-black hover:text-secondary hover:bg-secondary/10 rounded-full">
-                    <Link href="/pricing">
-                      <Crown className="mr-2 h-4 w-4 fill-secondary" />
-                      Go VIP
+                    <Link href="/rewards">
+                      <Gift className="mr-2 h-4 w-4 animate-bounce" />
+                      Free VIP
                     </Link>
                   </Button>
                 )}
@@ -158,9 +157,9 @@ export function Navigation() {
                           <AvatarImage src={displayPhoto} className="object-cover" />
                           <AvatarFallback className="bg-primary/10 text-primary font-black uppercase text-xs">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
-                        {(isGrowthChampion || isPro) && (
-                          <div className={cn("absolute -top-1 -right-1 rounded-full p-0.5 sm:p-1 border-2 border-white shadow-xl animate-pulse", isPro ? "bg-secondary" : "bg-pink-500")}>
-                            {isPro ? <Crown className="h-2 w-2 text-white fill-white" /> : <Sparkles className="h-2 w-2 text-white" />}
+                        {isPro && (
+                          <div className="absolute -top-1 -right-1 rounded-full p-0.5 sm:p-1 border-2 border-white shadow-xl animate-pulse bg-secondary">
+                            <Crown className="h-2 w-2 text-white fill-white" />
                           </div>
                         )}
                       </div>
@@ -189,13 +188,8 @@ export function Navigation() {
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
                       <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />Dashboard</Link>
                     </DropdownMenuItem>
-                    {!isPro && (
-                      <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
-                        <Link href="/pricing"><Crown className="mr-3 h-5 w-5 fill-secondary" />Unlock VIP Status</Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/referrals"><Gift className="mr-3 h-5 w-5 text-secondary" />Invite Others</Link>
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
+                      <Link href="/rewards"><Gift className="mr-3 h-5 w-5" />Earn Free VIP</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
                       <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />My Profile</Link>
@@ -241,25 +235,6 @@ export function Navigation() {
               </Link>
             );
           })}
-          {user && (
-            <Link 
-              href="/notifications" 
-              className={cn(
-                "flex flex-col items-center justify-center gap-1.5 transition-all flex-1 h-full relative", 
-                pathname === "/notifications" ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              <div className={cn("p-2 rounded-xl transition-all duration-300", pathname === "/notifications" && "bg-primary/10 scale-110")}>
-                <Bell className="h-6 w-6" />
-                {unreadCount > 0 && (
-                  <span className="absolute right-4 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[8px] font-black text-secondary-foreground border-2 border-background shadow-lg">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-              <span className="text-[9px] font-black tracking-tight uppercase">Alerts</span>
-            </Link>
-          )}
         </div>
       </nav>
     </>

@@ -16,7 +16,8 @@ import {
   Crown,
   Clock,
   Tag,
-  AlertCircle
+  AlertCircle,
+  Gift
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -105,16 +106,33 @@ export default function PricingPage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter sm:text-7xl text-primary">Go VIP.</h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-          Support the platform that grows your reputation across Malawi. Select your tier by entering the amount on PayChangu.
+          Support the platform that grows your reputation across Malawi. Select your tier or earn Pro status for free.
         </p>
       </header>
 
+      {/* NEW: EARN FOR FREE SECTION */}
+      <Card className="border-none bg-secondary/10 p-8 rounded-[3rem] shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+          <Gift className="h-40 w-40" />
+        </div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-2 text-center md:text-left">
+            <Badge className="bg-secondary text-secondary-foreground font-black mb-2">FREE ENTRY OPTION</Badge>
+            <h3 className="text-3xl font-black tracking-tight">Earn VIP for Free</h3>
+            <p className="text-sm opacity-80 max-w-md font-medium">Complete one quick offer from our partners to unlock 2 days of Pro features instantly. No cash required.</p>
+          </div>
+          <Button size="lg" className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-16 shadow-xl" asChild>
+            <Link href="/rewards">Go to Reward Center</Link>
+          </Button>
+        </div>
+      </Card>
+
       {/* Critical Payment Warning */}
-      <Alert variant="destructive" className="bg-destructive/5 border-2 border-destructive/20 rounded-[2rem] p-6 animate-in fade-in slide-in-from-top-4 duration-500">
+      <Alert variant="destructive" className="bg-destructive/5 border-2 border-destructive/20 rounded-[2rem] p-6">
         <AlertCircle className="h-6 w-6" />
-        <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">Important Payment Instructions</AlertTitle>
+        <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">Payment Warning</AlertTitle>
         <AlertDescription className="text-sm font-medium mt-2 ml-2 leading-relaxed">
-          activation is 100% automated. <b>You MUST enter the EXACT value</b> shown for your chosen plan. If you enter an incorrect amount on the payment page, your VIP benefits will NOT activate automatically and manual review will be required.
+          activation is 100% automated. <b>You MUST enter the EXACT value</b> shown for your chosen plan. Incorrect amounts will NOT activate automatically.
         </AlertDescription>
       </Alert>
 
@@ -135,15 +153,10 @@ export default function PricingPage() {
                 <h2 className="text-3xl font-black tracking-tighter">20% Welcome Discount!</h2>
                 <p className="opacity-80 font-medium">Upgrade now to claim your discount. Valid for any VIP tier.</p>
               </div>
-              <div className="flex flex-col items-center gap-4">
-                <div className="text-center px-8 py-4 bg-white/20 rounded-2xl border border-white/30 backdrop-blur-md">
-                  <p className="text-[10px] font-black uppercase opacity-70">Claim For Only</p>
-                  <p className="text-4xl font-black">MWK 240</p>
-                  <p className="text-[8px] font-bold">Standard VIP (30 Days)</p>
-                </div>
-                <Button variant="secondary" className="rounded-full px-8 font-black shadow-lg pointer-events-none">
-                  Claim Discount Now
-                </Button>
+              <div className="text-center px-8 py-4 bg-white/20 rounded-2xl border border-white/30 backdrop-blur-md">
+                <p className="text-[10px] font-black uppercase opacity-70">Claim For Only</p>
+                <p className="text-4xl font-black">MWK 240</p>
+                <p className="text-[8px] font-bold">Standard VIP (30 Days)</p>
               </div>
             </div>
           </Card>
@@ -157,7 +170,7 @@ export default function PricingPage() {
             <Crown className="h-8 w-8 text-secondary fill-secondary" />
             You are {activeBenefit.type}
           </h3>
-          <p className="text-base text-muted-foreground mt-2 font-medium">Your professional benefits are active until <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
+          <p className="text-base text-muted-foreground mt-2 font-medium">Active until <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
         </Card>
       )}
 
@@ -196,39 +209,13 @@ export default function PricingPage() {
                   <CreditCard className="mr-3 h-5 w-5" /> Pay MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}
                 </a>
               </Button>
-              <p className="text-[10px] text-center text-muted-foreground font-bold uppercase leading-tight px-4">
-                Enter exactly <span className="text-primary">MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}</span> at checkout.
+              <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
+                Enter Exactly: <span className="text-primary">MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}</span>
               </p>
             </CardFooter>
           </Card>
         ))}
       </section>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-none bg-muted/30 p-8 rounded-[3rem] flex items-start gap-6">
-          <div className="bg-primary/10 p-4 rounded-3xl text-primary">
-            <Info className="h-8 w-8" />
-          </div>
-          <div>
-            <h4 className="font-black text-lg mb-2 text-foreground">Flexible National Pricing</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              We absorb all transaction fees so you pay exactly what you see. Use any payment method on PayChangu (Airtel, Mpamba, Bank, Card).
-            </p>
-          </div>
-        </Card>
-
-        <Card className="border-none bg-destructive/5 p-8 rounded-[3rem] flex items-start gap-6 border-2 border-destructive/10">
-          <div className="bg-destructive/10 p-4 rounded-3xl text-destructive">
-            <AlertTriangle className="h-8 w-8" />
-          </div>
-          <div>
-            <h4 className="font-black text-lg text-destructive mb-2">Professional Policy</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              All VIP upgrades are non-refundable. Please ensure you enter the correct amount for your chosen tier. Incorrect values will result in activation delays.
-            </p>
-          </div>
-        </Card>
-      </div>
     </div>
   );
 }
