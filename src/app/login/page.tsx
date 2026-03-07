@@ -70,8 +70,10 @@ function LoginContent() {
         }
       }
 
+      // Ensure we always have a placeholder avatar
       const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
-      const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+      const fallbackAvatar = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop";
+      const randomAvatar = defaultAvatars.length > 0 ? defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)] : fallbackAvatar;
       const profilePictureUrl = auth.currentUser?.photoURL || randomAvatar;
 
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -100,6 +102,7 @@ function LoginContent() {
         updatedAt: serverTimestamp(),
       });
 
+      // Registry entries
       await setDoc(doc(db, "usernames", finalUsername), { uid });
       await setDoc(doc(db, "referralCodes", newCode), { uid });
 
@@ -188,7 +191,7 @@ function LoginContent() {
           Build your <span className="text-primary italic">Professional Identity.</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
-          Join Malawi's national network. Log verified work, earn trust points, and connect with local opportunities.
+          Join the national network. Log verified work, earn trust points, and connect with global opportunities.
         </p>
         
         <div className="grid grid-cols-3 gap-4 pt-4">
@@ -202,7 +205,7 @@ function LoginContent() {
           </div>
           <div className="flex flex-col items-center lg:items-start gap-2">
             <div className="bg-blue-500/10 p-3 rounded-2xl"><Globe className="h-6 w-6 text-blue-500" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">National Scale</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Global Scale</p>
           </div>
         </div>
       </div>

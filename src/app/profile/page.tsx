@@ -48,7 +48,8 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
-const IMAGE_SIZE_LIMIT = 800 * 1024; // 800KB
+// Increased to 3MB for free users
+const IMAGE_SIZE_LIMIT = 3 * 1024 * 1024; 
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -127,7 +128,7 @@ export default function ProfilePage() {
         toast({
           variant: "destructive",
           title: "File Too Large",
-          description: "Please select a photo under 800KB to ensure reliable syncing.",
+          description: "Please select a photo under 3MB to ensure reliable syncing.",
         });
         return;
       }
@@ -313,8 +314,8 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <p className="text-xs font-medium leading-relaxed opacity-90">
                 {isPro 
-                  ? "Your VIP status is currently active. You have full access to HD photos and national priority." 
-                  : "Unlock national ranking boost, and a professional VIP badge on your profile."}
+                  ? "Your VIP status is currently active. You have full access to HD photos and priority visibility." 
+                  : "Unlock national ranking boost and a professional VIP badge on your profile."}
               </p>
               {!isPro && (
                 <Button variant="secondary" className="w-full rounded-full font-black shadow-lg" asChild>
