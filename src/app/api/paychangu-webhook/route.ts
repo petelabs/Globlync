@@ -19,29 +19,22 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-/**
- * PayChangu Webhook Handler
- * Uses a double-verification system: 
- * 1. Signature check (if webhook secret is present)
- * 2. API Verification fallback (using Secret Key)
- */
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
     const body = JSON.parse(rawBody);
     const headersList = await headers();
     
-    // Extract data from the payload
     const data = body.data || body;
     const txRef = data.tx_ref || data.reference || data.id;
     const customerEmail = data.customer?.email || data.email;
     const amount = parseFloat(data.amount || "0");
 
-    console.log(`[Webhook] Received payment notification for ${customerEmail}. Reference: ${txRef}`);
+    console.log(`[Webhook] Received payment for ${customerEmail}. Amount: ${amount}. Ref: ${txRef}`);
 
     let isVerified = false;
 
-    // A. Try Signature Verification
+    // A. Signature Verification
     const webhookSecret = process.env.PAYCHANGU_WEBHOOK_SECRET;
     const signature = headersList.get('x-paychangu-signature');
 
@@ -50,14 +43,12 @@ export async function POST(req: Request) {
       const expectedSignature = hmac.update(rawBody).digest('hex');
       if (signature === expectedSignature) {
         isVerified = true;
-        console.log('[Webhook] Signature verification successful.');
       }
     }
 
-    // B. Fallback: API Verification (Using Secret Key from API Keys section)
+    // B. API Verification Fallback
     const secretKey = process.env.PAYCHANGU_SECRET_KEY;
     if (!isVerified && secretKey && txRef) {
-      console.log('[Webhook] Attempting API verification fallback via PayChangu API...');
       try {
         const verifyRes = await fetch(`https://api.paychangu.com/payment-verification/${txRef}`, {
           headers: {
@@ -66,12 +57,8 @@ export async function POST(req: Request) {
           }
         });
         const verifyData = await verifyRes.json();
-        
         if (verifyData.status === 'success' && (verifyData.data?.status === 'success' || verifyData.data?.status === 'completed')) {
           isVerified = true;
-          console.log('[Webhook] API verification successful.');
-        } else {
-          console.warn('[Webhook] API verification failed:', verifyData.message);
         }
       } catch (err) {
         console.error('[Webhook] API verification error:', err);
@@ -79,42 +66,36 @@ export async function POST(req: Request) {
     }
 
     if (!isVerified) {
-      console.warn('[Webhook] Could not verify payment source. Transaction ignored.');
       return NextResponse.json({ message: 'Verification failed' }, { status: 401 });
     }
 
-    /**
-     * Step 2: Update User Status based on Amount Paid (Revised Tiers)
-     */
     if (customerEmail) {
       const usersRef = db.collection('workerProfiles');
       const q = await usersRef.where('contactEmail', '==', customerEmail).limit(1).get();
 
       if (q.empty) {
-        console.warn(`[Webhook] No profile found for email: ${customerEmail}`);
         return NextResponse.json({ message: 'User not found' });
       }
 
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // Professional Tier Logic (Balanced for Malawi)
-      let tierName = "Standard Pro";
-      let days = 7;
+      // Flexible Tier Logic (All 30 Days as requested)
+      // Standard: 300 (or 240 discounted)
+      // Silver: 500 (or 400 discounted)
+      // Gold: 1000 (or 800 discounted)
+      let tierName = "Standard VIP";
+      let days = 30;
 
-      if (amount >= 1000) {
-        tierName = "Gold Pro";
-        days = 30;
-      } else if (amount >= 600) {
-        tierName = "Silver Pro";
-        days = 15;
-      } else if (amount >= 300) {
-        tierName = "Standard Pro";
-        days = 7;
+      if (amount >= 800) {
+        tierName = "Gold VIP";
+      } else if (amount >= 400) {
+        tierName = "Silver VIP";
+      } else if (amount >= 240) {
+        tierName = "Standard VIP";
       } else {
-        // Micro-payment safety net (Trial)
-        tierName = "Trial Pro";
-        days = 2;
+        tierName = "Trial VIP";
+        days = 2; // Micro-payment safety
       }
 
       const expiryDate = new Date();
@@ -135,22 +116,19 @@ export async function POST(req: Request) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Notify the user in-app
-      const notifRef = db.collection('workerProfiles').doc(userDoc.id).collection('notifications');
+      const notifRef = userDoc.ref.collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `VIP Status Verified! You've been upgraded to ${tierName} for ${days} days. Amount: MWK ${amount}. Expiry: ${expiryDate.toLocaleDateString()}.`,
+        message: `VIP Status Activated! You've been upgraded to ${tierName} for ${days} days. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log(`[Webhook] Upgraded ${customerEmail} to ${tierName}`);
       return NextResponse.json({ status: 'success' });
     }
 
     return NextResponse.json({ message: 'No email found' });
   } catch (error: any) {
-    console.error('[Webhook Error]:', error.message);
     return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
   }
 }

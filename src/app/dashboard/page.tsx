@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -18,7 +19,11 @@ import {
   ThumbsUp,
   Lightbulb,
   ArrowRight,
-  Loader2
+  Loader2,
+  Eye,
+  Briefcase,
+  Trophy,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
@@ -100,6 +105,7 @@ export default function DashboardPage() {
       totalVerified: verifiedJobs.length,
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
+      profileViews: profile?.profileViews || 0,
       tier: (profile?.trustScore || 0) > 100 ? "Platinum" : (profile?.trustScore || 0) > 50 ? "Gold" : "Bronze",
       badges: profile?.badgeIds || [],
       referrals: profile?.referralCount || 0
@@ -114,14 +120,14 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tighter flex items-center gap-2">
             Professional Hub
-            {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 rounded-full font-black text-[10px] uppercase"><Crown className="h-3 w-3 mr-1" /> Pro Member</Badge>}
+            {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 rounded-full font-black text-[10px] uppercase"><Crown className="h-3 w-3 mr-1" /> VIP Member</Badge>}
           </h1>
           <p className="text-muted-foreground text-sm">Manage your reputation and global professional visibility.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full font-bold" asChild>
             <Link href={`/public/${user.uid}`}>
-              <QrCode className="mr-2 h-4 w-4" /> My Resume
+              <QrCode className="mr-2 h-4 w-4" /> My Profile
             </Link>
           </Button>
           <Button size="sm" className="rounded-full shadow-lg font-bold" asChild>
@@ -132,20 +138,60 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* Stats Quick View */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Eye className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Views</p>
+              <p className="text-xl font-black">{stats.profileViews}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><TrendingUp className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Score</p>
+              <p className="text-xl font-black">{stats.trustScore}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><ClipboardCheck className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Jobs</p>
+              <p className="text-xl font-black">{stats.totalVerified}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Star className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Rating</p>
+              <p className="text-xl font-black">{stats.averageRating}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-12">
         {/* AI Daily Tip Card */}
-        <Card className="md:col-span-12 border-none bg-primary/5 rounded-[2rem] overflow-hidden relative group">
+        <Card className="md:col-span-8 border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <Lightbulb className="h-32 w-32" />
           </div>
-          <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-            <div className="flex items-center gap-6">
-              <div className="bg-primary/10 p-4 rounded-2xl">
-                <Lightbulb className="h-8 w-8 text-primary animate-pulse" />
+          <CardContent className="p-8 flex flex-col items-start gap-6 relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="bg-primary/10 p-3 rounded-2xl">
+                <Lightbulb className="h-6 w-6 text-primary animate-pulse" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Daily Expert Advice</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Expert Daily Mentorship</span>
                   {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
                 </div>
                 {dailyTip ? (
@@ -161,80 +207,107 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-            <Button variant="ghost" className="rounded-full text-primary font-bold group-hover:translate-x-1 transition-transform" asChild>
-              <Link href="/profile">Update Trade <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Button variant="ghost" className="rounded-full text-primary font-bold group-hover:translate-x-1 transition-transform p-0" asChild>
+              <Link href="/profile">Change Trade Skill <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Nearby Opportunities Preview */}
+        <Card className="md:col-span-4 border-none bg-muted/30 rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Briefcase className="h-4 w-4" /> Nearby Jobs
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="p-3 bg-white rounded-2xl border flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-xs font-bold">Masonry Work</p>
+                <p className="text-[10px] text-muted-foreground">Lilongwe Area 25</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-primary" />
+            </div>
+            <div className="p-3 bg-white rounded-2xl border flex items-center justify-between opacity-50">
+              <div className="space-y-0.5">
+                <p className="text-xs font-bold">Solar Setup</p>
+                <p className="text-[10px] text-muted-foreground">Blantyre City</p>
+              </div>
+              <ChevronRight className="h-4 w-4" />
+            </div>
+            <Button variant="ghost" size="sm" className="w-full text-xs font-bold text-primary" asChild>
+              <Link href="/jobs">View National Board</Link>
             </Button>
           </CardContent>
         </Card>
 
         {!isPro && (
-          <Card className="md:col-span-12 border-none bg-primary text-primary-foreground shadow-2xl overflow-hidden relative group rounded-[2rem]">
+          <Card className="md:col-span-12 border-none bg-primary text-primary-foreground shadow-2xl overflow-hidden relative group rounded-[3rem]">
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-              <Zap className="h-32 w-32" />
+              <Zap className="h-40 w-40" />
             </div>
-            <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 text-center md:text-left">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="bg-white/20 p-5 rounded-3xl shadow-inner">
-                  <Crown className="h-10 w-10 text-secondary" />
+            <CardContent className="p-10 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="bg-white/20 p-6 rounded-[2rem] shadow-inner">
+                  <Crown className="h-12 w-12 text-secondary fill-secondary" />
                 </div>
-                <div>
-                  <h3 className="text-2xl font-black tracking-tight">Boost Your Career!</h3>
-                  <p className="text-sm opacity-80 max-w-md">Unlock 10 HD photos per job, priority AI verification, and a professional Pro badge. Help cover our storage and AI costs.</p>
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-black tracking-tight">VIP Professional Upgrade</h3>
+                  <p className="text-base opacity-80 max-w-lg">Unlock 10 HD photos per job, national ranking boost, and a verified VIP badge for 30 days. Invest in your career growth today.</p>
                 </div>
               </div>
-              <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-14 text-lg hover:scale-105 transition-transform shadow-xl" asChild>
-                <Link href="/pricing">Upgrade to Pro</Link>
+              <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
+                <Link href="/pricing">Go VIP Now</Link>
               </Button>
             </CardContent>
           </Card>
         )}
 
-        <Card className="md:col-span-12 border-none bg-accent/30 rounded-[2rem] overflow-hidden">
-          <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6 text-center md:text-left">
-              <div className="bg-white p-5 rounded-3xl shadow-sm">
-                <Gift className="h-8 w-8 text-primary" />
+        <Card className="md:col-span-12 border-none bg-accent/30 rounded-[3rem] overflow-hidden">
+          <CardContent className="p-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-8 text-center md:text-left">
+              <div className="bg-white p-6 rounded-[2rem] shadow-sm">
+                <Gift className="h-10 w-10 text-primary" />
               </div>
-              <div>
-                <h3 className="text-xl font-black tracking-tight">Invite Peers, Earn Pro!</h3>
-                <p className="text-sm text-muted-foreground">You have invited {stats.referrals} professionals. Reach 10 to unlock Pro status for free!</p>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black tracking-tight">Earn VIP for Free!</h3>
+                <p className="text-sm text-muted-foreground">Invite 10 professionals to join the national network and unlock VIP features for free. You have invited {stats.referrals} so far.</p>
               </div>
             </div>
-            <Button variant="outline" className="rounded-full border-primary text-primary font-black px-8 h-12 hover:bg-primary hover:text-white transition-all" asChild>
-              <Link href="/referrals">Invite & Earn</Link>
+            <Button variant="outline" className="rounded-full border-primary text-primary font-black px-10 h-14 hover:bg-primary hover:text-white transition-all text-lg" asChild>
+              <Link href="/referrals">Invite & Unlock</Link>
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-4 bg-white border-none shadow-sm rounded-[2rem] overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-4 opacity-5">
-            <TrendingUp className="h-24 w-24" />
+        <Card className="md:col-span-4 bg-white border-none shadow-sm rounded-[3rem] overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:rotate-12 transition-transform">
+            <Trophy className="h-24 w-24" />
           </div>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl font-black uppercase tracking-widest text-[10px] text-muted-foreground">Trust Ranking</CardTitle>
+            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">National Ranking</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-6 text-center">
-            <div className="relative flex h-40 w-40 items-center justify-center">
+          <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="relative flex h-48 w-48 items-center justify-center">
               <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
-                <circle className="text-muted/20" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
-                <circle className="text-primary" strokeWidth="8" strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - Math.min(stats.trustScore / 250, 1))} strokeLinecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                <circle className="text-muted/10" strokeWidth="6" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
+                <circle className="text-primary" strokeWidth="6" strokeDasharray={263.8} strokeDashoffset={263.8 * (1 - Math.min(stats.trustScore / 250, 1))} strokeLinecap="round" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
               </svg>
               <div className="absolute flex flex-col items-center">
-                <span className="text-5xl font-black text-primary">{stats.trustScore}</span>
+                <span className="text-6xl font-black text-primary">{stats.trustScore}</span>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{stats.tier} Tier</span>
               </div>
             </div>
-            <div className="mt-8 flex items-center gap-2 bg-muted/30 px-4 py-2 rounded-full">
-              <Star className="h-4 w-4 fill-secondary text-secondary" />
-              <span className="text-sm font-black">{stats.averageRating} Avg Rating</span>
-            </div>
+            <Button variant="ghost" size="sm" className="mt-8 font-black text-primary" asChild>
+              <Link href="/search">View Leaderboard <ChevronRight className="ml-1 h-3 w-3" /></Link>
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-8 border-none shadow-sm rounded-[2rem]">
+        <Card className="md:col-span-8 border-none shadow-sm rounded-[3rem]">
           <CardHeader>
-            <CardTitle className="text-xl font-black">Professional Badges</CardTitle>
-            <CardDescription>Earned milestones based on verified manual labor and community growth.</CardDescription>
+            <CardTitle className="text-2xl font-black">Professional Milestones</CardTitle>
+            <CardDescription>Verified badges earned through honest work and community leadership.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {stats.badges.length > 0 ? (
@@ -243,26 +316,26 @@ export default function DashboardPage() {
                 if (!badge) return null;
                 const Icon = badge.icon;
                 return (
-                  <div key={badgeId} className="flex flex-col items-center gap-3 p-5 rounded-3xl bg-muted/20 border transition-all hover:scale-105 hover:shadow-md text-center group">
-                    <div className={cn("p-4 rounded-2xl shadow-sm transition-transform group-hover:rotate-12", badge.color)}>
-                      <Icon className="h-8 w-8" />
+                  <div key={badgeId} className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-muted/20 border transition-all hover:scale-105 hover:shadow-md text-center group">
+                    <div className={cn("p-5 rounded-2xl shadow-sm transition-transform group-hover:rotate-12", badge.color)}>
+                      <Icon className="h-10 w-10" />
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[10px] font-black leading-tight uppercase tracking-tighter block">{badge.name}</span>
+                      <span className="text-[10px] font-black leading-tight uppercase tracking-tight block">{badge.name}</span>
                       <p className="text-[8px] text-muted-foreground leading-tight">{badge.description}</p>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="col-span-full py-16 flex flex-col items-center text-center gap-4 bg-muted/10 rounded-3xl border-2 border-dashed">
-                <Award className="h-12 w-12 text-muted-foreground opacity-20" />
+              <div className="col-span-full py-16 flex flex-col items-center text-center gap-4 bg-muted/10 rounded-[2.5rem] border-2 border-dashed">
+                <Award className="h-14 w-14 text-muted-foreground opacity-20" />
                 <div className="space-y-1 px-8">
-                  <p className="text-sm font-bold text-muted-foreground">No Badges Yet</p>
-                  <p className="text-xs text-muted-foreground/60">Log your first job or invite a friend to unlock your first professional milestone.</p>
+                  <p className="text-sm font-bold text-muted-foreground">No Milestones Yet</p>
+                  <p className="text-xs text-muted-foreground/60">Log your first verified job or invite a peer to unlock your professional badges.</p>
                 </div>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/work-log">Start Logging <PlusCircle className="ml-2 h-4 w-4" /></Link>
+                <Button variant="outline" size="sm" className="mt-4 rounded-full font-bold" asChild>
+                  <Link href="/work-log">Start Logging Work</Link>
                 </Button>
               </div>
             )}
