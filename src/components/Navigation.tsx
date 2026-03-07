@@ -47,7 +47,7 @@ export function Logo({ className }: { className?: string }) {
       />
       <div className="flex flex-col -space-y-1 text-left">
         <span className="text-xl font-black tracking-tighter text-primary">Globlync</span>
-        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">National Network</span>
+        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">Global Network</span>
       </div>
     </div>
   );
@@ -117,7 +117,7 @@ export function Navigation() {
               onClick={() => router.push('/search')}
             >
               <Search className="h-4 w-4 mr-3 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
-              <span className="text-sm font-bold tracking-tight truncate">Search national network...</span>
+              <span className="text-sm font-bold tracking-tight truncate">Search global network...</span>
             </Button>
             <Button 
               variant="ghost" 
@@ -179,7 +179,7 @@ export function Navigation() {
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">{profile?.tradeSkill || "New Worker"}</p>
+                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">{profile?.tradeSkill || "New Global Worker"}</p>
                           </div>
                         </div>
                       </div>

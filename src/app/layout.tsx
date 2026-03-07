@@ -17,8 +17,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Globlync | Evidence-Based Reputation for Malawi',
-  description: 'Globlync helps professionals in Malawi build a digital, evidence-based reputation with AI-verified job logs and verified ratings.',
+  title: 'Globlync | Global Evidence-Based Reputation',
+  description: 'Globlync helps professionals worldwide build a digital, evidence-based reputation with AI-verified job logs and verified ratings. Headquartered in Malawi, serving the globe.',
   manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
@@ -28,19 +28,19 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://globlync.vercel.app',
-    title: 'Globlync | Malawian Professional Reputation',
-    description: 'Verifiable trust for skilled professionals across Malawi.',
+    title: 'Globlync | Global Professional Reputation',
+    description: 'Verifiable trust for skilled professionals everywhere. Headquartered in Malawi.',
     images: [{ 
       url: '/og-image.png',
       width: 1200,
       height: 630,
-      alt: 'Globlync Professional Network'
+      alt: 'Globlync Global Professional Network'
     }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Globlync | Malawian Professional Reputation',
-    description: 'Verifiable trust for skilled professionals across Malawi.',
+    title: 'Globlync | Global Professional Reputation',
+    description: 'Verifiable trust for skilled professionals everywhere. Headquartered in Malawi.',
     images: ['/og-image.png'],
   }
 };

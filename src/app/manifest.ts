@@ -3,9 +3,9 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Globlync | Evidence-Based Reputation',
-    short_name: 'Globlync',
-    description: 'Verifiable trust and digital reputation for skilled informal workers.',
+    name: 'Globlync | Global Evidence-Based Reputation',
+    short_name: 'Globlync Global',
+    description: 'Verifiable trust and digital reputation for skilled workers everywhere. Headquartered in Malawi.',
     start_url: '/',
     display: 'standalone',
     background_color: '#FDFDFD',

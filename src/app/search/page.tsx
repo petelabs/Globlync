@@ -34,9 +34,9 @@ import { cn } from "@/lib/utils";
 import { AdBanner } from "@/components/AdBanner";
 
 const SKILL_CATEGORIES = [
-  { name: "Construction", icon: HardHat, skills: ["Mason", "Carpenter", "Welder", "Painter"] },
-  { name: "Home Services", icon: Home, skills: ["Plumber", "Electrician", "Gardener", "Solar Tech"] },
-  { name: "Technical", icon: Laptop, skills: ["Mechanic", "IT Support", "Repair", "Tailor"] },
+  { name: "Tech & Dev", icon: Laptop, skills: ["Developer", "Designer", "IT", "Engineer"] },
+  { name: "Services", icon: Home, skills: ["Plumber", "Electrician", "Gardener", "Solar"] },
+  { name: "Skilled Trades", icon: HardHat, skills: ["Mason", "Welder", "Painter", "Carpenter"] },
   { name: "Expert Pro", icon: GraduationCap, skills: ["Tutor", "Accountant", "Sales", "Driver"] },
 ];
 
@@ -81,17 +81,17 @@ export default function SearchPage() {
       <header className="flex flex-col gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-primary">
-            <MapPin className="h-4 w-4" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">National Search</span>
+            <Globe className="h-4 w-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Discovery (HQ: Malawi)</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tighter">Discover <span className="italic text-primary">Malawi's Best.</span></h1>
-          <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals in your district.</p>
+          <h1 className="text-4xl font-black tracking-tighter">Discover <span className="italic text-primary">The Best.</span></h1>
+          <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals worldwide.</p>
         </div>
 
         <div className="relative group">
           <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input 
-            placeholder="Search by trade, name, or city..." 
+            placeholder="Search by trade, name, or city worldwide..." 
             className="pl-14 h-16 rounded-[1.5rem] shadow-xl border-2 focus-visible:ring-primary text-lg font-medium" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -126,7 +126,7 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {/* National Leaderboard - Shown when not searching */}
+      {/* Global Leaderboard - Shown when not searching */}
       {!searchTerm && !selectedCategory && (
         <Card className="border-none bg-primary/5 rounded-[3rem] overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-8 pb-4">
@@ -134,7 +134,7 @@ export default function SearchPage() {
               <div className="bg-primary/10 p-3 rounded-2xl">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle className="text-2xl font-black">National Leaderboard</CardTitle>
+              <CardTitle className="text-2xl font-black">Global Leaderboard</CardTitle>
             </div>
             <Badge variant="secondary" className="bg-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase">Top Rated</Badge>
           </CardHeader>
@@ -179,7 +179,7 @@ export default function SearchPage() {
       <section className="space-y-6">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-2xl font-black flex items-center gap-3">
-            {searchTerm || selectedCategory ? "Search Results" : "Verified Professionals"}
+            {searchTerm || selectedCategory ? "Search Results" : "Verified Professionals Everywhere"}
             {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
           </h2>
           <Badge variant="outline" className="font-black text-[10px] uppercase">{filteredWorkers.length} Experts found</Badge>
@@ -216,7 +216,7 @@ export default function SearchPage() {
                     <div className="mt-6 flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
                         <MapPin className="h-3.5 w-3.5" /> 
-                        {worker.serviceAreas?.[0] || "All Malawi"}
+                        {worker.serviceAreas?.[0] || "Everywhere"}
                       </div>
                       <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-2 transition-transform" />
                     </div>

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/Navigation";
-import { MapPin } from "lucide-react";
+import { MapPin, Globe } from "lucide-react";
 
 export function Footer() {
   return (
@@ -13,10 +13,13 @@ export function Footer() {
           <div className="space-y-6 text-center md:text-left">
             <Logo className="justify-center md:justify-start" />
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
-              Building a verifiable labor market for every professional in Malawi.
+              Building a verifiable labor market for every professional everywhere.
             </p>
             <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
-              <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (National Support)
+              <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (Global Support)
+            </div>
+            <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
+              <Globe className="h-3 w-3" /> Serving: US, UK, EU, Africa & More
             </div>
           </div>
 
@@ -24,7 +27,7 @@ export function Footer() {
             <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Platform</h4>
             <nav className="flex flex-col gap-3">
               <Link href="/search" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Find Professionals</Link>
-              <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Find Work</Link>
+              <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Global Jobs</Link>
               <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Advertising</Link>
             </nav>
           </div>
@@ -39,7 +42,7 @@ export function Footer() {
           </div>
 
           <div className="space-y-6 text-center md:text-left">
-            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Office</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Headquarters</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Petediano Tech<br/>
               Dzenje Village, Mulanje<br/>
@@ -49,7 +52,7 @@ export function Footer() {
         </div>
 
         <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-          <p>© 2026 Petediano Tech • Malawi</p>
+          <p>© 2026 Petediano Tech • Global Professional Network</p>
           <div className="flex gap-6">
             <Link href="/contact" className="hover:text-primary transition-colors">Report an Ad</Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

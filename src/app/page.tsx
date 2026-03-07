@@ -64,13 +64,13 @@ export default function Home() {
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
           <Sparkles className="h-4 w-4" />
-          <span>Professional Reputation for Every Malawian Expert</span>
+          <span>Professional Reputation for Every Expert Everywhere</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
           Trust is the new <span className="text-primary font-black animate-shimmer-text">Currency.</span>
         </h1>
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
-          Globlync connects formal and informal <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
+          Globlync connects <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers globally. Build a digital, AI-verified resume that proves your skills to clients worldwide.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
@@ -90,19 +90,19 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-12">
           <div className="flex flex-col items-center text-center gap-4">
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
-              National Purpose
+              Global Purpose (HQ: Malawi)
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">For Every Professional in Malawi</h2>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">For Every Professional, Everywhere</h2>
             <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              Whether you are an informal artisan, a formal specialist, or an advertiser looking to reach a nationwide audience, Globlync is your professional hub. We bridge the trust gap with transparent verification for the entire Malawian labor market.
+              Whether you are an artisan in London, a specialist in Lilongwe, or a developer in New York, Globlync is your professional hub. We bridge the trust gap with transparent verification for the entire global labor market.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { title: "Informal Workers", desc: "Artisans building portable trust across districts.", icon: Users },
-              { title: "Formal Sector", desc: "Professional specialists verifying expertise.", icon: Building2 },
-              { title: "Job Seekers", desc: "Seeking opportunities within Malawi.", icon: SearchIcon },
-              { title: "Advertisers", desc: "Businesses connecting with Malawian audiences.", icon: Sparkles }
+              { title: "Global Workers", desc: "Professionals building portable trust across borders.", icon: Users },
+              { title: "Formal Sector", desc: "Corporate specialists verifying expertise.", icon: Building2 },
+              { title: "Job Seekers", desc: "Seeking remote and on-site opportunities.", icon: SearchIcon },
+              { title: "Advertisers", desc: "Businesses connecting with global audiences.", icon: Sparkles }
             ].map((item, i) => (
               <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default group">
                 <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:text-white transition-colors">
@@ -118,27 +118,27 @@ export default function Home() {
 
       {/* How it Works - The Trust Loop */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
-        <h2 className="text-3xl font-bold text-center mb-16">Building National Trust</h2>
+        <h2 className="text-3xl font-bold text-center mb-16">Building Universal Trust</h2>
         <div className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
           {[
             {
               step: "01",
               title: "Create Profile",
-              desc: "Sign up as a professional. Upload a professional photo to build instant trust in your district.",
+              desc: "Sign up as a professional. Upload a professional photo to build instant trust in your city.",
               icon: Camera,
               color: "bg-blue-500"
             },
             {
               step: "02",
               title: "Log & Verify",
-              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise to anyone in Malawi.",
+              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise to anyone, globally.",
               icon: QrCode,
               color: "bg-primary"
             },
             {
               step: "03",
               title: "Scale Career",
-              desc: "Your verifiable reputation attracts higher-paying jobs and better national opportunities.",
+              desc: "Your verifiable reputation attracts higher-paying jobs and better global opportunities.",
               icon: Zap,
               color: "bg-secondary"
             }

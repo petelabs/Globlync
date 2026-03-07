@@ -66,7 +66,7 @@ export default function JobsBoardPage() {
       "@context": "https://schema.org/",
       "@type": "JobPosting",
       "title": job.title,
-      "description": job.description ? job.description.substring(0, 200) + "..." : "Professional job opportunity via Globlync.",
+      "description": job.description ? job.description.substring(0, 200) + "..." : "Professional job opportunity via Globlync Global.",
       "datePosted": job.created_at || new Date().toISOString(),
       "hiringOrganization": {
         "@type": "Organization",
@@ -77,7 +77,7 @@ export default function JobsBoardPage() {
         "address": {
           "@type": "PostalAddress",
           "addressLocality": job.location,
-          "addressCountry": "MW" 
+          "addressCountry": "US" 
         }
       }
     };
@@ -87,15 +87,15 @@ export default function JobsBoardPage() {
     <div className="flex flex-col gap-6 py-4 max-w-full mx-auto px-3 sm:px-4 overflow-x-hidden w-full box-border">
       <header className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Find Your Next Move.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Explore national vacancies and remote roles verified for Malawian professionals.</p>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Global Career Moves.</h1>
+          <p className="text-muted-foreground text-sm font-medium">Explore remote roles and international vacancies verified for global professionals.</p>
         </div>
         
         <div className="space-y-4 w-full">
           <div className="relative group w-full">
             <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
-              placeholder="Search keywords (Developer, Designer, Plumber)..." 
+              placeholder="Search keywords (Developer, Designer, Engineer)..." 
               className="pl-12 h-16 rounded-2xl shadow-xl border-2 text-base w-full focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -137,7 +137,7 @@ export default function JobsBoardPage() {
         <div className="flex items-center justify-between px-2 mb-2">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
-              {searchTerm ? `Search Results for "${searchTerm}"` : "Active National Listings"}
+              {searchTerm ? `Search Results for "${searchTerm}"` : "Active Global & Remote Listings"}
             </h2>
             <Badge variant="outline" className="text-[10px] font-bold">{filteredJobs.length}</Badge>
           </div>
@@ -167,7 +167,7 @@ export default function JobsBoardPage() {
                       </div>
                     </div>
                     <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full whitespace-nowrap">
-                      {job.remote ? "Remote" : "On-Site"}
+                      {job.remote ? "Remote" : "Global"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -188,7 +188,7 @@ export default function JobsBoardPage() {
                 </CardContent>
                 <CardFooter className="bg-muted/30 flex justify-between items-center p-4 w-full min-w-0">
                   <div className="flex items-center gap-2 text-[10px] font-black text-primary/60 uppercase">
-                    <Sparkles className="h-3 w-3" /> Professional Listing
+                    <Sparkles className="h-3 w-3" /> Global Professional Listing
                   </div>
                 </CardFooter>
               </Card>
@@ -201,9 +201,9 @@ export default function JobsBoardPage() {
             </div>
             <div className="space-y-1">
               <p className="text-muted-foreground font-black text-lg px-4">No results for "{searchTerm}"</p>
-              <p className="text-xs text-muted-foreground/60 px-4">Try searching for broader keywords like "Service", "Admin", or "Work".</p>
+              <p className="text-xs text-muted-foreground/60 px-4">Try searching for broader keywords like "Developer", "Designer", or "Engineer".</p>
             </div>
-            <Button variant="ghost" className="mt-4 text-primary font-black uppercase tracking-tighter" onClick={() => setSearchTerm("")}>Show all listings</Button>
+            <Button variant="ghost" className="mt-4 font-black uppercase tracking-tighter" onClick={() => setSearchTerm("")}>Show all listings</Button>
           </div>
         ) : (
           <div className="space-y-4 w-full">
@@ -224,15 +224,15 @@ export default function JobsBoardPage() {
         </div>
         <div className="relative z-10 space-y-6 w-full">
           <div className="space-y-2">
-            <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Verified <br/><span className="text-secondary italic">Excellence.</span></h3>
+            <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Global <br/><span className="text-secondary italic">Excellence.</span></h3>
             <p className="text-sm md:text-base opacity-80 max-w-md leading-relaxed">
-              Reach thousands of verified professionals in Malawi. Advertise your brand or post vacancies directly on our network.
+              Reach thousands of verified professionals worldwide. Advertise your brand or post vacancies directly on our network.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <Button variant="secondary" className="rounded-full font-black px-8 h-14 w-full sm:w-auto shadow-xl hover:scale-105 transition-transform" asChild>
               <a href="https://wa.me/0987066051" target="_blank">
-                <MessageSquare className="mr-2 h-5 w-5" /> WhatsApp Business
+                <MessageSquare className="mr-2 h-5 w-5" /> Contact Partnerships
               </a>
             </Button>
             <Button variant="outline" className="rounded-full font-black px-8 bg-transparent border-white hover:bg-white/10 h-14 w-full sm:w-auto" asChild>
