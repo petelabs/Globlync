@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe } from "lucide-react";
+import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -29,8 +29,9 @@ function LoginContent() {
   const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [desiredUsername, setDesiredUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
   
   const auth = useAuth();
   const db = useFirestore();
@@ -40,32 +41,7 @@ function LoginContent() {
 
   const referralCode = searchParams.get('ref');
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && isSignInWithEmailLink(auth, window.location.href)) {
-      let emailForLink = window.localStorage.getItem('emailForSignIn');
-      if (!emailForLink) {
-        emailForLink = window.prompt('Please provide your email for confirmation');
-      }
-      if (emailForLink) {
-        setIsLoading(true);
-        signInWithEmailLink(auth, emailForLink, window.location.href)
-          .then((result) => {
-            window.localStorage.removeItem('emailForSignIn');
-            handlePostAuth(result.user.uid);
-          })
-          .catch((error: any) => {
-            toast({
-              variant: "destructive",
-              title: "Link Verification Failed",
-              description: error.message,
-            });
-            setIsLoading(false);
-          });
-      }
-    }
-  }, [auth, router, toast]);
-
-  const handlePostAuth = async (uid: string) => {
+  const handlePostAuth = async (uid: string, manualName?: string, manualUsername?: string) => {
     if (!db) return;
     
     const profileRef = doc(db, "workerProfiles", uid);
@@ -89,7 +65,7 @@ function LoginContent() {
           const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
           addDoc(inviterNotifRef, {
             type: "profile_update",
-            message: "New Referral! Someone joined Globlync using your link. You're closer to earning your VIP status!",
+            message: "New Referral! Someone joined Globlync using your link.",
             isRead: false,
             createdAt: serverTimestamp()
           }).catch(() => {});
@@ -102,10 +78,16 @@ function LoginContent() {
 
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
+      const finalName = manualName || auth.currentUser?.displayName || "New Worker";
+      // Auto-placeholder username if not provided: globlync_firstname_lastname
+      const fallbackUsername = `globlync_${finalName.toLowerCase().replace(/\s+/g, '_')}_${uid.substring(0, 4)}`;
+      const finalUsername = manualUsername?.toLowerCase() || fallbackUsername;
+
       await setDoc(profileRef, {
         id: uid,
-        name: auth.currentUser?.displayName || "New Worker",
-        username: `worker_${uid.substring(0, 5)}`,
+        name: finalName,
+        username: finalUsername,
+        lastUsernameUpdate: serverTimestamp(),
         tradeSkill: "",
         bio: "",
         profilePictureUrl,
@@ -117,19 +99,18 @@ function LoginContent() {
         badgeIds: [],
         onboardingCompleted: false,
         isPro: false,
-        contactEmail: auth.currentUser?.email || "",
+        contactEmail: auth.currentUser?.email || email || "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
+      await setDoc(doc(db, "usernames", finalUsername), { uid });
       await setDoc(doc(db, "referralCodes", newCode), { uid });
 
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
       await addDoc(notifRef, {
         type: "app",
-        message: referralCode 
-          ? "Welcome! You've received 10 starter Trust Points for joining via invitation. Start building your portfolio today!" 
-          : "Welcome to Globlync! Start by logging your manual work to build an evidence-based professional reputation.",
+        message: "Welcome to Globlync! Start by logging your manual work to build an evidence-based professional reputation.",
         isRead: false,
         createdAt: serverTimestamp()
       });
@@ -154,14 +135,30 @@ function LoginContent() {
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    if (isSignUp && (!fullName || !desiredUsername)) {
+      toast({ variant: "destructive", title: "Registration Incomplete", description: "Name and Desired Username are required." });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      let result;
       if (isSignUp) {
-        result = await createUserWithEmailAndPassword(auth, email, password);
+        // Check if username is taken first
+        const nameRef = doc(db!, "usernames", desiredUsername.toLowerCase());
+        const nameSnap = await getDoc(nameRef);
+        if (nameSnap.exists()) {
+          toast({ variant: "destructive", title: "Username Taken", description: "Please pick another username." });
+          setIsLoading(false);
+          return;
+        }
+
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await handlePostAuth(result.user.uid, fullName, desiredUsername);
       } else {
-        result = await signInWithEmailAndPassword(auth, email, password);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        await handlePostAuth(result.user.uid);
       }
-      await handlePostAuth(result.user.uid);
     } catch (error: any) {
       toast({ variant: "destructive", title: "Auth Failed", description: error.message });
       setIsLoading(false);
@@ -175,10 +172,10 @@ function LoginContent() {
           <Logo className="scale-150 mb-4" />
         </div>
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
-          Build your <span className="text-primary italic">Global Reputation.</span>
+          Build your <span className="text-primary italic">Professional Identity.</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
-          Join the professional movement. Log verified work, earn trust points, and connect with global opportunities.
+          Join Malawi's national network. Log verified work, earn trust points, and connect with local opportunities.
         </p>
         
         <div className="grid grid-cols-3 gap-4 pt-4">
@@ -192,21 +189,12 @@ function LoginContent() {
           </div>
           <div className="flex flex-col items-center lg:items-start gap-2">
             <div className="bg-blue-500/10 p-3 rounded-2xl"><Globe className="h-6 w-6 text-blue-500" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Global Work</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">National Scale</p>
           </div>
         </div>
       </div>
 
       <div className="relative">
-        {referralCode && (
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[280px] z-20">
-            <div className="bg-secondary text-secondary-foreground p-3 rounded-2xl flex items-center gap-3 shadow-xl border-2 border-white animate-bounce">
-              <Gift className="h-5 w-5 shrink-0" />
-              <p className="text-[10px] font-black leading-none uppercase">Referral active: +10 Trust Points!</p>
-            </div>
-          </div>
-        )}
-        
         <Card className="border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
           <CardHeader className="bg-muted/30 pb-8 pt-10 text-center">
             <CardDescription className="font-bold text-sm">
@@ -235,6 +223,18 @@ function LoginContent() {
             </div>
 
             <form onSubmit={handleEmailAuth} className="grid gap-4">
+              {isSignUp && (
+                <>
+                  <div className="grid gap-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Full Name</Label>
+                    <Input placeholder="e.g. John Doe" className="h-14 rounded-2xl bg-muted/10 border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired Username</Label>
+                    <Input placeholder="e.g. jdoe_plumber" className="h-14 rounded-2xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
+                  </div>
+                </>
+              )}
               <div className="grid gap-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Email</Label>
                 <Input type="email" placeholder="professional@example.com" className="h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />

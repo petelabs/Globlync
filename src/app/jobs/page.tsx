@@ -123,27 +123,6 @@ export default function JobsBoardPage() {
             ))}
           </div>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full">
-          <Card className="p-4 bg-primary/5 border-none flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg">
-              <Users className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-[10px] font-bold uppercase tracking-widest">Informal Sector</div>
-          </Card>
-          <Card className="p-4 bg-primary/5 border-none flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg">
-              <Building2 className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-[10px] font-bold uppercase tracking-widest">Formal Sector</div>
-          </Card>
-          <Card className="p-4 bg-primary/5 border-none flex items-center gap-3 col-span-2 md:col-span-1">
-            <div className="bg-primary/10 p-2 rounded-lg">
-              <GraduationCap className="h-4 w-4 text-primary" />
-            </div>
-            <div className="text-[10px] font-bold uppercase tracking-widest">Job Seekers</div>
-          </Card>
-        </div>
       </header>
 
       <div className="my-2 w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
@@ -177,7 +156,10 @@ export default function JobsBoardPage() {
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2 w-full min-w-0">
                     <div className="flex-1 min-w-0 w-full">
                       <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight w-full">
-                        <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
+                        <a href={job.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          {job.title}
+                          <ExternalLink className="h-4 w-4 opacity-30 shrink-0" />
+                        </a>
                       </CardTitle>
                       <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground w-full">
                         <Building2 className="h-4 w-4 shrink-0" />
@@ -199,10 +181,6 @@ export default function JobsBoardPage() {
                       <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <span>Updated</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md">
-                      <Globe className="h-3.5 w-3.5 shrink-0" />
-                      <span>National</span>
-                    </div>
                   </div>
                   <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full">
                     {job.description ? job.description.replace(/<[^>]*>?/gm, '') : "Check full details on the application page."}
@@ -212,9 +190,6 @@ export default function JobsBoardPage() {
                   <div className="flex items-center gap-2 text-[10px] font-black text-primary/60 uppercase">
                     <Sparkles className="h-3 w-3" /> Professional Listing
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary" asChild>
-                    <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report</a>
-                  </Button>
                 </CardFooter>
               </Card>
             </div>

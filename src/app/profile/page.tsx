@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +26,8 @@ import {
   Mail,
   Phone,
   Crown,
-  Zap
+  Zap,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +41,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { subDays, formatDistanceToNow } from "date-fns";
 
 const MALAWI_DISTRICTS = [
   "Chitipa", "Karonga", "Likoma", "Mzimba", "Nkhata Bay", "Rumphi", "Mzuzu City",
@@ -94,6 +97,28 @@ export default function ProfilePage() {
     }
   }, [profile, user?.email]);
 
+  const canChangeUsername = useMemo(() => {
+    if (!profile?.lastUsernameUpdate) return true;
+    const lastUpdate = profile.lastUsernameUpdate?.seconds 
+      ? new Date(profile.lastUsernameUpdate.seconds * 1000) 
+      : new Date(profile.lastUsernameUpdate);
+    
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - lastUpdate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 14;
+  }, [profile?.lastUsernameUpdate]);
+
+  const nextChangeDate = useMemo(() => {
+    if (!profile?.lastUsernameUpdate) return null;
+    const lastUpdate = profile.lastUsernameUpdate?.seconds 
+      ? new Date(profile.lastUsernameUpdate.seconds * 1000) 
+      : new Date(profile.lastUsernameUpdate);
+    const date = new Date(lastUpdate);
+    date.setDate(date.getDate() + 14);
+    return date;
+  }, [profile?.lastUsernameUpdate]);
+
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +170,24 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!workerRef || !db || !user) return;
 
+    const data: any = {
+      name: profile?.name || user.displayName || "Worker",
+      tradeSkill: trade,
+      bio: bio,
+      isAvailable,
+      whatsappNumber: whatsapp,
+      phoneNumber: phone,
+      contactEmail: contactEmail,
+      serviceAreas,
+      updatedAt: serverTimestamp(),
+    };
+
     if (username !== profile?.username) {
+      if (!canChangeUsername) {
+        toast({ variant: "destructive", title: "Wait a bit", description: `You can only change your username once every 2 weeks. Next change: ${nextChangeDate?.toLocaleDateString()}` });
+        return;
+      }
+
       const nameRef = doc(db, "usernames", username.toLowerCase());
       const snap = await getDoc(nameRef);
       if (snap.exists() && snap.data().uid !== user.uid) {
@@ -156,20 +198,9 @@ export default function ProfilePage() {
       if (profile?.username) {
         await deleteDoc(doc(db, "usernames", profile.username.toLowerCase()));
       }
+      data.username = username.toLowerCase();
+      data.lastUsernameUpdate = serverTimestamp();
     }
-
-    const data: any = {
-      name: user.displayName || "Worker",
-      username: username.toLowerCase(),
-      tradeSkill: trade,
-      bio: bio,
-      isAvailable,
-      whatsappNumber: whatsapp,
-      phoneNumber: phone,
-      contactEmail: contactEmail,
-      serviceAreas,
-      updatedAt: serverTimestamp(),
-    };
 
     if (newProfilePic) {
       data.profilePictureUrl = newProfilePic;
@@ -231,7 +262,7 @@ export default function ProfilePage() {
               <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <Avatar className="h-32 w-32 border-4 border-primary shadow-xl group-hover:opacity-80 transition-opacity">
                   <AvatarImage src={displayPhoto} className="object-cover" />
-                  <AvatarFallback className="text-2xl font-black">{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                  <AvatarFallback className="text-2xl font-black">{profile?.name?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                   <Camera className="h-8 w-8 text-white" />
@@ -247,7 +278,7 @@ export default function ProfilePage() {
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
               </div>
               <div>
-                <h2 className="text-xl font-bold">{user?.displayName || "Skilled Pro"}</h2>
+                <h2 className="text-xl font-bold">{profile?.name || "Skilled Pro"}</h2>
                 <Badge variant={isAvailable ? "default" : "secondary"} className="mt-1 font-black">
                   {isAvailable ? "Available for Hire" : "Currently Busy"}
                 </Badge>
@@ -259,7 +290,6 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          {/* VIP / PRO Status Card */}
           <Card className={cn(
             "border-none shadow-xl rounded-[2rem] overflow-hidden relative group",
             isPro ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"
@@ -286,21 +316,6 @@ export default function ProfilePage() {
               )}
             </CardContent>
           </Card>
-
-          <Card className="border-none shadow-md bg-muted/50 hidden md:block">
-            <CardHeader className="text-center pb-2">
-              <CardTitle className="text-sm font-bold flex items-center justify-center gap-2">
-                <QrCode className="h-4 w-4" />
-                Public QR Code
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4 pb-6 text-center">
-              <div className="bg-white p-4 rounded-xl shadow-inner">
-                {publicUrl && <QRCodeSVG value={publicUrl} size={160} fgColor="hsl(var(--primary))" />}
-              </div>
-              <p className="text-[10px] opacity-70">Clients scan this to verify your reputation on-site.</p>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="md:col-span-2">
@@ -312,13 +327,21 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="username">Public Username</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="username">Public Username</Label>
+                    {!canChangeUsername && (
+                      <Badge variant="outline" className="text-[8px] font-black uppercase text-muted-foreground flex items-center gap-1">
+                        <Lock className="h-2 w-2" /> Locked for {formatDistanceToNow(nextChangeDate!, { addSuffix: false })}
+                      </Badge>
+                    )}
+                  </div>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input 
                       id="username" 
                       placeholder="e.g. john_plumber"
                       value={username} 
+                      disabled={!canChangeUsername}
                       onChange={(e) => {
                         setUsername(e.target.value);
                         checkUsername(e.target.value);
@@ -326,7 +349,8 @@ export default function ProfilePage() {
                       className={cn(
                         "pl-10 h-12 rounded-xl",
                         usernameStatus === "available" && "border-green-500",
-                        usernameStatus === "taken" && "border-destructive"
+                        usernameStatus === "taken" && "border-destructive",
+                        !canChangeUsername && "bg-muted cursor-not-allowed opacity-50"
                       )} 
                     />
                     <div className="absolute right-3 top-3.5">
