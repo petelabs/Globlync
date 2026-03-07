@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User, CheckCircle2, Ticket } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -28,6 +27,7 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [desiredUsername, setDesiredUsername] = useState("");
+  const [manualReferral, setManualReferral] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
@@ -37,7 +37,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const referralCode = searchParams.get('ref');
+  const urlReferral = searchParams?.get('ref') || "";
 
   const handlePostAuth = async (uid: string, manualName?: string, manualUsername?: string) => {
     if (!db) return;
@@ -47,8 +47,10 @@ function LoginContent() {
     
     if (!snap.exists()) {
       let invitedBy = "";
-      if (referralCode) {
-        const referralDocRef = doc(db, "referralCodes", referralCode);
+      const finalReferral = urlReferral || manualReferral;
+
+      if (finalReferral) {
+        const referralDocRef = doc(db, "referralCodes", finalReferral.trim().toUpperCase());
         const referralDocSnap = await getDoc(referralDocRef);
         
         if (referralDocSnap.exists()) {
@@ -70,7 +72,7 @@ function LoginContent() {
         }
       }
 
-      // Professional Gradient Avatars (No stock images)
+      // Professional Gradient Avatars
       const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
       const fallbackTeal = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA3OTZCO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA0RDQwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
       const randomAvatar = defaultAvatars.length > 0 ? defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)] : fallbackTeal;
@@ -89,7 +91,7 @@ function LoginContent() {
         tradeSkill: "",
         bio: "",
         profilePictureUrl,
-        trustScore: referralCode ? 10 : 0,
+        trustScore: invitedBy ? 10 : 0,
         referralCode: newCode,
         invitedBy,
         referralCount: 0,
@@ -125,11 +127,22 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
     try {
       const result = await signInWithPopup(auth, provider);
       await handlePostAuth(result.user.uid);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Login Failed", description: error.message });
+      console.error("Google Auth Error:", error);
+      let errorMessage = "Ensure you are using a standard browser and check your internet.";
+      if (error.code === 'auth/popup-blocked') errorMessage = "The sign-in popup was blocked. Please allow popups for this site.";
+      if (error.code === 'auth/unauthorized-domain') errorMessage = "This domain is not authorized. Please check your Firebase Console settings.";
+      
+      toast({ 
+        variant: "destructive", 
+        title: "Login Failed", 
+        description: errorMessage 
+      });
       setIsLoading(false);
     }
   };
@@ -173,7 +186,7 @@ function LoginContent() {
           <CheckCircle2 className="h-20 w-20 text-primary" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-4xl font-black tracking-tighter">Success!</h2>
+          <h2 className="text-4xl font-black tracking-tighter text-primary">Success!</h2>
           <p className="text-muted-foreground text-lg font-medium">Preparing your professional dashboard...</p>
         </div>
         <Loader2 className="h-6 w-6 animate-spin text-primary opacity-50" />
@@ -191,7 +204,7 @@ function LoginContent() {
           Build your <span className="text-primary italic">Professional Identity.</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
-          Join the national network. Log verified work, earn trust points, and connect with global opportunities.
+          Join the global network. Log verified work, earn trust points, and connect with remote opportunities worldwide.
         </p>
         
         <div className="grid grid-cols-3 gap-4 pt-4">
@@ -257,6 +270,14 @@ function LoginContent() {
                     <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired Username</Label>
                     <Input placeholder="e.g. jdoe_plumber" className="h-14 rounded-2xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
                   </div>
+                  {!urlReferral && (
+                    <div className="grid gap-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60 flex items-center gap-1">
+                        <Ticket className="h-3 w-3" /> Referral Code (Optional)
+                      </Label>
+                      <Input placeholder="e.g. GL-ABC123" className="h-14 rounded-2xl bg-primary/5 border-2 border-dashed border-primary/20" value={manualReferral} onChange={(e) => setManualReferral(e.target.value.toUpperCase())} />
+                    </div>
+                  )}
                 </>
               )}
               <div className="grid gap-2">
@@ -287,7 +308,12 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-[80vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+    <Suspense fallback={
+      <div className="flex min-h-[80vh] items-center justify-center flex-col gap-4">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="font-black text-[10px] uppercase tracking-widest animate-pulse">Initializing Global Gateway...</p>
+      </div>
+    }>
       <LoginContent />
     </Suspense>
   );
