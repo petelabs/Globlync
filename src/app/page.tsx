@@ -62,12 +62,12 @@ export default function Home() {
         <div className="mb-4 animate-in zoom-in duration-700">
           <Logo className="scale-[2] mb-8" />
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-float">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
           <Sparkles className="h-4 w-4" />
           <span>Professional Reputation for Every Malawian Expert</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Trust is the new <span className="animate-shimmer-text italic font-black">Currency.</span>
+          Trust is the new <span className="text-primary italic font-black">Currency.</span>
         </h1>
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
           Globlync connects formal and informal <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
@@ -116,7 +116,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it Works */}
+      {/* How it Works - The Trust Loop */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
         <h2 className="text-3xl font-bold text-center mb-16">Building National Trust</h2>
         <div className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
