@@ -59,6 +59,9 @@ export default function Home() {
   const { data: testimonials } = useCollection(appRatingsQuery);
   const { data: newcomers, isLoading: isNewcomersLoading } = useCollection(newcomersQuery);
 
+  // User's specific native banner zone ID
+  const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
+
   return (
     <div className="flex flex-col gap-16 py-6">
       {/* Hero Section */}
@@ -74,7 +77,7 @@ export default function Home() {
           Trust is the new <span className="animate-shimmer-text italic">Currency.</span>
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-          Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof.
+          Globlync helps skilled professionals—plumbers, electricians, cleaners—build a digital resume backed by AI-verified proof, anywhere in Malawi.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
@@ -87,7 +90,7 @@ export default function Home() {
       </section>
 
       {/* Ad placement 1: Hero Bottom */}
-      <AdBanner id="hero-bottom-ad" className="max-w-4xl mx-auto w-full" />
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full" />
 
       {/* Explicit Purpose Section (for Google Verification) */}
       <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10">
@@ -96,9 +99,9 @@ export default function Home() {
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
               Our Mission & Purpose
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Empowering the Malawian Labor Market</h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Globlync is a professional reputation platform designed specifically for informal workers in Malawi. Our purpose is to bridge the trust gap between skilled manual professionals and their clients through transparent, evidence-based job verification and AI-assisted portfolio building.
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">Empowering the Malawian Labor Market</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed text-center">
+              Globlync is a national professional reputation platform designed specifically for informal workers across Malawi. Our purpose is to bridge the trust gap between skilled manual professionals and their clients through transparent, evidence-based job verification and AI-assisted portfolio building.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
@@ -106,8 +109,8 @@ export default function Home() {
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center">
                 <ShieldCheck className="text-primary h-6 w-6" />
               </div>
-              <h3 className="font-bold text-xl">Digital Reputation</h3>
-              <p className="text-sm text-muted-foreground">We provide workers with a portable digital ID that proves their skills and reliability to any potential employer.</p>
+              <h3 className="font-bold text-xl">National Reputation</h3>
+              <p className="text-sm text-muted-foreground">We provide workers with a portable digital ID that proves their skills and reliability to any employer, from Lilongwe to Blantyre.</p>
             </div>
             <div className="bg-white p-8 rounded-[2rem] shadow-sm space-y-3 border border-primary/5">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center">
@@ -121,7 +124,7 @@ export default function Home() {
       </section>
 
       {/* Ad placement 2: Mid-Content */}
-      <AdBanner id="mid-content-ad" className="max-w-4xl mx-auto w-full" />
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full" />
 
       {/* New Workers Showcase */}
       {newcomers && newcomers.length > 0 && (
@@ -131,7 +134,7 @@ export default function Home() {
               <div className="bg-secondary/20 p-1.5 rounded-lg">
                 <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
               </div>
-              <h2 className="text-2xl font-black tracking-tight">New to Globlync</h2>
+              <h2 className="text-2xl font-black tracking-tight">Professionals Across Malawi</h2>
             </div>
             <Button variant="ghost" size="sm" className="text-primary font-bold" asChild>
               <Link href="/search">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
@@ -243,7 +246,7 @@ export default function Home() {
       </section>
 
       {/* Ad placement 3: Footer Top */}
-      <AdBanner id="footer-top-ad" className="max-w-4xl mx-auto w-full mb-8" />
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full mb-8" />
 
       {/* Footer Branding */}
       <footer className="bg-primary/5 py-16 border-t mt-12 px-6">
@@ -253,10 +256,10 @@ export default function Home() {
             <div className="space-y-6 text-center md:text-left">
               <Logo className="justify-center md:justify-start" />
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
-                Building a verifiable manual labor market. Headquartered in Dzenje Village, Mulanje, Malawi.
+                Building a verifiable manual labor market for all of Malawi.
               </p>
               <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
-                <MapPin className="h-3 w-3" /> Mulanje, Malawi
+                <MapPin className="h-3 w-3" /> Headquarters: Mulanje, Malawi
               </div>
             </div>
 

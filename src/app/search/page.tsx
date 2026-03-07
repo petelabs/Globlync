@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -90,12 +91,14 @@ export default function SearchPage() {
     });
   }, [allWorkers, searchTerm, selectedCategory]);
 
+  const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
+
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">
       <header className="flex flex-col gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tight text-primary">Discover Professionals</h1>
-          <p className="text-muted-foreground text-sm">Search thousands of verified workers in Malawi.</p>
+          <p className="text-muted-foreground text-sm">Search thousands of verified workers across Malawi.</p>
         </div>
 
         <div className="flex gap-2">
@@ -139,11 +142,11 @@ export default function SearchPage() {
       </header>
 
       {/* Ad placement 4: Search results top */}
-      <AdBanner id="search-results-top-ad" className="w-full" />
+      <AdBanner id={NATIVE_AD_ID} className="w-full" />
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
-          {searchTerm || selectedCategory ? "Results" : "Top Verified Workers"}
+          {searchTerm || selectedCategory ? "Results Across Malawi" : "Top Verified Professionals"}
           {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </h2>
 
@@ -186,7 +189,7 @@ export default function SearchPage() {
       </section>
 
       {/* Ad placement 5: Search Footer */}
-      <AdBanner id="search-footer-ad" className="w-full mt-8" />
+      <AdBanner id={NATIVE_AD_ID} className="w-full mt-8" />
     </div>
   );
 }

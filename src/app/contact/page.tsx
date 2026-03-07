@@ -32,7 +32,7 @@ const CONTACT_POINTS = [
   },
   {
     title: "Advertising",
-    description: "Connect with our network of thousands of verified manual workers.",
+    description: "Connect with our network of verified manual workers across Malawi.",
     email: "globlync+ads@gmail.com",
     subject: "Globlync Partnership Inquiry",
     icon: Briefcase,
@@ -74,7 +74,7 @@ export default function ContactPage() {
             Get in <span className="text-primary italic">Touch.</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Headquartered in Mulanje, building the future of manual labor in Malawi. We support every verified professional on our platform.
+            Headquartered in Mulanje, building the future of manual labor across all of Malawi. We support every verified professional nationwide.
           </p>
         </div>
       </header>
@@ -119,7 +119,7 @@ export default function ContactPage() {
             <MapPin className="h-6 w-6 text-primary" />
           </div>
           <h4 className="font-bold uppercase tracking-widest text-[10px]">Headquarters</h4>
-          <p className="text-sm font-medium">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">Near Dzenje Secondary School</span></p>
+          <p className="text-sm font-medium">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">Petediano Tech Office</span></p>
         </Card>
         <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
           <div className="bg-primary/10 p-4 rounded-full mb-2">
@@ -148,7 +148,7 @@ export default function ContactPage() {
           <div className="space-y-2">
             <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Fast WhatsApp Support</h2>
             <p className="opacity-80 max-w-md mx-auto text-lg leading-relaxed">
-              For urgent verification issues or payment support, our WhatsApp line is monitored by human experts in Mulanje.
+              For urgent verification issues or payment support across Malawi, our WhatsApp line is monitored by human experts at our Mulanje HQ.
             </p>
           </div>
           <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
@@ -159,7 +159,7 @@ export default function ContactPage() {
 
       <footer className="text-center py-10 border-t mt-8">
         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-4">
-          Managed by Petediano Tech • Mulanje, Malawi
+          Managed by Petediano Tech • Malawi
         </p>
         <div className="flex justify-center gap-8 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
           <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

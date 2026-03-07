@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -17,11 +18,13 @@ import {
   MessageSquare
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { AdBanner } from "@/components/AdBanner";
 
 const JOB_LISTINGS: any[] = [];
 
 export default function JobsBoardPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
 
   const filteredJobs = JOB_LISTINGS.filter(job => 
     job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,14 +37,14 @@ export default function JobsBoardPage() {
       <header className="flex flex-col gap-4">
         <div>
           <h1 className="text-3xl font-bold">Find Work</h1>
-          <p className="text-muted-foreground">Available opportunities for skilled workers in Malawi.</p>
+          <p className="text-muted-foreground">Available opportunities for skilled workers across Malawi.</p>
         </div>
         
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
             <Input 
-              placeholder="Search jobs..." 
+              placeholder="Search jobs anywhere in Malawi..." 
               className="pl-10 h-12 rounded-full shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -49,6 +52,8 @@ export default function JobsBoardPage() {
           </div>
         </div>
       </header>
+
+      <AdBanner id={NATIVE_AD_ID} className="w-full mb-4" />
 
       <section className="grid gap-4">
         {filteredJobs.length > 0 ? (
@@ -92,10 +97,12 @@ export default function JobsBoardPage() {
         ) : (
           <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
             <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-10" />
-            <p className="text-muted-foreground">No matching job listings found.</p>
+            <p className="text-muted-foreground">No matching job listings found in Malawi yet.</p>
           </div>
         )}
       </section>
+
+      <AdBanner id={NATIVE_AD_ID} className="w-full mt-4" />
 
       <Card className="border-none bg-primary/5 text-primary text-center p-8 rounded-[2.5rem]">
         <h3 className="font-bold text-xl mb-2">Want to post a job?</h3>
@@ -108,7 +115,7 @@ export default function JobsBoardPage() {
           </Button>
           <Button variant="outline" className="rounded-full border-primary" asChild>
             <a href="mailto:globlync.pro@gmail.com">
-              <Mail className="mr-2 h-4 w-4" /> Email globlync.pro@gmail.com
+              <Mail className="mr-2 h-4 w-4" /> Email Headquarters
             </a>
           </Button>
         </div>
