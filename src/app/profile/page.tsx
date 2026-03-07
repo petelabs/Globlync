@@ -26,7 +26,8 @@ import {
   Mail,
   Phone,
   Crown,
-  Zap
+  Zap,
+  Clock
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -46,7 +47,7 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
-const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024; // Increased to 5MB
+const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024; 
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -80,6 +81,7 @@ export default function ProfilePage() {
   const [isAreasOpen, setIsAreasOpen] = useState(false);
   const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [bioCooldownText, setBioCooldownText] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -91,6 +93,21 @@ export default function ProfilePage() {
       setPhone(profile.phoneNumber || "");
       setContactEmail(profile.contactEmail || user?.email || "");
       setServiceAreas(profile.serviceAreas || []);
+      
+      // Calculate Bio Cooldown
+      if (profile.lastBioPolishAt && !profile.isPro) {
+        const lastUsed = new Date(profile.lastBioPolishAt);
+        const cooldownDays = 14;
+        const resetDate = new Date(lastUsed.getTime() + cooldownDays * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        
+        if (now < resetDate) {
+          const diffDays = Math.ceil((resetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          setBioCooldownText(`Reset in ${diffDays}d`);
+        } else {
+          setBioCooldownText(null);
+        }
+      }
     }
   }, [profile, user?.email]);
 
@@ -196,10 +213,27 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Trade Required", description: "Enter your trade first." });
       return;
     }
+    
+    if (bioCooldownText && !isPro) {
+      toast({ 
+        variant: "destructive", 
+        title: "AI Tool on Cooldown", 
+        description: `Free users can polish bios every 14 days. ${bioCooldownText}. Upgrade to VIP for unlimited use.` 
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const result = await generateProfessionalBio({ trade });
       setBio(result.bio);
+      
+      if (workerRef) {
+        updateDocumentNonBlocking(workerRef, {
+          lastBioPolishAt: new Date().toISOString()
+        });
+      }
+
       toast({ title: "Bio Refined", description: "AI has polished your professional story." });
     } catch (error) {
       toast({ variant: "destructive", title: "AI Error", description: "Could not refine bio." });
@@ -347,10 +381,27 @@ export default function ProfilePage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="bio">Professional Summary</Label>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateBio} disabled={isGenerating} className="text-primary font-bold">
-                      {isGenerating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                      AI Polish
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {bioCooldownText && !isPro && (
+                        <span className="text-[10px] font-black text-muted-foreground uppercase flex items-center gap-1">
+                          <Clock className="h-2.5 w-2.5" /> {bioCooldownText}
+                        </span>
+                      )}
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleGenerateBio} 
+                        disabled={isGenerating || (!!bioCooldownText && !isPro)} 
+                        className={cn(
+                          "font-bold h-8 rounded-lg",
+                          (bioCooldownText && !isPro) ? "opacity-50 grayscale" : "text-primary"
+                        )}
+                      >
+                        {isGenerating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                        AI Polish
+                      </Button>
+                    </div>
                   </div>
                   <Textarea 
                     id="bio" 

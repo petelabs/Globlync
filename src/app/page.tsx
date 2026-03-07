@@ -1,9 +1,10 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ShieldCheck, 
   QrCode, 
@@ -27,18 +28,23 @@ import {
   Search as SearchIcon,
   Camera,
   Zap,
-  HardHat
+  HardHat,
+  Lightbulb,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
+import { collection, query, orderBy, limit, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
+import { generateDailyTip } from "@/ai/flows/generate-daily-tip-flow";
 
 export default function Home() {
   const db = useFirestore();
+  const [globalInsight, setGlobalInsight] = useState<{ title: string; content: string } | null>(null);
+  const [isInsightLoading, setIsInsightLoading] = useState(true);
 
   const appRatingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -51,6 +57,48 @@ export default function Home() {
   }, [appRatingsRef]);
 
   const { data: testimonials } = useCollection(appRatingsQuery);
+
+  // Global Daily Insight Logic (1 API call per 24h for ALL users)
+  useEffect(() => {
+    async function syncDailyInsight() {
+      if (!db) return;
+      const insightRef = doc(db, "system", "dailyInsight");
+      
+      try {
+        const snap = await getDoc(insightRef);
+        const now = new Date();
+        let needsUpdate = true;
+
+        if (snap.exists()) {
+          const data = snap.data();
+          const lastUpdate = data.updatedAt?.toDate() || new Date(0);
+          const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
+          
+          if (diffHours < 24) {
+            setGlobalInsight({ title: data.title, content: data.content });
+            needsUpdate = false;
+          }
+        }
+
+        if (needsUpdate) {
+          const result = await generateDailyTip({ trade: "Global Professional (All Skills)" });
+          const insightData = {
+            title: result.tipTitle,
+            content: result.tipContent,
+            updatedAt: serverTimestamp()
+          };
+          await setDocumentNonBlocking(insightRef, insightData, { merge: true });
+          setGlobalInsight({ title: result.tipTitle, content: result.tipContent });
+        }
+      } catch (err) {
+        console.error("Insight sync error:", err);
+      } finally {
+        setIsInsightLoading(false);
+      }
+    }
+
+    syncDailyInsight();
+  }, [db]);
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
@@ -78,6 +126,37 @@ export default function Home() {
             <Link href="/search">Find Verified Pros</Link>
           </Button>
         </div>
+      </section>
+
+      {/* Global AI Daily Insight */}
+      <section className="max-w-4xl mx-auto w-full px-4">
+        <Card className="border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group shadow-inner border-2 border-primary/10">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Lightbulb className="h-32 w-32" />
+          </div>
+          <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8 relative z-10">
+            <div className="bg-primary/10 p-6 rounded-[2rem] shadow-sm shrink-0">
+              <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+            </div>
+            <div className="space-y-2 flex-1 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Global Daily Insight</Badge>
+                {isInsightLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+              </div>
+              {globalInsight ? (
+                <>
+                  <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalInsight.title}</h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{globalInsight.content}</p>
+                </>
+              ) : (
+                <div className="space-y-2 py-2">
+                  <div className="h-6 w-48 bg-muted animate-pulse rounded-md" />
+                  <div className="h-4 w-full bg-muted animate-pulse rounded-md" />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Reward Promotion */}
