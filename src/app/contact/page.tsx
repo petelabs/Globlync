@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -24,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 const CONTACT_POINTS = [
   {
     title: "Support & Help",
-    description: "Need help with your profile, trust score, or manual job verification?",
+    description: "Need help with your profile, trust score, or job verification?",
     email: "globlync+support@gmail.com",
     subject: "Globlync Support Request",
     icon: LifeBuoy,
@@ -33,7 +32,7 @@ const CONTACT_POINTS = [
   },
   {
     title: "Advertising & Partnerships",
-    description: "Connect with our network or place your own business ads across Malawi.",
+    description: "Connect with our network or place your own business ads globally.",
     email: "globlync+ads@gmail.com",
     subject: "Globlync Partnership Inquiry",
     icon: Briefcase,
@@ -62,20 +61,20 @@ const CONTACT_POINTS = [
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col gap-12 py-10 max-w-5xl mx-auto px-4">
+    <div className="flex flex-col gap-12 py-10 max-w-5xl mx-auto px-4 overflow-x-hidden">
       <header className="flex flex-col gap-6 text-center md:text-left">
         <Button variant="ghost" size="sm" asChild className="w-fit">
           <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Home</Link>
         </Button>
         <div className="space-y-2">
           <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 mb-2">
-            National Network Support
+            Global Network Support
           </Badge>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
             Get in <span className="text-primary italic">Touch.</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Headquartered in Mulanje, serving professionals and businesses across all of Malawi. Reach out to our dedicated teams for specific needs.
+            Headquartered in Mulanje, serving professionals and businesses worldwide. Reach out to our dedicated teams for specific needs.
           </p>
         </div>
       </header>
@@ -127,14 +126,14 @@ export default function ContactPage() {
             <Clock className="h-6 w-6 text-primary" />
           </div>
           <h4 className="font-bold uppercase tracking-widest text-[10px]">Response Hours</h4>
-          <p className="text-sm font-medium">Mon - Sat: 8:00 AM - 5:00 PM</p>
+          <p className="text-sm font-medium">Mon - Sat: 8:00 AM - 5:00 PM (GMT+2)</p>
         </Card>
         <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
           <div className="bg-primary/10 p-4 rounded-full mb-2">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">National Coverage</h4>
-          <p className="text-sm font-medium">Supporting All 28 Districts</p>
+          <h4 className="font-bold uppercase tracking-widest text-[10px]">Global Coverage</h4>
+          <p className="text-sm font-medium">Supporting Professionals Worldwide</p>
         </Card>
       </div>
 
@@ -149,7 +148,7 @@ export default function ContactPage() {
           <div className="space-y-2">
             <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Instant WhatsApp Support</h2>
             <p className="opacity-80 max-w-md mx-auto text-lg leading-relaxed">
-              For urgent verification, advertising inquiries, or broken ad reports across Malawi, our WhatsApp line is monitored by human experts.
+              For urgent verification, advertising inquiries, or broken ad reports, our WhatsApp line is monitored by human experts.
             </p>
           </div>
           <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
@@ -160,7 +159,7 @@ export default function ContactPage() {
 
       <footer className="text-center py-10 border-t mt-8">
         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-4">
-          Managed by Petediano Tech • Malawi
+          Managed by Petediano Tech • Global
         </p>
         <div className="flex justify-center gap-8 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
           <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

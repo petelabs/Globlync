@@ -82,11 +82,11 @@ export default function JobsBoardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden w-full">
-      <header className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-6 py-4 max-w-full mx-auto px-3 sm:px-4 overflow-x-hidden w-full box-border">
+      <header className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Find Your Next Move.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Explore national vacancies and global remote roles verified for Malawian professionals.</p>
+          <p className="text-muted-foreground text-sm font-medium">Explore global vacancies and remote roles verified for professionals worldwide.</p>
         </div>
         
         <div className="space-y-4 w-full">
@@ -144,15 +144,15 @@ export default function JobsBoardPage() {
         </div>
       </header>
 
-      <div className="my-2 w-full">
+      <div className="my-2 w-full max-w-4xl mx-auto">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
       </div>
 
-      <section className="grid gap-4 w-full">
+      <section className="grid gap-4 w-full max-w-4xl mx-auto overflow-hidden">
         <div className="flex items-center justify-between px-2 mb-2">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
-              {searchTerm ? `Search Results for "${searchTerm}"` : "Active Listings"}
+              {searchTerm ? `Search Results for "${searchTerm}"` : "Active Global Listings"}
             </h2>
             <Badge variant="outline" className="text-[10px] font-bold">{filteredJobs.length}</Badge>
           </div>
@@ -161,15 +161,15 @@ export default function JobsBoardPage() {
 
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job, idx) => (
-            <div key={job.slug || idx} className="w-full">
+            <div key={job.slug || idx} className="w-full min-w-0">
               <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
               />
-              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full">
-                <CardHeader className="pb-2 w-full">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 w-full">
-                    <div className="flex-1 min-w-0 w-full overflow-hidden">
+              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full box-border">
+                <CardHeader className="pb-2 w-full min-w-0">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 w-full min-w-0">
+                    <div className="flex-1 min-w-0 w-full">
                       <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight w-full">
                         <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
                       </CardTitle>
@@ -183,11 +183,11 @@ export default function JobsBoardPage() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 flex-1 w-full">
+                <CardContent className="space-y-4 flex-1 w-full min-w-0">
                   <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground w-full">
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md max-w-full">
                       <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-                      <span className="truncate max-w-[120px]">{job.location}</span>
+                      <span className="truncate">{job.location}</span>
                     </div>
                     <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
                       <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
@@ -202,14 +202,11 @@ export default function JobsBoardPage() {
                     {job.description ? job.description.replace(/<[^>]*>?/gm, '') : "Check full details on the application page."}
                   </p>
                 </CardContent>
-                <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4 w-full">
-                  <Button className="w-full sm:flex-1 rounded-full px-8 font-black shadow-lg bg-primary h-12 text-white hover:bg-primary/90 flex items-center justify-center" asChild>
-                    <a href={job.url} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Apply Now
-                    </a>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="w-full sm:w-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary h-10" asChild>
+                <CardFooter className="bg-muted/30 flex justify-between items-center p-4 w-full min-w-0">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-primary/60 uppercase">
+                    <Sparkles className="h-3 w-3" /> Professional Listing
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary" asChild>
                     <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report</a>
                   </Button>
                 </CardFooter>
@@ -236,11 +233,11 @@ export default function JobsBoardPage() {
         )}
       </section>
 
-      <div className="mt-4 w-full">
+      <div className="mt-4 w-full max-w-4xl mx-auto">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
       </div>
 
-      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group w-full">
+      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group w-full max-w-4xl mx-auto">
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Sparkles className="h-48 w-48 md:h-64 md:w-64" />
         </div>
@@ -248,7 +245,7 @@ export default function JobsBoardPage() {
           <div className="space-y-2">
             <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Verified <br/><span className="text-secondary italic">Excellence.</span></h3>
             <p className="text-sm md:text-base opacity-80 max-w-md leading-relaxed">
-              Reach thousands of verified professionals across Malawi. Advertise your brand or post vacancies directly on our national network.
+              Reach thousands of verified professionals globally. Advertise your brand or post vacancies directly on our network.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 pt-2">

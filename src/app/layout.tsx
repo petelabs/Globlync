@@ -16,8 +16,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Globlync | Evidence-Based Reputation for Skilled Workers',
-  description: 'Globlync helps informal workers in Malawi build a digital, evidence-based reputation with AI-verified job logs and client ratings.',
+  title: 'Globlync | Global Evidence-Based Reputation',
+  description: 'Globlync helps professionals worldwide build a digital, evidence-based reputation with AI-verified job logs and verified ratings.',
   manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://globlync.vercel.app',
     title: 'Globlync | Professional Reputation',
-    description: 'Verifiable trust for skilled manual workers in Malawi.',
+    description: 'Verifiable trust for skilled professionals globally.',
     images: [{ 
       url: '/og-image.png',
       width: 1200,
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Globlync | Professional Reputation',
-    description: 'Verifiable trust for skilled manual workers in Malawi.',
+    description: 'Verifiable trust for skilled professionals globally.',
     images: ['/og-image.png'],
   }
 };
@@ -68,10 +68,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background text-foreground overflow-x-hidden">
+      <body className="font-body antialiased bg-background text-foreground overflow-x-hidden w-full">
         <FirebaseClientProvider>
           <Navigation />
-          <main className="mx-auto min-h-screen max-w-screen-xl px-4 pb-28 pt-20 md:pb-12 md:pt-28">
+          <main className="mx-auto min-h-screen max-w-screen-xl px-0 sm:px-4 pb-28 pt-20 md:pb-12 md:pt-28 w-full box-border overflow-hidden">
             {children}
           </main>
           <OnboardingTutorial />

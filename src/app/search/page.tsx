@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -97,11 +96,11 @@ export default function SearchPage() {
   const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
 
   return (
-    <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">
+    <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden w-full">
       <header className="flex flex-col gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-black tracking-tighter text-primary">Discover Malawi's Best.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals across all 28 districts.</p>
+          <h1 className="text-4xl font-black tracking-tighter text-primary">Discover the World's Best.</h1>
+          <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals globally.</p>
         </div>
 
         <div className="flex gap-2">
@@ -144,7 +143,7 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {/* National Leaderboard Section */}
+      {/* Global Leaderboard Section */}
       {!searchTerm && !selectedCategory && allWorkers && (
         <Card className="border-none bg-primary/5 rounded-[3rem] overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-8 pb-4">
@@ -152,7 +151,7 @@ export default function SearchPage() {
               <div className="bg-primary/10 p-3 rounded-2xl">
                 <Trophy className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle className="text-2xl font-black">National Leaderboard</CardTitle>
+              <CardTitle className="text-2xl font-black">Global Leaderboard</CardTitle>
             </div>
             <Badge variant="secondary" className="bg-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase">Top Professionals</Badge>
           </CardHeader>
@@ -192,7 +191,7 @@ export default function SearchPage() {
 
       <section className="space-y-6">
         <h2 className="text-2xl font-black flex items-center gap-3 px-2">
-          {searchTerm || selectedCategory ? "Search Results" : "Verified Pros Near You"}
+          {searchTerm || selectedCategory ? "Search Results" : "Verified Professionals"}
           {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
         </h2>
 
@@ -200,7 +199,7 @@ export default function SearchPage() {
           {filteredWorkers.length > 0 ? (
             filteredWorkers.map((worker) => (
               <Link key={worker.id} href={`/public/${worker.id}`} className="block">
-                <Card className="group hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl cursor-pointer overflow-hidden rounded-[2.5rem] h-full flex flex-col">
+                <Card className="group hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl cursor-pointer overflow-hidden rounded-[2.5rem] h-full flex flex-col box-border">
                   <div className="h-48 w-full bg-muted relative shrink-0">
                     <img 
                       src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/400/300`} 
@@ -227,7 +226,7 @@ export default function SearchPage() {
                     <div className="mt-6 flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
                         <MapPin className="h-3.5 w-3.5" /> 
-                        {worker.serviceAreas?.[0] || "National"}
+                        {worker.serviceAreas?.[0] || "Global"}
                       </div>
                       <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-2 transition-transform" />
                     </div>

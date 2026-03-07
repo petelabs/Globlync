@@ -63,21 +63,21 @@ export default function Home() {
   const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
 
   return (
-    <div className="flex flex-col gap-16 py-6">
+    <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
       {/* Hero Section */}
-      <section className="flex flex-col items-center text-center gap-6 py-12">
+      <section className="flex flex-col items-center text-center gap-6 py-12 px-4">
         <div className="mb-4 animate-in zoom-in duration-700">
           <Logo className="scale-[2.5] mb-8" />
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-float">
           <Sparkles className="h-4 w-4" />
-          <span>National Reputation for Every Professional</span>
+          <span>Professional Reputation for Every Expert</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
           Trust is the new <span className="animate-shimmer-text italic font-black">Currency.</span>
         </h1>
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
-          Globlync connects formal and informal <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers across Malawi. Build a digital, AI-verified resume that proves your skills nationwide.
+          Globlync connects formal and informal <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers globally. Build a digital, AI-verified resume that proves your skills worldwide.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
@@ -90,18 +90,18 @@ export default function Home() {
       </section>
 
       {/* Ad placement 1: Hero Bottom */}
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full" />
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
 
-      {/* Explicit Purpose Section (for Google Verification) */}
-      <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10">
+      {/* Explicit Purpose Section (for Global Verification) */}
+      <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex flex-col items-center text-center gap-4">
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
-              National Purpose
+              Global Purpose
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">For Every Professional in Malawi</h2>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">For Every Professional Worldwide</h2>
             <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              Whether you are an informal artisan, a formal specialist, or an advertiser looking to reach thousands, Globlync is your national hub. We bridge the trust gap with transparent verification for the entire Malawian labor market.
+              Whether you are an informal artisan, a formal specialist, or an advertiser looking to reach a worldwide audience, Globlync is your professional hub. We bridge the trust gap with transparent verification for the entire labor market.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -110,45 +110,45 @@ export default function Home() {
                 <Users className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Informal Workers</h3>
-              <p className="text-[10px] text-muted-foreground">Artisans and manual workers building portable trust.</p>
+              <p className="text-[10px] text-muted-foreground">Artisans building portable trust globally.</p>
             </div>
             <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <Building2 className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Formal Sector</h3>
-              <p className="text-[10px] text-muted-foreground">Professional specialists verifying their expertise.</p>
+              <p className="text-[10px] text-muted-foreground">Professional specialists verifying expertise.</p>
             </div>
             <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <SearchIcon className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Job Seekers</h3>
-              <p className="text-[10px] text-muted-foreground">Individuals seeking opportunities across the country.</p>
+              <p className="text-[10px] text-muted-foreground">Seeking opportunities across the globe.</p>
             </div>
             <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
               <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
                 <Sparkles className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-bold text-sm">Advertisers</h3>
-              <p className="text-[10px] text-muted-foreground">Businesses connecting with a national audience.</p>
+              <p className="text-[10px] text-muted-foreground">Businesses connecting with global audiences.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Ad placement 2: Mid-Content */}
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full" />
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
 
-      {/* New Workers Showcase */}
+      {/* Global Workers Showcase */}
       {newcomers && newcomers.length > 0 && (
-        <section className="space-y-6">
+        <section className="space-y-6 px-4">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
               <div className="bg-secondary/20 p-1.5 rounded-lg">
                 <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
               </div>
-              <h2 className="text-2xl font-black tracking-tight">Nationwide Professionals</h2>
+              <h2 className="text-2xl font-black tracking-tight">Global Professionals</h2>
             </div>
             <Button variant="ghost" size="sm" className="text-primary font-bold" asChild>
               <Link href="/search">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
@@ -190,10 +190,10 @@ export default function Home() {
 
       {/* Community Testimonials */}
       {testimonials && testimonials.length > 0 && (
-        <section className="py-12 bg-accent/30 rounded-[3rem] px-8">
+        <section className="py-12 bg-accent/30 rounded-[3rem] px-8 mx-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-10 flex items-center justify-center gap-3">
-              Voices of Globlync Professionals
+              Voices of Professionals
               <Star className="h-6 w-6 text-secondary fill-secondary" />
             </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -226,26 +226,26 @@ export default function Home() {
       )}
 
       {/* How it Works */}
-      <section className="py-12">
-        <h2 className="text-3xl font-bold text-center mb-12">Building National Trust</h2>
-        <div className="grid gap-8 md:grid-cols-3">
+      <section className="py-12 px-4">
+        <h2 className="text-3xl font-bold text-center mb-12">Building Global Trust</h2>
+        <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
           {[
             {
               step: "01",
               title: "Create Your Profile",
-              desc: "Sign up as a formal or informal worker. Upload a professional photo to build instant trust.",
+              desc: "Sign up as a professional. Upload a professional photo to build instant trust globally.",
               icon: Sparkles
             },
             {
               step: "02",
               title: "Log & Verify",
-              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise nationwide.",
+              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise nationwide and beyond.",
               icon: QrCode
             },
             {
               step: "03",
               title: "Scale Your Career",
-              desc: "Your verifiable reputation attracts higher-paying jobs and better advertising opportunities.",
+              desc: "Your verifiable reputation attracts higher-paying jobs and better global opportunities.",
               icon: Award
             }
           ].map((item, i) => (
@@ -260,7 +260,7 @@ export default function Home() {
       </section>
 
       {/* Ad placement 3: Footer Top */}
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full mb-8" />
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full mb-8 px-4" />
 
       {/* Footer Branding */}
       <footer className="bg-primary/5 py-16 border-t mt-12 px-6">
@@ -269,10 +269,10 @@ export default function Home() {
             <div className="space-y-6 text-center md:text-left">
               <Logo className="justify-center md:justify-start" />
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
-                Building a verifiable labor market for every professional in Malawi.
+                Building a verifiable labor market for every professional across the globe.
               </p>
               <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
-                <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (National Coverage)
+                <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (Global Support)
               </div>
             </div>
 
@@ -305,7 +305,7 @@ export default function Home() {
           </div>
 
           <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-            <p>© 2026 Petediano Tech • Malawi</p>
+            <p>© 2026 Petediano Tech • Global</p>
             <div className="flex gap-6">
               <Link href="/contact" className="hover:text-primary transition-colors">Report an Ad</Link>
               <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
