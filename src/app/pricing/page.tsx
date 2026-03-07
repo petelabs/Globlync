@@ -9,20 +9,20 @@ import {
   CheckCircle2, 
   Zap, 
   ShieldCheck, 
-  Database, 
-  Cpu, 
   Sparkles, 
   CreditCard,
   Info,
   AlertTriangle,
   Crown,
   Clock,
-  Tag
+  Tag,
+  AlertCircle
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const PLANS = [
   {
@@ -31,7 +31,8 @@ const PLANS = [
     duration: "30 Days",
     features: ["5 HD Photos per job", "AI Proof Priority", "Verified VIP Badge", "Basic Directory Listing"],
     color: "bg-primary/5 border-primary/20",
-    paymentLink: "https://pay.paychangu.com/SC-c9Mara"
+    paymentLink: "https://pay.paychangu.com/SC-c9Mara",
+    recommended: true
   },
   {
     name: "Silver VIP",
@@ -39,7 +40,6 @@ const PLANS = [
     duration: "30 Days",
     features: ["10 HD Photos per job", "Enhanced Trust Score", "Search Result Boost", "WhatsApp Visibility Boost"],
     color: "bg-muted/50 border-muted",
-    popular: true,
     paymentLink: "https://pay.paychangu.com/SC-c9Mara"
   },
   {
@@ -109,6 +109,15 @@ export default function PricingPage() {
         </p>
       </header>
 
+      {/* Critical Payment Warning */}
+      <Alert variant="destructive" className="bg-destructive/5 border-2 border-destructive/20 rounded-[2rem] p-6 animate-in fade-in slide-in-from-top-4 duration-500">
+        <AlertCircle className="h-6 w-6" />
+        <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">Important Payment Instructions</AlertTitle>
+        <AlertDescription className="text-sm font-medium mt-2 ml-2 leading-relaxed">
+          activation is 100% automated. <b>You MUST enter the EXACT value</b> shown for your chosen plan. If you enter an incorrect amount on the payment page, your VIP benefits will NOT activate automatically and manual review will be required.
+        </AlertDescription>
+      </Alert>
+
       {isEligibleForDiscount && (
         <a href={PAYMENT_LINK} target="_blank" className="block group">
           <Card className="bg-primary text-primary-foreground border-none rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]">
@@ -157,11 +166,11 @@ export default function PricingPage() {
           <Card key={plan.name} className={cn(
             "relative border-2 transition-all hover:scale-[1.02] flex flex-col rounded-[3rem] overflow-hidden shadow-xl",
             plan.color,
-            plan.popular && "ring-4 ring-secondary border-transparent"
+            plan.recommended && "ring-4 ring-primary border-transparent"
           )}>
-            {plan.popular && (
-              <div className="absolute top-6 right-6 bg-secondary text-secondary-foreground text-[10px] font-black px-4 py-1.5 rounded-full uppercase shadow-lg">
-                Most Popular
+            {plan.recommended && (
+              <div className="absolute top-6 right-6 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase shadow-lg">
+                Recommended
               </div>
             )}
             <CardHeader className="p-8">
@@ -184,11 +193,11 @@ export default function PricingPage() {
             <CardFooter className="flex flex-col gap-4 p-8">
               <Button className="w-full rounded-full font-black h-16 text-lg shadow-2xl bg-primary" asChild>
                 <a href={plan.paymentLink} target="_blank">
-                  <CreditCard className="mr-3 h-5 w-5" /> Pay on PayChangu
+                  <CreditCard className="mr-3 h-5 w-5" /> Pay MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}
                 </a>
               </Button>
-              <p className="text-[10px] text-center text-muted-foreground italic px-6">
-                Enter MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price} at checkout for this tier.
+              <p className="text-[10px] text-center text-muted-foreground font-bold uppercase leading-tight px-4">
+                Enter exactly <span className="text-primary">MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}</span> at checkout.
               </p>
             </CardFooter>
           </Card>
@@ -215,7 +224,7 @@ export default function PricingPage() {
           <div>
             <h4 className="font-black text-lg text-destructive mb-2">Professional Policy</h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              All VIP upgrades are non-refundable. Please ensure you enter the correct amount for your chosen tier. Trial VIP (2 days) is assigned to payments below 240 MWK.
+              All VIP upgrades are non-refundable. Please ensure you enter the correct amount for your chosen tier. Incorrect values will result in activation delays.
             </p>
           </div>
         </Card>
