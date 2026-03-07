@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     }
 
     /**
-     * Step 2: Update User Status based on Amount Paid
+     * Step 2: Update User Status based on Amount Paid (Revised Tiers)
      */
     if (customerEmail) {
       const usersRef = db.collection('workerProfiles');
@@ -98,21 +98,21 @@ export async function POST(req: Request) {
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // Professional Tier Logic
+      // Professional Tier Logic (Balanced for Malawi)
       let tierName = "Standard Pro";
       let days = 7;
 
-      if (amount >= 700) {
+      if (amount >= 1000) {
         tierName = "Gold Pro";
         days = 30;
-      } else if (amount >= 500) {
+      } else if (amount >= 600) {
         tierName = "Silver Pro";
         days = 15;
-      } else if (amount >= 250) {
+      } else if (amount >= 300) {
         tierName = "Standard Pro";
         days = 7;
       } else {
-        // Micro-payment safety net
+        // Micro-payment safety net (Trial)
         tierName = "Trial Pro";
         days = 2;
       }
@@ -139,7 +139,7 @@ export async function POST(req: Request) {
       const notifRef = db.collection('workerProfiles').doc(userDoc.id).collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `Payment Verified! You've been upgraded to ${tierName} for ${days} days. Amount: MWK ${amount}. Expiry: ${expiryDate.toLocaleDateString()}.`,
+        message: `VIP Status Verified! You've been upgraded to ${tierName} for ${days} days. Amount: MWK ${amount}. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

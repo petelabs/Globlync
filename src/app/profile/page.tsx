@@ -24,7 +24,9 @@ import {
   MapPin,
   ChevronDown,
   Mail,
-  Phone
+  Phone,
+  Crown,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -168,6 +170,7 @@ export default function ProfilePage() {
 
   const publicUrl = typeof window !== 'undefined' ? `${window.location.origin}/public/${user?.uid}` : "";
   const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
+  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto">
@@ -221,7 +224,35 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          <Card className="border-none shadow-md bg-primary text-primary-foreground">
+          {/* VIP / PRO Status Card */}
+          <Card className={cn(
+            "border-none shadow-xl rounded-[2rem] overflow-hidden relative group",
+            isPro ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"
+          )}>
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+              <Crown className="h-24 w-24" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                {isPro ? <Crown className="h-4 w-4 fill-secondary-foreground" /> : <Zap className="h-4 w-4" />}
+                {isPro ? "VIP Professional" : "Go Pro / VIP"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs font-medium leading-relaxed opacity-90">
+                {isPro 
+                  ? "Your VIP status is currently active. You have full access to HD photos and AI verification priority." 
+                  : "Unlock 10 HD photos per job, AI verification priority, and a professional VIP badge on your profile."}
+              </p>
+              {!isPro && (
+                <Button variant="secondary" className="w-full rounded-full font-black shadow-lg" asChild>
+                  <Link href="/pricing">Upgrade Now</Link>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-md bg-muted/50">
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-sm font-bold flex items-center justify-center gap-2">
                 <QrCode className="h-4 w-4" />

@@ -15,7 +15,8 @@ import {
   Sparkles,
   CreditCard,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  Crown
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -25,7 +26,7 @@ import { cn } from "@/lib/utils";
 const PLANS = [
   {
     name: "Standard Pro",
-    price: 250,
+    price: 300,
     duration: "7 Days",
     features: ["10 HD Photos per job", "AI Proof Priority", "Verified Pro Badge", "WhatsApp Visibility"],
     color: "bg-primary/5 border-primary/20",
@@ -33,7 +34,7 @@ const PLANS = [
   },
   {
     name: "Silver Pro",
-    price: 500,
+    price: 600,
     duration: "15 Days",
     features: ["Everything in Standard", "Enhanced Trust Score", "Search Result Boost", "Priority Support"],
     color: "bg-muted/50 border-muted",
@@ -41,7 +42,7 @@ const PLANS = [
   },
   {
     name: "Gold Pro",
-    price: 700,
+    price: 1000,
     duration: "1 Month",
     features: ["Everything in Silver", "Premium Directory", "Ad-Free Experience", "Monthly Activity Report"],
     color: "bg-secondary/10 border-secondary/20",
@@ -77,8 +78,11 @@ export default function PricingPage() {
 
       {activeBenefit && (
         <Card className="bg-secondary/10 border-2 border-secondary/30 rounded-[2rem] p-6 text-center animate-in zoom-in-95">
-          <Badge className="bg-secondary text-secondary-foreground font-black mb-2">ACTIVE PLAN</Badge>
-          <h3 className="text-xl font-bold">You are currently {activeBenefit.type}</h3>
+          <Badge className="bg-secondary text-secondary-foreground font-black mb-2">ACTIVE VIP STATUS</Badge>
+          <h3 className="text-xl font-bold flex items-center justify-center gap-2">
+            <Crown className="h-5 w-5 text-secondary fill-secondary" />
+            You are currently {activeBenefit.type}
+          </h3>
           <p className="text-sm text-muted-foreground">Your professional benefits expire on <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
         </Card>
       )}
@@ -132,9 +136,9 @@ export default function PricingPage() {
             <Info className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h4 className="font-bold text-sm">Automatic Tier Detection</h4>
+            <h4 className="font-bold text-sm">All-Inclusive Round Pricing</h4>
             <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-              Our system reads the exact amount you choose to pay. For example, paying 700 MWK gives you 30 days of Gold Pro. Always use the email address associated with your Globlync account.
+              We use round numbers for Malawi (300, 600, 1000) so you don't have to worry about transaction fees. The amount you see is the amount you pay.
             </p>
           </div>
         </Card>
@@ -144,9 +148,9 @@ export default function PricingPage() {
             <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
           <div>
-            <h4 className="font-bold text-sm text-destructive">Payment & Refund Policy</h4>
+            <h4 className="font-bold text-sm text-destructive">Payment Policy</h4>
             <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-              Payments below 250 MWK are assigned to "Trial Pro" (2 days). All payments are final and non-refundable. Please ensure you enter the correct amount for your desired tier.
+              Payments below 300 MWK are assigned to "Trial Pro" (2 days). All payments are final and non-refundable. Please ensure you enter the correct amount for your desired tier.
             </p>
           </div>
         </Card>

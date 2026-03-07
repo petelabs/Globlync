@@ -15,7 +15,8 @@ import {
   ClipboardCheck,
   ChevronDown,
   Gift,
-  Sparkles
+  Sparkles,
+  Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -81,9 +82,9 @@ export function Navigation() {
   const { data: unreadNotifications } = useCollection(unreadQuery);
   const unreadCount = unreadNotifications?.length || 0;
   
+  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
   const isGrowthChampion = profile?.badgeIds?.includes('growth-champion');
   
-  // Display photo priority: Profile Record > Google Auth > Fallback Initials
   const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
 
   const handleLogout = async () => {
@@ -125,6 +126,14 @@ export function Navigation() {
           <div className="flex items-center gap-1 sm:gap-4 shrink-0 pr-1 sm:pr-0">
             {user ? (
               <>
+                {!isPro && (
+                  <Button variant="ghost" size="sm" asChild className="hidden lg:flex text-secondary font-black hover:text-secondary hover:bg-secondary/10 rounded-full">
+                    <Link href="/pricing">
+                      <Crown className="mr-2 h-4 w-4 fill-secondary" />
+                      Go VIP
+                    </Link>
+                  </Button>
+                )}
                 <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden sm:flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   {unreadCount > 0 && (
@@ -138,13 +147,13 @@ export function Navigation() {
                   <DropdownMenuTrigger asChild id="nav-user-menu">
                     <button className="flex items-center gap-1 p-0.5 rounded-full hover:bg-muted transition-all outline-none border border-transparent hover:border-border">
                       <div className="relative">
-                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-primary/20 shadow-sm">
+                        <Avatar className={cn("h-8 w-8 sm:h-10 sm:w-10 border-2 shadow-sm", isPro ? "border-secondary" : "border-primary/20")}>
                           <AvatarImage src={displayPhoto} className="object-cover" />
                           <AvatarFallback className="bg-primary/10 text-primary font-black uppercase text-xs">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
-                        {isGrowthChampion && (
-                          <div className="absolute -top-1 -right-1 bg-pink-500 rounded-full p-0.5 sm:p-1 border-2 border-white shadow-xl animate-pulse">
-                            <Sparkles className="h-2 w-2 text-white" />
+                        {(isGrowthChampion || isPro) && (
+                          <div className={cn("absolute -top-1 -right-1 rounded-full p-0.5 sm:p-1 border-2 border-white shadow-xl animate-pulse", isPro ? "bg-secondary" : "bg-pink-500")}>
+                            {isPro ? <Crown className="h-2 w-2 text-white fill-white" /> : <Sparkles className="h-2 w-2 text-white" />}
                           </div>
                         )}
                       </div>
@@ -154,11 +163,14 @@ export function Navigation() {
                   <DropdownMenuContent className="w-72 mt-2 p-3 rounded-[1.5rem] shadow-2xl border-none animate-in fade-in zoom-in-95" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal p-3 bg-muted/30 rounded-2xl mb-2">
                       <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12 border-2 border-primary/10">
+                        <Avatar className={cn("h-12 w-12 border-2", isPro ? "border-secondary" : "border-primary/10")}>
                           <AvatarImage src={displayPhoto} className="object-cover" />
                         </Avatar>
                         <div className="flex flex-col space-y-0.5">
-                          <p className="text-sm font-black leading-none">{user.displayName || "Professional"}</p>
+                          <p className="text-sm font-black leading-none flex items-center gap-1.5">
+                            {user.displayName || "Professional"}
+                            {isPro && <Crown className="h-3 w-3 text-secondary fill-secondary" />}
+                          </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
                             <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest truncate max-w-[150px]">{profile?.tradeSkill || "New Worker"}</p>
@@ -170,6 +182,11 @@ export function Navigation() {
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
                       <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />Hub Overview</Link>
                     </DropdownMenuItem>
+                    {!isPro && (
+                      <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
+                        <Link href="/pricing"><Crown className="mr-3 h-5 w-5 fill-secondary" />Unlock VIP Status</Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
                       <Link href="/referrals"><Gift className="mr-3 h-5 w-5 text-secondary" />Invite Peers</Link>
                     </DropdownMenuItem>
