@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,7 +30,9 @@ import {
   AlertTriangle,
   Loader2,
   CheckCircle2,
-  Heart
+  Heart,
+  ArrowRight,
+  ShieldAlert
 } from "lucide-react";
 import { useAuth, useUser, useFirestore, useMemoFirebase } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
@@ -80,7 +81,7 @@ export default function SettingsPage() {
   
   // Deletion States
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deleteStep, setDeleteStep] = useState(1); // 1: Reason, 2: Auth, 3: Success
+  const [deleteStep, setDeleteStep] = useState(1); // 1: Confirmation, 2: Impact Info, 3: Reason, 4: Auth, 5: Success
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [otherDescription, setOtherDescription] = useState("");
   const [password, setPassword] = useState("");
@@ -158,18 +159,16 @@ export default function SettingsPage() {
       });
 
       // 3. Delete from Firestore
-      // We'll try to delete associated records. Rules must allow this or use admin sdk in api.
-      // For this prototype, we delete the main profile.
       await deleteDoc(doc(db, "workerProfiles", user.uid));
       
       // 4. Final Delete Auth User
       await deleteUser(user);
 
-      setDeleteStep(3);
+      setDeleteStep(5);
       setTimeout(() => {
         setIsDeleteDialogOpen(false);
         router.push("/");
-      }, 6000); // Give them time to read the message
+      }, 8000); 
 
     } catch (error: any) {
       console.error(error);
@@ -325,13 +324,58 @@ export default function SettingsPage() {
             </DialogTrigger>
             <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
               {deleteStep === 1 && (
+                <div className="p-10 space-y-6 text-center">
+                  <div className="bg-destructive/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-2 animate-bounce">
+                    <AlertTriangle className="h-10 w-10 text-destructive" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-black tracking-tight">Are you sure?</h2>
+                    <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                      We're sad to see you go. Are you sure you want to start the account deletion process?
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 pt-4">
+                    <Button className="w-full rounded-full h-12 font-black" onClick={() => setDeleteStep(2)}>
+                      Continue to Delete
+                    </Button>
+                    <Button variant="ghost" className="w-full font-bold text-xs" onClick={() => setIsDeleteDialogOpen(false)}>
+                      Back to Settings
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {deleteStep === 2 && (
+                <div className="p-10 space-y-6">
+                  <div className="bg-primary/10 p-4 rounded-2xl flex items-center gap-4">
+                    <ShieldAlert className="h-8 w-8 text-primary shrink-0" />
+                    <h2 className="text-xl font-black tracking-tight">Understand the Impact</h2>
+                  </div>
+                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                    <p>Deleting your account will <span className="text-destructive font-black">permanently remove</span> your profile, trust score, verified jobs, and all professional evidence from our database.</p>
+                    <p className="bg-muted/50 p-4 rounded-xl border-l-4 border-primary font-medium text-xs">
+                      Note: You can still create another account using the same email at a later time if you change your mind.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 pt-4">
+                    <Button className="w-full rounded-full h-12 font-black" onClick={() => setDeleteStep(3)}>
+                      I Understand, Continue
+                    </Button>
+                    <Button variant="ghost" className="w-full font-bold text-xs" onClick={() => setIsDeleteDialogOpen(false)}>
+                      Cancel & Keep My Account
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {deleteStep === 3 && (
                 <>
                   <DialogHeader className="p-8 pb-4 bg-destructive/5">
                     <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-2 text-destructive">
-                      <AlertTriangle className="h-6 w-6" /> We're sorry to see you go.
+                      Help Us Improve
                     </DialogTitle>
                     <DialogDescription className="font-medium text-sm pt-2">
-                      Please tell us why you are leaving. Your feedback helps us improve Globlync for everyone.
+                      Please tell us why you are leaving. Your feedback is required to finalize deletion.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="px-8 py-4 space-y-4 max-h-[40vh] overflow-y-auto scrollbar-hide">
@@ -358,9 +402,9 @@ export default function SettingsPage() {
                     <Button 
                       className="w-full rounded-full h-12 font-black text-sm" 
                       disabled={selectedReasons.length === 0}
-                      onClick={() => setDeleteStep(2)}
+                      onClick={() => setDeleteStep(4)}
                     >
-                      Continue Deletion
+                      Continue to Auth Verification
                     </Button>
                     <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setIsDeleteDialogOpen(false)}>
                       Stay with Globlync
@@ -369,12 +413,12 @@ export default function SettingsPage() {
                 </>
               )}
 
-              {deleteStep === 2 && (
+              {deleteStep === 4 && (
                 <>
                   <DialogHeader className="p-8 pb-4 bg-destructive/5">
-                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Verify Identity</DialogTitle>
+                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Final Verification</DialogTitle>
                     <DialogDescription className="font-medium text-sm pt-2 leading-relaxed">
-                      For your security, please confirm your credentials to permanently erase your professional identity and data. This cannot be undone.
+                      To protect your professional data, please confirm your credentials one last time.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="p-8 space-y-6">
@@ -388,14 +432,13 @@ export default function SettingsPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
-                        <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-tighter" onClick={() => toast({ title: "Check Email", description: "Password reset link sent." })}>Forgot Password?</button>
                       </div>
                     ) : (
                       <div className="bg-muted/30 p-6 rounded-2xl text-center border-2 border-dashed">
-                        <p className="text-xs font-bold mb-4">You are signed in via Google.</p>
+                        <p className="text-xs font-bold mb-4">Re-authenticate via Google.</p>
                         <Button variant="outline" className="rounded-full bg-white font-black" onClick={handleDeleteAccount} disabled={isDeleting}>
                           {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                          Verify via Google Popup
+                          Google Identity Check
                         </Button>
                       </div>
                     )}
@@ -409,30 +452,30 @@ export default function SettingsPage() {
                         onClick={handleDeleteAccount}
                       >
                         {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Trash2 className="mr-2 h-5 w-5" />}
-                        Delete Permanently
+                        Delete Forever
                       </Button>
                     )}
-                    <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setDeleteStep(1)} disabled={isDeleting}>
+                    <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setDeleteStep(3)} disabled={isDeleting}>
                       Back to Feedback
                     </Button>
                   </DialogFooter>
                 </>
               )}
 
-              {deleteStep === 3 && (
+              {deleteStep === 5 && (
                 <div className="p-12 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
                   <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                     <Heart className="h-10 w-10 text-primary fill-primary" />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-3xl font-black tracking-tight">We hear you.</h2>
+                    <h2 className="text-3xl font-black tracking-tight text-primary">We hear you.</h2>
                     <p className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
                       We'll try to fix the issues you mentioned. Please, if you find free time, come back to our app. We keep on updating so you have a good experience in our app.
                     </p>
                   </div>
                   <div className="pt-4 space-y-4">
                     <Loader2 className="h-6 w-6 animate-spin text-primary/30 mx-auto" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Clearing your data...</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Clearing your professional footprint...</p>
                   </div>
                 </div>
               )}
