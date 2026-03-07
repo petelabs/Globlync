@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,7 +22,8 @@ import {
   ExternalLink,
   Globe,
   Sparkles,
-  X
+  X,
+  ArrowDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
@@ -86,7 +88,7 @@ export default function JobsBoardPage() {
       <header className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Find Your Next Move.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Explore global vacancies and remote roles verified for professionals worldwide.</p>
+          <p className="text-muted-foreground text-sm font-medium">Explore national vacancies and remote roles verified for Malawian professionals.</p>
         </div>
         
         <div className="space-y-4 w-full">
@@ -144,15 +146,19 @@ export default function JobsBoardPage() {
         </div>
       </header>
 
-      <div className="my-2 w-full max-w-4xl mx-auto">
+      <div className="my-2 w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
+        <div className="flex flex-col items-center gap-2 animate-bounce mt-4 text-primary">
+          <span className="text-[10px] font-black uppercase tracking-widest">Scroll down to find Jobs</span>
+          <ArrowDown className="h-5 w-5" />
+        </div>
       </div>
 
       <section className="grid gap-4 w-full max-w-4xl mx-auto overflow-hidden">
         <div className="flex items-center justify-between px-2 mb-2">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
-              {searchTerm ? `Search Results for "${searchTerm}"` : "Active Global Listings"}
+              {searchTerm ? `Search Results for "${searchTerm}"` : "Active National Listings"}
             </h2>
             <Badge variant="outline" className="text-[10px] font-bold">{filteredJobs.length}</Badge>
           </div>
@@ -195,7 +201,7 @@ export default function JobsBoardPage() {
                     </div>
                     <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md">
                       <Globe className="h-3.5 w-3.5 shrink-0" />
-                      <span>Global</span>
+                      <span>National</span>
                     </div>
                   </div>
                   <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full">
@@ -245,7 +251,7 @@ export default function JobsBoardPage() {
           <div className="space-y-2">
             <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Verified <br/><span className="text-secondary italic">Excellence.</span></h3>
             <p className="text-sm md:text-base opacity-80 max-w-md leading-relaxed">
-              Reach thousands of verified professionals globally. Advertise your brand or post vacancies directly on our network.
+              Reach thousands of verified professionals in Malawi. Advertise your brand or post vacancies directly on our network.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 pt-2">

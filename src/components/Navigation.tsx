@@ -43,7 +43,7 @@ export function Logo({ className }: { className?: string }) {
       </div>
       <div className="flex flex-col -space-y-1">
         <span className="text-xl font-black tracking-tighter italic text-primary">Globlync</span>
-        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">Pro Network</span>
+        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">National Network</span>
       </div>
     </div>
   );
@@ -114,7 +114,7 @@ export function Navigation() {
               onClick={() => router.push('/search')}
             >
               <Search className="h-4 w-4 mr-3 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
-              <span className="text-sm font-bold tracking-tight truncate">Search global network...</span>
+              <span className="text-sm font-bold tracking-tight truncate">Search national network...</span>
             </Button>
             <Button 
               variant="ghost" 

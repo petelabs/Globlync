@@ -13,10 +13,10 @@ export function Footer() {
           <div className="space-y-6 text-center md:text-left">
             <Logo className="justify-center md:justify-start" />
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
-              Building a verifiable labor market for every professional across the globe.
+              Building a verifiable labor market for every professional in Malawi.
             </p>
             <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
-              <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (Global Support)
+              <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (National Support)
             </div>
           </div>
 
@@ -49,7 +49,7 @@ export function Footer() {
         </div>
 
         <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-          <p>© 2026 Petediano Tech • Global</p>
+          <p>© 2026 Petediano Tech • Malawi</p>
           <div className="flex gap-6">
             <Link href="/contact" className="hover:text-primary transition-colors">Report an Ad</Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>

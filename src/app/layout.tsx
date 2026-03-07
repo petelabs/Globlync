@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -18,8 +17,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Globlync | Global Evidence-Based Reputation',
-  description: 'Globlync helps professionals worldwide build a digital, evidence-based reputation with AI-verified job logs and verified ratings.',
+  title: 'Globlync | Evidence-Based Reputation for Malawi',
+  description: 'Globlync helps professionals in Malawi build a digital, evidence-based reputation with AI-verified job logs and verified ratings.',
   manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
@@ -29,8 +28,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://globlync.vercel.app',
-    title: 'Globlync | Professional Reputation',
-    description: 'Verifiable trust for skilled professionals globally.',
+    title: 'Globlync | Malawian Professional Reputation',
+    description: 'Verifiable trust for skilled professionals across Malawi.',
     images: [{ 
       url: '/og-image.png',
       width: 1200,
@@ -40,8 +39,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Globlync | Professional Reputation',
-    description: 'Verifiable trust for skilled professionals globally.',
+    title: 'Globlync | Malawian Professional Reputation',
+    description: 'Verifiable trust for skilled professionals across Malawi.',
     images: ['/og-image.png'],
   }
 };
