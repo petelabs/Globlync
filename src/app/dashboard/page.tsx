@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -86,13 +85,13 @@ export default function DashboardPage() {
   const { data: ratings } = useCollection(ratingsRef);
 
   useEffect(() => {
-    if (profile?.tradeSkill && !dailyTip) {
+    if (profile?.tradeSkill) {
       setIsTipLoading(true);
       generateDailyTip({ trade: profile.tradeSkill })
         .then(setDailyTip)
         .finally(() => setIsTipLoading(false));
     }
-  }, [profile?.tradeSkill, dailyTip]);
+  }, [profile?.tradeSkill]);
 
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
@@ -113,17 +112,21 @@ export default function DashboardPage() {
     };
   }, [allJobs, ratings, profile]);
 
-  if (!user) return null;
+  if (!user) return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
 
   return (
-    <div className="flex flex-col gap-6 py-4">
+    <div className="flex flex-col gap-6 py-4 px-2">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tighter flex items-center gap-2">
             Professional Hub
             {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 rounded-full font-black text-[10px] uppercase"><Crown className="h-3 w-3 mr-1" /> VIP Member</Badge>}
           </h1>
-          <p className="text-muted-foreground text-sm">Manage your reputation and global professional visibility.</p>
+          <p className="text-muted-foreground text-sm">Manage your reputation and national professional visibility.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full font-bold" asChild>
@@ -139,7 +142,6 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Stats Quick View */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
@@ -180,7 +182,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-12">
-        {/* AI Daily Tip Card */}
         <Card className="md:col-span-8 border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <Lightbulb className="h-32 w-32" />
@@ -214,7 +215,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Nearby Opportunities Preview */}
         <Card className="md:col-span-4 border-none bg-muted/30 rounded-[2.5rem] overflow-hidden">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-3xl font-black tracking-tight">VIP Professional Upgrade</h3>
-                  <p className="text-base opacity-80 max-w-lg">Unlock 10 HD photos per job, national ranking boost, and a verified VIP badge for 30 days. Invest in your career growth today.</p>
+                  <p className="text-base opacity-80 max-w-lg">Unlock high-res uploads, national ranking boost, and a verified VIP badge for 30 days. Invest in your career growth today.</p>
                 </div>
               </div>
               <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
@@ -263,23 +263,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         )}
-
-        <Card className="md:col-span-12 border-none bg-accent/30 rounded-[3rem] overflow-hidden">
-          <CardContent className="p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-8 text-center md:text-left">
-              <div className="bg-white p-6 rounded-[2rem] shadow-sm">
-                <Gift className="h-10 w-10 text-primary" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black tracking-tight">Earn VIP for Free!</h3>
-                <p className="text-sm text-muted-foreground">Invite 10 professionals to join the national network and unlock VIP features for free. You have invited {stats.referrals} so far.</p>
-              </div>
-            </div>
-            <Button variant="outline" className="rounded-full border-primary text-primary font-black px-10 h-14 hover:bg-primary hover:text-white transition-all text-lg" asChild>
-              <Link href="/referrals">Invite & Unlock</Link>
-            </Button>
-          </CardContent>
-        </Card>
 
         <Card className="md:col-span-4 bg-white border-none shadow-sm rounded-[3rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:rotate-12 transition-transform">
@@ -333,7 +316,7 @@ export default function DashboardPage() {
                 <Award className="h-14 w-14 text-muted-foreground opacity-20" />
                 <div className="space-y-1 px-8">
                   <p className="text-sm font-bold text-muted-foreground">No Milestones Yet</p>
-                  <p className="text-xs text-muted-foreground/60">Log your first verified job or invite a peer to unlock your professional badges.</p>
+                  <p className="text-xs text-muted-foreground/60">Log your first verified job to unlock your professional badges.</p>
                 </div>
                 <Button variant="outline" size="sm" className="mt-4 rounded-full font-bold" asChild>
                   <Link href="/work-log">Start Logging Work</Link>

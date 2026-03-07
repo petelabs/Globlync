@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -34,14 +33,13 @@ import { useToast } from "@/hooks/use-toast";
 import { generateProfessionalBio } from "@/ai/flows/generate-bio-flow";
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
 import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
-import { QRCodeSVG } from "qrcode.react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { subDays, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 const MALAWI_DISTRICTS = [
   "Chitipa", "Karonga", "Likoma", "Mzimba", "Nkhata Bay", "Rumphi", "Mzuzu City",
@@ -49,8 +47,8 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
-const FREE_UPLOAD_LIMIT = 1.5 * 1024 * 1024; // 1.5MB
-const PRO_UPLOAD_LIMIT = 5 * 1024 * 1024; // 5MB
+// Optimized limits for Firestore document size (1MB limit)
+const IMAGE_SIZE_LIMIT = 800 * 1024; // 800KB to be safe
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -125,12 +123,11 @@ export default function ProfilePage() {
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const limit = isPro ? PRO_UPLOAD_LIMIT : FREE_UPLOAD_LIMIT;
-      if (file.size > limit) {
+      if (file.size > IMAGE_SIZE_LIMIT) {
         toast({
           variant: "destructive",
           title: "File Too Large",
-          description: `Free users are limited to 1.5MB. Your photo is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Upgrade to VIP for 5MB uploads!`,
+          description: "Please select a photo under 800KB to ensure reliable syncing.",
         });
         return;
       }
@@ -138,7 +135,7 @@ export default function ProfilePage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewProfilePic(reader.result as string);
-        toast({ title: "Photo Selected", description: "Remember to tap 'Save Professional Profile' at the bottom to apply changes." });
+        toast({ title: "Photo Ready", description: "Tap 'Save Professional Profile' below to apply." });
       };
       reader.readAsDataURL(file);
     }
@@ -186,7 +183,7 @@ export default function ProfilePage() {
     try {
       if (username.toLowerCase() !== profile?.username?.toLowerCase()) {
         if (!canChangeUsername) {
-          toast({ variant: "destructive", title: "Wait a bit", description: `Username lock is active. Next change: ${nextChangeDate?.toLocaleDateString()}` });
+          toast({ variant: "destructive", title: "Username Locked", description: `Available in ${formatDistanceToNow(nextChangeDate!)}` });
           setIsSaving(false);
           return;
         }
@@ -211,15 +208,15 @@ export default function ProfilePage() {
         data.profilePictureUrl = newProfilePic;
       }
 
-      await updateDocumentNonBlocking(workerRef, data);
+      updateDocumentNonBlocking(workerRef, data);
       
       toast({
-        title: "Profile Updated",
-        description: "Your professional status has been saved successfully.",
+        title: "Profile Saved",
+        description: "Your professional status has been updated.",
       });
       setNewProfilePic(null);
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Save Failed", description: err.message });
+      toast({ variant: "destructive", title: "Save Failed", description: "Ensure photo size is small." });
     } finally {
       setIsSaving(false);
     }
@@ -234,7 +231,7 @@ export default function ProfilePage() {
     try {
       const result = await generateProfessionalBio({ trade });
       setBio(result.bio);
-      toast({ title: "Bio Improved", description: "AI has polished your professional story." });
+      toast({ title: "Bio Refined", description: "AI has polished your professional story." });
     } catch (error) {
       toast({ variant: "destructive", title: "AI Error", description: "Could not refine bio." });
     } finally {
@@ -316,8 +313,8 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <p className="text-xs font-medium leading-relaxed opacity-90">
                 {isPro 
-                  ? "Your VIP status is currently active. You have full access to HD photos and AI verification priority." 
-                  : "Unlock 5MB photos, AI verification priority, and a professional VIP badge on your profile."}
+                  ? "Your VIP status is currently active. You have full access to HD photos and national priority." 
+                  : "Unlock national ranking boost, and a professional VIP badge on your profile."}
               </p>
               {!isPro && (
                 <Button variant="secondary" className="w-full rounded-full font-black shadow-lg" asChild>
@@ -329,19 +326,19 @@ export default function ProfilePage() {
         </div>
 
         <div className="md:col-span-2">
-          <div className="grid gap-6">
+          <form onSubmit={handleUpdate} className="grid gap-6">
             <Card className="border-none shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Professional Details</CardTitle>
-                <CardDescription>Keep your skills and locations updated for clients across Malawi.</CardDescription>
+                <CardDescription>Keep your skills and locations updated for clients.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="username">Public Username</Label>
-                    {!canChangeUsername && (
+                    {!canChangeUsername && nextChangeDate && (
                       <Badge variant="outline" className="text-[8px] font-black uppercase text-muted-foreground flex items-center gap-1">
-                        <Lock className="h-2 w-2" /> Locked for {formatDistanceToNow(nextChangeDate!, { addSuffix: false })}
+                        <Lock className="h-2 w-2" /> Changes locked for {formatDistanceToNow(nextChangeDate)}
                       </Badge>
                     )}
                   </div>
@@ -403,13 +400,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label>Service Areas ({serviceAreas.length} selected)</Label>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {serviceAreas.slice(0, 5).map(area => (
-                      <Badge key={area} variant="secondary" className="text-[8px] font-black">{area}</Badge>
-                    ))}
-                    {serviceAreas.length > 5 && <Badge variant="outline" className="text-[8px]">+{serviceAreas.length - 5} more</Badge>}
-                  </div>
+                  <Label>Service Areas ({serviceAreas.length})</Label>
                   <Collapsible open={isAreasOpen} onOpenChange={setIsAreasOpen} className="w-full space-y-2">
                     <CollapsibleTrigger asChild>
                       <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-xl">
@@ -443,66 +434,45 @@ export default function ProfilePage() {
 
             <Card className="border-none shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Direct Contact Information</CardTitle>
-                <CardDescription>Allow clients to reach you instantly. Visible on your public profile.</CardDescription>
+                <CardTitle className="text-lg">Contact Information</CardTitle>
+                <CardDescription>Visible on your public profile for client inquiries.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="whatsapp">WhatsApp Number</Label>
                   <div className="relative">
                     <WhatsAppIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      id="whatsapp" 
-                      placeholder="e.g. 0987066051"
-                      value={whatsapp} 
-                      onChange={(e) => setWhatsapp(e.target.value)}
-                      className="pl-10 h-12 rounded-xl" 
-                    />
+                    <Input id="whatsapp" placeholder="e.g. 0987066051" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="pl-10 h-12 rounded-xl" />
                   </div>
                 </div>
-
                 <div className="grid gap-2">
-                  <Label htmlFor="phone">Direct Phone Number</Label>
+                  <Label htmlFor="phone">Direct Phone</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      id="phone" 
-                      placeholder="e.g. 0987066051"
-                      value={phone} 
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 h-12 rounded-xl" 
-                    />
+                    <Input id="phone" placeholder="e.g. 0987066051" value={phone} onChange={(e) => setPhone(e.target.value)} className="pl-10 h-12 rounded-xl" />
                   </div>
                 </div>
-
                 <div className="grid gap-2">
-                  <Label htmlFor="contact-email">Contact Email</Label>
+                  <Label htmlFor="contact-email">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      id="contact-email" 
-                      type="email"
-                      placeholder="e.g. worker@gmail.com"
-                      value={contactEmail} 
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      className="pl-10 h-12 rounded-xl" 
-                    />
+                    <Input id="contact-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="pl-10 h-12 rounded-xl" />
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="bg-muted/10">
                 <Button 
                   id="profile-save-btn"
-                  onClick={handleUpdate}
+                  type="submit"
                   disabled={isSaving || usernameStatus === "taken"}
-                  className="w-full rounded-full py-6 text-lg shadow-lg font-black pointer-events-auto" 
+                  className="w-full rounded-full py-6 text-lg shadow-lg font-black" 
                 >
                   {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
                   Save Professional Profile
                 </Button>
               </CardFooter>
             </Card>
-          </div>
+          </form>
         </div>
       </div>
     </div>
