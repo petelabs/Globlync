@@ -23,7 +23,7 @@ import {
   RefreshCw,
   Sparkles
 } from "lucide-react";
-import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -67,13 +67,11 @@ export default function ReferralsPage() {
     try {
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
-      // Update profile
       await setDoc(workerRef, { 
         referralCode: newCode,
         updatedAt: serverTimestamp() 
       }, { merge: true });
 
-      // Register code
       await setDoc(doc(db, "referralCodes", newCode), { uid: user.uid });
       
       toast({ title: "Link Generated!", description: "Your original professional code is ready." });

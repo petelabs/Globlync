@@ -53,8 +53,6 @@ export default function Home() {
 
   const { data: testimonials } = useCollection(appRatingsQuery);
 
-  const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
-
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
       {/* Hero Section */}
@@ -71,13 +69,13 @@ export default function Home() {
           Trust is the new <span className="text-primary font-black animate-shimmer-text">Currency.</span>
         </h1>
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
-          Building your professional identity is <span className="text-primary font-bold">Free for Life</span>. Join the global network of verified professionals and log your work to build portable trust.
+          Building your professional identity is <span className="text-primary font-bold underline decoration-secondary">Free for Life</span>. Join the global network of verified professionals and build portable trust.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
-          <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
+          <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
             <Link href="/login">Create Free Profile</Link>
           </Button>
-          <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg" asChild>
+          <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg font-black" asChild>
             <Link href="/search">Find Verified Pros</Link>
           </Button>
         </div>
