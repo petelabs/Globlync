@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -33,6 +32,7 @@ import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { generateDailyTip, DailyTipOutput } from "@/ai/flows/generate-daily-tip-flow";
+import { Progress } from "@/components/ui/progress";
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -192,17 +192,24 @@ export default function DashboardPage() {
 
         <Card className="md:col-span-4 border-none bg-secondary/10 rounded-[2.5rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
-            <Gift className="h-24 w-24" />
+            <Users className="h-24 w-24" />
           </div>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-black uppercase tracking-widest text-secondary flex items-center gap-2">
-              <Gift className="h-4 w-4" /> Reward Hub
+              <Users className="h-4 w-4" /> Invite & Earn
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 relative z-10">
-            <p className="text-[11px] font-medium leading-tight">Unlock <b>Pro VIP</b> status for free by completing daily tasks.</p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-black uppercase opacity-70">
+                <span>Free Pro VIP Progress</span>
+                <span>{stats.referrals}/10</span>
+              </div>
+              <Progress value={(stats.referrals / 10) * 100} className="h-2 bg-secondary/20" />
+            </div>
+            <p className="text-[11px] font-medium leading-tight">Friends get <b>+10 Trust Score</b> when they join using your link.</p>
             <Button size="sm" className="w-full rounded-full bg-secondary text-secondary-foreground font-black text-[10px]" asChild>
-              <Link href="/rewards">View Tasks <ChevronRight className="ml-1 h-3 w-3" /></Link>
+              <Link href="/referrals">Invite Friends <ChevronRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           </CardContent>
         </Card>
@@ -226,7 +233,7 @@ export default function DashboardPage() {
                 <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
                   <Link href="/pricing">Go Pro VIP</Link>
                 </Button>
-                <Link href="/rewards" className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 text-center">Or Earn it for Free</Link>
+                <Link href="/referrals" className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 text-center">Or Earn it by Inviting Friends</Link>
               </div>
             </CardContent>
           </Card>

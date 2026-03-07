@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -17,7 +16,8 @@ import {
   ChevronDown,
   Gift,
   Sparkles,
-  Crown
+  Crown,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -186,10 +186,13 @@ export function Navigation() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="mx-[-8px] my-1" />
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />Dashboard</Link>
+                      <Link href="/dashboard"><LayoutDashboard className="mr-3 h-5 w-5 text-primary" />My Dashboard</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
-                      <Link href="/rewards"><Gift className="mr-3 h-5 w-5" />Earn Free VIP</Link>
+                      <Link href="/referrals"><Users className="mr-3 h-5 w-5 text-secondary" />Invite & Earn</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
+                      <Link href="/rewards"><Gift className="mr-3 h-5 w-5 text-secondary" />Earn Free VIP</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
                       <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />My Profile</Link>
