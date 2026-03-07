@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -113,19 +114,19 @@ export function Navigation() {
           <div className="flex-1 flex justify-center px-2 sm:px-4 md:px-8 max-w-md">
             <Button 
               variant="outline" 
-              className="hidden sm:flex w-full justify-start text-muted-foreground rounded-full h-10 px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2 border-primary/10 hover:border-primary/30 group" 
+              className="hidden sm:flex w-full justify-start text-muted-foreground rounded-full h-12 px-8 bg-muted/20 hover:bg-muted/40 transition-all border-2 border-primary/10 hover:border-primary/30 group" 
               onClick={() => router.push('/search')}
             >
-              <Search className="h-4 w-4 mr-3 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
-              <span className="text-sm font-bold tracking-tight truncate">Search global network...</span>
+              <Search className="h-5 w-5 mr-4 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
+              <span className="text-base font-black tracking-tight truncate">Search global network...</span>
             </Button>
             <Button 
               variant="ghost" 
               size="icon"
-              className="sm:hidden rounded-full h-10 w-10 text-primary/60 hover:text-primary hover:bg-primary/5" 
+              className="sm:hidden rounded-full h-12 w-12 text-primary/60 hover:text-primary hover:bg-primary/5" 
               onClick={() => router.push('/search')}
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-6 w-6" />
             </Button>
           </div>
 

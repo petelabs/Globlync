@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useMemo } from "react";
@@ -37,8 +38,8 @@ import { Badge } from "@/components/ui/badge";
 
 const FREE_LIMIT = 1;
 const PRO_LIMIT = 10;
-const FREE_SIZE_LIMIT = 1.5 * 1024 * 1024; // 1.5MB
-const PRO_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
+const FREE_SIZE_LIMIT = 5 * 1024 * 1024; // Increased to 5MB
+const PRO_SIZE_LIMIT = 10 * 1024 * 1024; // Increased to 10MB
 
 // Official WhatsApp Logo as Inline SVG
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -89,7 +90,7 @@ export default function WorkLogPage() {
         toast({
           variant: "destructive",
           title: "File Too Large",
-          description: `Photo size must be under ${limit / (1024 * 1024)}MB for free users. Upgrade to VIP for high-res 5MB uploads.`,
+          description: `Photo size must be under ${limit / (1024 * 1024)}MB. Upgrade to VIP for higher limits.`,
         });
         return;
       }
@@ -222,7 +223,7 @@ export default function WorkLogPage() {
         {!isPro && (
           <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-2xl">
             <Crown className="h-4 w-4 text-primary" />
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Free users: 1.5MB per photo. <Link href="/pricing" className="text-primary font-bold underline">Upgrade to VIP</Link> for 5MB limit.</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Standard limit: 5MB per photo. <Link href="/pricing" className="text-primary font-bold underline">Upgrade to VIP</Link> for 10MB limit.</p>
           </div>
         )}
       </header>
@@ -301,7 +302,7 @@ export default function WorkLogPage() {
                         {aiAnalysis.isMatch ? <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" /> : <AlertCircle className="h-6 w-6 text-amber-600 mt-0.5" />}
                         <div className="text-sm">
                           <p className="font-black text-xs uppercase tracking-tight">{aiAnalysis.isMatch ? "Proof Accepted" : "AI Flags Review"}</p>
-                          <p className="text-muted-foreground text-[11px] leading-tight mt-1">{aiAnalysis.analysis}</p>
+                          <p className="text-muted-foreground text-[11px] font-medium leading-tight mt-1">{aiAnalysis.analysis}</p>
                         </div>
                       </div>
                     )}

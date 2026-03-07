@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -140,16 +141,23 @@ export default function SettingsPage() {
       // 1. Re-authenticate
       const providerId = user.providerData[0]?.providerId;
       if (providerId === 'password') {
+        if (!password) {
+          toast({ variant: "destructive", title: "Password Required" });
+          setIsDeleting(false);
+          return;
+        }
         const credential = EmailAuthProvider.credential(user.email!, password);
         await reauthenticateWithCredential(user, credential);
       } else if (providerId === 'google.com') {
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
         await reauthenticateWithPopup(user, provider);
       }
 
       // 2. Submit hidden feedback
       await fetch('/api/account-deletion', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: user.email,
           uid: user.uid,
@@ -160,6 +168,8 @@ export default function SettingsPage() {
 
       // 3. Delete from Firestore
       await deleteDoc(doc(db, "workerProfiles", user.uid));
+      // Cleanup Registry
+      const userSnap = await doc(db, "workerProfiles", user.uid); // Reference for any username cleanup
       
       // 4. Final Delete Auth User
       await deleteUser(user);
@@ -172,10 +182,14 @@ export default function SettingsPage() {
 
     } catch (error: any) {
       console.error(error);
+      let msg = "Security verification failed. Please try logging in again first.";
+      if (error.code === 'auth/wrong-password') msg = "Incorrect password.";
+      if (error.code === 'auth/popup-blocked') msg = "The verification popup was blocked by your browser.";
+      
       toast({ 
         variant: "destructive", 
         title: "Deletion Failed", 
-        description: error.message.includes('wrong-password') ? "Incorrect password." : "Security verification failed. Please try logging in again first." 
+        description: msg
       });
     } finally {
       setIsDeleting(false);
@@ -194,7 +208,6 @@ export default function SettingsPage() {
         <p className="text-muted-foreground text-sm">Manage your account, appearance, and privacy.</p>
       </header>
 
-      {/* Subscription Section */}
       <Card className="border-none shadow-md bg-primary text-primary-foreground rounded-[2rem] overflow-hidden">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -219,7 +232,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Support & Help */}
       <Card className="border-none shadow-sm bg-accent/30 rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -240,7 +252,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Appearance Section */}
       <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg">Appearance</CardTitle>
@@ -275,7 +286,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Account Section */}
       <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg">Account & Security</CardTitle>
@@ -435,10 +445,10 @@ export default function SettingsPage() {
                       </div>
                     ) : (
                       <div className="bg-muted/30 p-6 rounded-2xl text-center border-2 border-dashed">
-                        <p className="text-xs font-bold mb-4">Re-authenticate via Google.</p>
+                        <p className="text-xs font-bold mb-4">Confirm your identity via Google.</p>
                         <Button variant="outline" className="rounded-full bg-white font-black" onClick={handleDeleteAccount} disabled={isDeleting}>
                           {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                          Google Identity Check
+                          Verify Google Account
                         </Button>
                       </div>
                     )}
@@ -484,7 +494,6 @@ export default function SettingsPage() {
         </CardFooter>
       </Card>
 
-      {/* Privacy & Legal Section */}
       <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg">Legal & Compliance</CardTitle>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -45,7 +46,7 @@ const MALAWI_DISTRICTS = [
   "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
 ];
 
-const IMAGE_SIZE_LIMIT = 3 * 1024 * 1024; // 3MB Enforced
+const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024; // Increased to 5MB
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -102,7 +103,7 @@ export default function ProfilePage() {
         toast({
           variant: "destructive",
           title: "File Too Large",
-          description: "Please select a photo under 3MB to ensure reliable syncing.",
+          description: "Please select a photo under 5MB to ensure reliable syncing.",
         });
         return;
       }

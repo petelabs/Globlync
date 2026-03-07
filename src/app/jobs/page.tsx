@@ -93,19 +93,19 @@ export default function JobsBoardPage() {
         
         <div className="space-y-4 w-full">
           <div className="relative group w-full">
-            <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
               placeholder="Search keywords (Developer, Designer, Engineer)..." 
-              className="pl-12 h-16 rounded-2xl shadow-xl border-2 text-base w-full focus-visible:ring-primary"
+              className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 text-xl font-black w-full focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-5 p-1 hover:bg-muted rounded-full transition-colors"
+                className="absolute right-6 top-7 p-1.5 hover:bg-muted rounded-full transition-colors"
               >
-                <X className="h-5 w-5 text-muted-foreground" />
+                <X className="h-6 w-6 text-muted-foreground" />
               </button>
             )}
           </div>
@@ -116,7 +116,7 @@ export default function JobsBoardPage() {
               <button
                 key={kw}
                 onClick={() => setSearchTerm(kw)}
-                className="px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold text-primary hover:bg-primary hover:text-white transition-all"
+                className="px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all uppercase tracking-tight"
               >
                 {kw}
               </button>
@@ -224,8 +224,8 @@ export default function JobsBoardPage() {
         </div>
         <div className="relative z-10 space-y-6 w-full">
           <div className="space-y-2">
-            <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Global <br/><span className="text-secondary italic">Excellence.</span></h3>
-            <p className="text-sm md:text-base opacity-80 max-w-md leading-relaxed">
+            <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Global Excellence.</h3>
+            <p className="text-sm md:text-base opacity-80 max-w-md font-medium leading-relaxed">
               Reach thousands of verified professionals worldwide. Advertise your brand or post vacancies directly on our network.
             </p>
           </div>

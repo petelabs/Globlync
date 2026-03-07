@@ -84,21 +84,21 @@ export default function SearchPage() {
             <Globe className="h-4 w-4" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Discovery (HQ: Malawi)</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tighter">Discover <span className="italic text-primary">The Best.</span></h1>
+          <h1 className="text-4xl font-black tracking-tighter">Discover <span className="text-primary">The Best.</span></h1>
           <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals worldwide.</p>
         </div>
 
         <div className="relative group">
-          <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input 
             placeholder="Search by trade, name, or city worldwide..." 
-            className="pl-14 h-16 rounded-[1.5rem] shadow-xl border-2 focus-visible:ring-primary text-lg font-medium" 
+            className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 focus-visible:ring-primary text-xl font-black" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {searchTerm && (
-            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-5 bg-muted p-1 rounded-full">
-              <X className="h-4 w-4 text-muted-foreground" />
+            <button onClick={() => setSearchTerm("")} className="absolute right-6 top-7 bg-muted p-1.5 rounded-full">
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -126,7 +126,6 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {/* Global Leaderboard - Shown when not searching */}
       {!searchTerm && !selectedCategory && (
         <Card className="border-none bg-primary/5 rounded-[3rem] overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-8 pb-4">
@@ -211,7 +210,7 @@ export default function SearchPage() {
                     <div className="flex-1">
                       <h3 className="text-xl font-black group-hover:text-primary transition-colors">{worker.name}</h3>
                       <p className="text-xs text-primary font-bold uppercase tracking-widest mt-1 mb-3">{worker.tradeSkill}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{worker.bio || "No professional summary provided."}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 font-medium leading-relaxed">{worker.bio || "No professional summary provided."}</p>
                     </div>
                     <div className="mt-6 flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
