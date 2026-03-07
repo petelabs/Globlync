@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,69 +16,38 @@ export default function PrivacyPolicyPage() {
         <div className="bg-primary/10 p-2 rounded-xl">
           <ShieldCheck className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-4xl font-bold">Privacy Policy</h1>
+        <h1 className="text-4xl font-black tracking-tighter">Privacy Policy</h1>
       </div>
 
-      <Card className="border-none shadow-sm">
-        <CardHeader>
-          <CardTitle>Introduction</CardTitle>
-          <p className="text-sm text-muted-foreground">Last Updated: March 1, 2026</p>
+      <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden">
+        <CardHeader className="bg-muted/30">
+          <CardTitle>Data Protection & Transparency</CardTitle>
+          <p className="text-xs text-muted-foreground font-bold">Last Updated: March 1, 2026</p>
         </CardHeader>
-        <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed">
+        <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed p-8">
           <section>
-            <h3 className="text-lg font-bold mb-2">1. Information We Collect</h3>
-            <p>At Globlync (built by Petediano Tech), we collect information to help skilled workers build a digital reputation. This includes:</p>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>Account Information:</strong> Name, email address, and profile picture provided through Google Auth or Email Sign-in.</li>
-              <li><strong>Professional Details:</strong> Your trade/skill, professional bio, and location.</li>
-              <li><strong>Job Data:</strong> Job titles, descriptions, and photos of completed work for verification purposes.</li>
-              <li><strong>Feedback:</strong> Ratings and comments provided by your clients.</li>
-            </ul>
+            <h3 className="text-lg font-black mb-2 text-primary">1. Information Collection</h3>
+            <p>Globlync collects minimal data to build your professional reputation. This includes your name, email, and trade skills. For Reward Center users, we may share non-sensitive demographic data with partners like Adscend Media to provide relevant tasks.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold mb-2">2. How We Use Your Information</h3>
-            <p>We use your data strictly to provide our services:</p>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li>To create and maintain your public professional profile.</li>
-              <li>To process AI-based photo verification of your work logs.</li>
-              <li>To calculate and display your Trust Score and professional badges.</li>
-              <li>To allow potential clients to verify your work history via QR codes.</li>
-            </ul>
+            <h3 className="text-lg font-black mb-2 text-primary">2. Reward Center Usage</h3>
+            <p>When you participate in our Reward Center to earn "VIP Status," third-party networks may collect data such as IP addresses or device IDs to verify task completion. This is governed by their respective privacy policies.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold mb-2">3. Data Sharing and Third Parties</h3>
-            <p>We value your privacy. We do not sell your personal information. We share data only in the following contexts:</p>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>Public Profiles:</strong> Your name, trade, bio, and verified job history are public so clients can find and trust you.</li>
-              <li><strong>Service Providers:</strong> We use Google Firebase for hosting/auth and Monetag for non-personalized advertising to keep the platform free.</li>
-              <li><strong>Legal Requirements:</strong> If required by Malawian law, we may disclose information to authorities.</li>
-            </ul>
+            <h3 className="text-lg font-black mb-2 text-primary">3. Professional Verification</h3>
+            <p>Photos uploaded for job logs are used strictly for AI-based skill verification and are displayed on your public profile to build trust with clients.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold mb-2">4. Data Security and Storage</h3>
-            <p>Your data is stored securely using Google Cloud Infrastructure (Firebase). We implement industry-standard security measures to protect against unauthorized access or disclosure.</p>
-          </section>
-
-          <section>
-            <h3 className="text-lg font-bold mb-2">5. Your Choices and Rights</h3>
-            <p>You can manage your data directly in the app:</p>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
-              <li><strong>Edit Profile:</strong> Update your trade, bio, and photos at any time.</li>
-              <li><strong>Delete Account:</strong> You can request account deletion via Settings, which removes all your logs and reputation data.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h3 className="text-lg font-bold mb-2">6. Contact Us</h3>
-            <p>If you have questions about this policy, please contact Petediano Tech at <a href="mailto:globlync.pro@gmail.com" className="text-primary font-bold">globlync.pro@gmail.com</a>.</p>
+            <h3 className="text-lg font-black mb-2 text-primary">4. Data Rights</h3>
+            <p>You have the absolute right to delete your profile and all associated logs at any time via the Settings page. This permanently removes your data from our active databases.</p>
           </section>
         </CardContent>
       </Card>
       
-      <footer className="text-center text-[10px] text-muted-foreground mt-8">
+      <footer className="text-center text-[10px] text-muted-foreground mt-8 font-black uppercase tracking-widest">
         © 2026 Petediano Tech • Malawi
       </footer>
     </div>

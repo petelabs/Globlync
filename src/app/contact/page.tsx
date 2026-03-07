@@ -68,20 +68,20 @@ export default function ContactPage() {
         </Button>
         <div className="space-y-2">
           <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 mb-2">
-            Global Network Support
+            National Support Center
           </Badge>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
-            Get in <span className="text-primary italic">Touch.</span>
+            Get in <span className="text-primary">Touch.</span>
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl">
-            Headquartered in Mulanje, serving professionals and businesses worldwide. Reach out to our dedicated teams for specific needs.
+          <p className="text-muted-foreground text-lg max-w-2xl font-medium">
+            Headquartered in Mulanje, serving professionals across Malawi. Reach out to our dedicated teams for specific needs.
           </p>
         </div>
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
         {CONTACT_POINTS.map((point) => (
-          <Card key={point.email} className="border-none shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-1">
+          <Card key={point.email} className="border-none shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-1 rounded-[2rem]">
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
               <div className={`p-4 rounded-2xl ${point.color} group-hover:scale-110 transition-transform shadow-inner`}>
                 <point.icon className="h-6 w-6" />
@@ -91,7 +91,7 @@ export default function ContactPage() {
                   <CardTitle className="text-xl font-bold">{point.title}</CardTitle>
                   <Badge variant="outline" className="text-[8px] font-black uppercase">{point.priority}</Badge>
                 </div>
-                <CardDescription className="text-xs font-medium">{point.description}</CardDescription>
+                <CardDescription className="text-xs font-bold text-muted-foreground">{point.description}</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="pt-2">
@@ -114,58 +114,33 @@ export default function ContactPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
+        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3 rounded-[2rem]">
           <div className="bg-primary/10 p-4 rounded-full mb-2">
             <MapPin className="h-6 w-6 text-primary" />
           </div>
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Headquarters</h4>
-          <p className="text-sm font-medium">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">Petediano Tech Office</span></p>
+          <h4 className="font-black uppercase tracking-widest text-[10px]">Headquarters</h4>
+          <p className="text-xs font-bold">Dzenje Village, Mulanje, Malawi<br/><span className="text-[10px] opacity-70">Petediano Tech Office</span></p>
         </Card>
-        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
+        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3 rounded-[2rem]">
           <div className="bg-primary/10 p-4 rounded-full mb-2">
             <Clock className="h-6 w-6 text-primary" />
           </div>
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Response Hours</h4>
-          <p className="text-sm font-medium">Mon - Sat: 8:00 AM - 5:00 PM (GMT+2)</p>
+          <h4 className="font-black uppercase tracking-widest text-[10px]">Response Hours</h4>
+          <p className="text-xs font-bold">Mon - Sat: 8:00 AM - 5:00 PM (GMT+2)</p>
         </Card>
-        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3">
+        <Card className="border-none bg-muted/30 p-8 flex flex-col items-center text-center gap-3 rounded-[2rem]">
           <div className="bg-primary/10 p-4 rounded-full mb-2">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <h4 className="font-bold uppercase tracking-widest text-[10px]">Global Coverage</h4>
-          <p className="text-sm font-medium">Supporting Professionals Worldwide</p>
+          <h4 className="font-black uppercase tracking-widest text-[10px]">National Coverage</h4>
+          <p className="text-xs font-bold">Supporting Pros across all 28 Districts</p>
         </Card>
       </div>
-
-      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <MessageSquare className="h-64 w-64" />
-        </div>
-        <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-          <div className="bg-white/20 p-4 rounded-3xl animate-pulse">
-            <MessageSquare className="h-10 w-10" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Instant WhatsApp Support</h2>
-            <p className="opacity-80 max-w-md mx-auto text-lg leading-relaxed">
-              For urgent verification, advertising inquiries, or broken ad reports, our WhatsApp line is monitored by human experts.
-            </p>
-          </div>
-          <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
-            <a href="https://wa.me/0987066051" target="_blank">Message Us Now</a>
-          </Button>
-        </div>
-      </Card>
 
       <footer className="text-center py-10 border-t mt-8">
         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-4">
           Managed by Petediano Tech • Global
         </p>
-        <div className="flex justify-center gap-8 text-[10px] font-bold text-primary/50 uppercase tracking-widest">
-          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-          <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
-          <Link href="/pricing" className="hover:text-primary transition-colors">Advertising</Link>
-        </div>
       </footer>
     </div>
   );
