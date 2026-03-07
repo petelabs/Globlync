@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   Home, 
   Briefcase, 
@@ -16,8 +17,7 @@ import {
   ChevronDown,
   Gift,
   Sparkles,
-  Crown,
-  Link as LinkIcon
+  Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -38,9 +38,13 @@ import { collection, query, where, doc } from "firebase/firestore";
 export function Logo({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <div className="bg-primary p-1.5 rounded-xl shadow-lg rotate-0 transition-transform">
-        <LinkIcon className="h-5 w-5 text-white" />
-      </div>
+      <Image 
+        src="/logo.png" 
+        alt="Globlync Logo" 
+        width={32} 
+        height={32} 
+        className="rounded-xl shadow-lg shrink-0"
+      />
       <div className="flex flex-col -space-y-1 text-left">
         <span className="text-xl font-black tracking-tighter text-primary">Globlync</span>
         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">National Network</span>
