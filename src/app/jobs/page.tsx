@@ -59,7 +59,6 @@ export default function JobsBoardPage() {
            description.includes(search);
   });
 
-  // Generate JSON-LD Schema for Google Search
   const generateSchemaMarkup = (job: any) => {
     return {
       "@context": "https://schema.org/",
@@ -145,12 +144,11 @@ export default function JobsBoardPage() {
         </div>
       </header>
 
-      {/* Recommended Ad Tag placement: Between search and results */}
       <div className="my-2">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
       </div>
 
-      <section className="grid gap-4">
+      <section className="grid gap-4 w-full">
         <div className="flex items-center justify-between px-2 mb-2">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
@@ -163,39 +161,39 @@ export default function JobsBoardPage() {
 
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job, idx) => (
-            <div key={job.slug || idx} className="w-full max-w-full">
+            <div key={job.slug || idx} className="w-full">
               <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
               />
-              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary">
+              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full">
                 <CardHeader className="pb-2">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0 max-w-full">
+                    <div className="flex-1 min-w-0 w-full">
                       <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight">
                         <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
                       </CardTitle>
                       <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground">
                         <Building2 className="h-4 w-4 shrink-0" />
-                        <span className="truncate max-w-[200px]">{job.company_name}</span>
+                        <span className="truncate">{job.company_name}</span>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full">
+                    <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full whitespace-nowrap">
                       {job.remote ? "Remote" : "On-Site"}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 max-w-full overflow-hidden">
+                <CardContent className="space-y-4 flex-1">
                   <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md shrink-0">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
                       <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <span className="truncate max-w-[120px]">{job.location}</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md shrink-0">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
                       <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <span>Updated</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md shrink-0">
+                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase text-primary/60 bg-primary/5 px-2 py-1 rounded-md">
                       <Globe className="h-3.5 w-3.5 shrink-0" />
                       <span>Global</span>
                     </div>
@@ -205,14 +203,14 @@ export default function JobsBoardPage() {
                   </p>
                 </CardContent>
                 <CardFooter className="bg-muted/30 flex flex-col sm:flex-row gap-3 p-4">
-                  <Button className="w-full sm:w-auto rounded-full px-8 font-black shadow-lg bg-primary h-12" asChild>
+                  <Button className="w-full sm:flex-1 rounded-full px-8 font-black shadow-lg bg-primary h-12 text-white hover:bg-primary/90" asChild>
                     <a href={job.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
-                      Apply for Position
+                      Apply Now
                     </a>
                   </Button>
                   <Button variant="ghost" size="sm" className="w-full sm:w-auto text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary h-10" asChild>
-                    <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report listing</a>
+                    <a href={`mailto:globlync+support@gmail.com?subject=Inquiry: ${job.title}`}>Report</a>
                   </Button>
                 </CardFooter>
               </Card>
