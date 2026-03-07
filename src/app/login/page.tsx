@@ -20,6 +20,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { Badge } from "@/components/ui/badge";
 
 function LoginContent() {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -30,6 +31,7 @@ function LoginContent() {
   const [manualReferral, setManualReferral] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [referrerName, setReferrerName] = useState<string | null>(null);
   
   const auth = useAuth();
   const db = useFirestore();
@@ -38,6 +40,26 @@ function LoginContent() {
   const { toast } = useToast();
 
   const urlReferral = searchParams?.get('ref') || "";
+
+  useEffect(() => {
+    async function checkReferrer() {
+      const code = urlReferral || manualReferral;
+      if (code && db) {
+        const refDoc = await getDoc(doc(db, "referralCodes", code.trim().toUpperCase()));
+        if (refDoc.exists()) {
+          const profileDoc = await getDoc(doc(db, "workerProfiles", refDoc.data().uid));
+          if (profileDoc.exists()) {
+            setReferrerName(profileDoc.data().name);
+          }
+        } else {
+          setReferrerName(null);
+        }
+      } else {
+        setReferrerName(null);
+      }
+    }
+    checkReferrer();
+  }, [urlReferral, manualReferral, db]);
 
   const handlePostAuth = async (uid: string, manualName?: string, manualUsername?: string) => {
     if (!db) return;
@@ -72,7 +94,6 @@ function LoginContent() {
         }
       }
 
-      // Professional Gradient Avatars
       const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
       const fallbackTeal = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA3OTZCO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA0RDQwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
       const randomAvatar = defaultAvatars.length > 0 ? defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)] : fallbackTeal;
@@ -104,7 +125,6 @@ function LoginContent() {
         updatedAt: serverTimestamp(),
       });
 
-      // Registry entries
       await setDoc(doc(db, "usernames", finalUsername), { uid });
       await setDoc(doc(db, "referralCodes", newCode), { uid });
 
@@ -201,7 +221,7 @@ function LoginContent() {
           <Logo className="scale-150 mb-4" />
         </div>
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
-          Build your <span className="text-primary italic">Professional Identity.</span>
+          Build your <span className="text-primary">Professional Identity.</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
           Join the global network. Log verified work, earn trust points, and connect with remote opportunities worldwide.
@@ -237,6 +257,14 @@ function LoginContent() {
             <CardDescription className="font-bold text-sm">
               {isSignUp ? "Create your professional account" : "Welcome back to Globlync"}
             </CardDescription>
+            {referrerName && (
+              <div className="mt-4 flex flex-col items-center gap-2 animate-in zoom-in-95">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 py-1.5 px-4 rounded-full font-black text-[10px] uppercase tracking-widest">
+                  <Gift className="h-3 w-3 mr-2" /> Joining via {referrerName}
+                </Badge>
+                <p className="text-[10px] font-bold text-muted-foreground">You will earn +10 Trust Score bonus!</p>
+              </div>
+            )}
           </CardHeader>
           <CardContent className="grid gap-6 p-8">
             <Button 
