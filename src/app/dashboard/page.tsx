@@ -9,23 +9,23 @@ import {
   Star, 
   TrendingUp, 
   QrCode, 
-  Award,
-  Users,
-  Gift,
-  Crown,
-  Zap,
-  ShieldCheck,
-  Medal,
-  ThumbsUp,
-  Lightbulb,
-  ArrowRight,
-  Loader2,
-  Eye,
-  Briefcase,
-  Trophy,
-  ChevronRight,
-  ClipboardCheck,
-  Sparkles
+  Award, 
+  Users, 
+  Gift, 
+  Crown, 
+  Zap, 
+  ShieldCheck, 
+  Medal, 
+  ThumbsUp, 
+  Lightbulb, 
+  ArrowRight, 
+  Loader2, 
+  Eye, 
+  Briefcase, 
+  Trophy, 
+  ChevronRight, 
+  ClipboardCheck, 
+  Sparkles 
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
@@ -99,9 +99,9 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tighter flex items-center gap-2">
             My Dashboard
-            {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 rounded-full font-black text-[10px] uppercase"><Crown className="h-3 w-3 mr-1" /> VIP Member</Badge>}
+            {isPro && <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 rounded-full font-black text-[10px] uppercase"><Crown className="h-3 w-3 mr-1" /> Pro VIP</Badge>}
           </h1>
-          <p className="text-muted-foreground text-sm">Manage your reputation and national professional visibility.</p>
+          <p className="text-muted-foreground text-sm">Manage your reputation and global professional visibility.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-full font-bold" asChild>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Expert Daily Mentorship</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Daily Mentor Tip</span>
                   {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
                 </div>
                 {dailyTip ? (
@@ -179,31 +179,30 @@ export default function DashboardPage() {
                 ) : (
                   <>
                     <h3 className="text-xl font-black tracking-tight">Growth is a Daily Habit</h3>
-                    <p className="text-sm text-muted-foreground">Keep logging your work to build the most trusted profile in your area.</p>
+                    <p className="text-sm text-muted-foreground">Log your work today to keep your streak and build trust.</p>
                   </>
                 )}
               </div>
             </div>
             <Button variant="ghost" className="rounded-full text-primary font-bold group-hover:translate-x-1 transition-transform p-0" asChild>
-              <Link href="/profile">Change Trade Skill <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/profile">Edit Trade Skills <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardContent>
         </Card>
 
-        {/* NEW REWARD CENTER CARD */}
         <Card className="md:col-span-4 border-none bg-secondary/10 rounded-[2.5rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
             <Gift className="h-24 w-24" />
           </div>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-black uppercase tracking-widest text-secondary flex items-center gap-2">
-              <Gift className="h-4 w-4" /> Reward Center
+              <Gift className="h-4 w-4" /> Reward Hub
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 relative z-10">
-            <p className="text-[11px] font-medium leading-tight">Complete tasks to unlock <b>Free VIP</b> status.</p>
+            <p className="text-[11px] font-medium leading-tight">Unlock <b>Pro VIP</b> status for free by completing daily tasks.</p>
             <Button size="sm" className="w-full rounded-full bg-secondary text-secondary-foreground font-black text-[10px]" asChild>
-              <Link href="/rewards">Earn Now <ChevronRight className="ml-1 h-3 w-3" /></Link>
+              <Link href="/rewards">View Tasks <ChevronRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           </CardContent>
         </Card>
@@ -219,13 +218,13 @@ export default function DashboardPage() {
                   <Crown className="h-12 w-12 text-secondary fill-secondary" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-3xl font-black tracking-tight">VIP Professional Upgrade</h3>
-                  <p className="text-base opacity-80 max-w-lg">Unlock high-res uploads, national ranking boost, and a verified VIP badge for 30 days. Invest in your career growth today.</p>
+                  <h3 className="text-3xl font-black tracking-tight">Optional Pro Upgrade</h3>
+                  <p className="text-base opacity-80 max-w-lg">Unlock HD photo logs, national search ranking boost, and a Pro badge for only MWK 500 per month.</p>
                 </div>
               </div>
               <div className="flex flex-col gap-3">
                 <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
-                  <Link href="/pricing">Go VIP Now</Link>
+                  <Link href="/pricing">Go Pro VIP</Link>
                 </Button>
                 <Link href="/rewards" className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 text-center">Or Earn it for Free</Link>
               </div>

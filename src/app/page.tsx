@@ -27,7 +27,8 @@ import {
   Building2,
   Search as SearchIcon,
   Camera,
-  Zap
+  Zap,
+  HardHat
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -64,17 +65,17 @@ export default function Home() {
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
           <Sparkles className="h-4 w-4" />
-          <span>Professional Reputation for Every Expert Everywhere</span>
+          <span>Professional Reputation for Everyone, Everywhere</span>
         </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
           Trust is the new <span className="text-primary font-black animate-shimmer-text">Currency.</span>
         </h1>
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
-          Globlync connects <span className="text-primary font-bold">Professionals</span>, job seekers, and advertisers globally. Build a digital, AI-verified resume that proves your skills to clients worldwide.
+          Building your professional identity is <span className="text-primary font-bold">Free for Life</span>. Join the global network of verified professionals and log your work to build portable trust.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform" asChild>
-            <Link href="/login">Join the Network</Link>
+            <Link href="/login">Create Free Profile</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg" asChild>
             <Link href="/search">Find Verified Pros</Link>
@@ -82,27 +83,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ad placement 1: Hero Bottom */}
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
+      {/* Reward Promotion */}
+      <div className="max-w-4xl mx-auto w-full px-4">
+        <AdBanner className="w-full" />
+      </div>
 
-      {/* Explicit Purpose Section */}
+      {/* Global Purpose Section */}
       <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4 shadow-inner">
         <div className="max-w-4xl mx-auto space-y-12">
           <div className="flex flex-col items-center text-center gap-4">
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
               Global Purpose (HQ: Malawi)
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">For Every Professional, Everywhere</h2>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">A Verified Identity for All</h2>
             <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              Whether you are an artisan in London, a specialist in Lilongwe, or a developer in New York, Globlync is your professional hub. We bridge the trust gap with transparent verification for the entire global labor market.
+              We believe everyone deserves a way to prove their expertise. From local artisans to global specialists, Globlync is a free-to-use platform that bridges the trust gap with AI-powered verification.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { title: "Global Workers", desc: "Professionals building portable trust across borders.", icon: Users },
-              { title: "Formal Sector", desc: "Corporate specialists verifying expertise.", icon: Building2 },
-              { title: "Job Seekers", desc: "Seeking remote and on-site opportunities.", icon: SearchIcon },
-              { title: "Advertisers", desc: "Businesses connecting with global audiences.", icon: Sparkles }
+              { title: "Artisans", desc: "Plumbers, Electricians, and Masons.", icon: HardHat },
+              { title: "Specialists", desc: "Corporate pros and office experts.", icon: Building2 },
+              { title: "Tech Experts", desc: "Designers and Software developers.", icon: SearchIcon },
+              { title: "Businesses", desc: "Looking for trusted, local talent.", icon: Sparkles }
             ].map((item, i) => (
               <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default group">
                 <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:text-white transition-colors">
@@ -118,27 +121,27 @@ export default function Home() {
 
       {/* How it Works - The Trust Loop */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
-        <h2 className="text-3xl font-bold text-center mb-16">Building Universal Trust</h2>
+        <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">Universal Trust Loop</h2>
         <div className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
           {[
             {
               step: "01",
-              title: "Create Profile",
-              desc: "Sign up as a professional. Upload a professional photo to build instant trust in your city.",
+              title: "Log Your Work",
+              desc: "Upload photos and details of your completed jobs. It's free and takes 1 minute.",
               icon: Camera,
               color: "bg-blue-500"
             },
             {
               step: "02",
-              title: "Log & Verify",
-              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise to anyone, globally.",
-              icon: QrCode,
+              title: "AI Verification",
+              desc: "Our AI analyzes your work proof to build instant trust with future clients.",
+              icon: ShieldCheck,
               color: "bg-primary"
             },
             {
               step: "03",
-              title: "Scale Career",
-              desc: "Your verifiable reputation attracts higher-paying jobs and better global opportunities.",
+              title: "Get Hired",
+              desc: "Share your professional link with anyone. Your verified reputation gets you more work.",
               icon: Zap,
               color: "bg-secondary"
             }
@@ -155,7 +158,9 @@ export default function Home() {
         </div>
       </section>
 
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
+      <div className="max-w-4xl mx-auto w-full px-4 mb-12">
+        <AdBanner className="w-full" />
+      </div>
     </div>
   );
 }

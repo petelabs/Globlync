@@ -4,7 +4,6 @@ import { headers } from 'next/headers';
 import crypto from 'crypto';
 import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin securely using Environment Variables
 if (!admin.apps.length) {
   const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
     ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
@@ -34,7 +33,6 @@ export async function POST(req: Request) {
 
     let isVerified = false;
 
-    // A. Signature Verification
     const webhookSecret = process.env.PAYCHANGU_WEBHOOK_SECRET;
     const signature = headersList.get('x-paychangu-signature');
 
@@ -46,7 +44,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // B. API Verification Fallback
     const secretKey = process.env.PAYCHANGU_SECRET_KEY;
     if (!isVerified && secretKey && txRef) {
       try {
@@ -80,22 +77,13 @@ export async function POST(req: Request) {
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // Flexible Tier Logic (All 30 Days as requested)
-      // Standard: 300 (or 240 discounted)
-      // Silver: 500 (or 400 discounted)
-      // Gold: 1000 (or 800 discounted)
-      let tierName = "Standard VIP";
+      // Pro VIP Logic: MWK 240+ (Discounted) or 300+ gets 30 days
+      let tierName = "Pro VIP";
       let days = 30;
 
-      if (amount >= 800) {
-        tierName = "Gold VIP";
-      } else if (amount >= 400) {
-        tierName = "Silver VIP";
-      } else if (amount >= 240) {
-        tierName = "Standard VIP";
-      } else {
-        tierName = "Trial VIP";
-        days = 2; // Micro-payment safety
+      if (amount < 240) {
+        tierName = "Trial Pro";
+        days = 2; // Safety for micro-payments or testing
       }
 
       const expiryDate = new Date();
@@ -119,7 +107,7 @@ export async function POST(req: Request) {
       const notifRef = userDoc.ref.collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `VIP Status Activated! You've been upgraded to ${tierName} for ${days} days. Expiry: ${expiryDate.toLocaleDateString()}.`,
+        message: `Pro VIP Status Activated! You now have full access for ${days} days. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

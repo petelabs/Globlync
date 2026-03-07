@@ -17,41 +17,14 @@ import {
   Clock,
   Tag,
   AlertCircle,
-  Gift
+  Gift,
+  ArrowRight
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-const PLANS = [
-  {
-    name: "Standard VIP",
-    price: 300,
-    duration: "30 Days",
-    features: ["5 HD Photos per job", "AI Proof Priority", "Verified VIP Badge", "Basic Directory Listing"],
-    color: "bg-primary/5 border-primary/20",
-    paymentLink: "https://pay.paychangu.com/SC-c9Mara",
-    recommended: true
-  },
-  {
-    name: "Silver VIP",
-    price: 500,
-    duration: "30 Days",
-    features: ["10 HD Photos per job", "Enhanced Trust Score", "Search Result Boost", "WhatsApp Visibility Boost"],
-    color: "bg-muted/50 border-muted",
-    paymentLink: "https://pay.paychangu.com/SC-c9Mara"
-  },
-  {
-    name: "Gold VIP",
-    price: 1000,
-    duration: "30 Days",
-    features: ["Everything in Silver", "Unlimited Photos", "Featured Home Page Slot", "Priority Human Verification"],
-    color: "bg-secondary/10 border-secondary/20",
-    paymentLink: "https://pay.paychangu.com/SC-c9Mara"
-  }
-];
 
 const PAYMENT_LINK = "https://pay.paychangu.com/SC-c9Mara";
 
@@ -69,7 +42,6 @@ export default function PricingPage() {
   
   const activeBenefit = profile?.activeBenefits?.find((b: any) => new Date(b.expiresAt) > new Date());
 
-  // Calculate 24h discount eligibility and countdown
   useEffect(() => {
     if (!profile?.createdAt) return;
     
@@ -97,44 +69,20 @@ export default function PricingPage() {
   }, [profile?.createdAt]);
 
   const isEligibleForDiscount = timeLeft !== "" && timeLeft !== "EXPIRED";
+  const proPrice = 300;
+  const discountedPrice = 240;
 
   return (
     <div className="flex flex-col gap-12 py-8 max-w-5xl mx-auto px-4">
       <header className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-secondary">
-          <Sparkles className="h-3 w-3" /> National Professional Network
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-primary">
+          <Sparkles className="h-3 w-3" /> Global Professional Network
         </div>
-        <h1 className="text-4xl font-black tracking-tighter sm:text-7xl text-primary">Go VIP.</h1>
-        <p className="max-w-[700px] mx-auto text-muted-foreground text-lg">
-          Support the platform that grows your reputation across Malawi. Select your tier or earn Pro status for free.
+        <h1 className="text-4xl font-black tracking-tighter sm:text-7xl text-primary">Go Pro VIP.</h1>
+        <p className="max-w-[700px] mx-auto text-muted-foreground text-lg font-medium">
+          Building your professional identity is <b>Free for Life</b>. Upgrade to Pro VIP to unlock advanced tools and global visibility.
         </p>
       </header>
-
-      {/* NEW: EARN FOR FREE SECTION */}
-      <Card className="border-none bg-secondary/10 p-8 rounded-[3rem] shadow-xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-          <Gift className="h-40 w-40" />
-        </div>
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-2 text-center md:text-left">
-            <Badge className="bg-secondary text-secondary-foreground font-black mb-2">FREE ENTRY OPTION</Badge>
-            <h3 className="text-3xl font-black tracking-tight">Earn VIP for Free</h3>
-            <p className="text-sm opacity-80 max-w-md font-medium">Complete one quick offer from our partners to unlock 2 days of Pro features instantly. No cash required.</p>
-          </div>
-          <Button size="lg" className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-16 shadow-xl" asChild>
-            <Link href="/rewards">Go to Reward Center</Link>
-          </Button>
-        </div>
-      </Card>
-
-      {/* Critical Payment Warning */}
-      <Alert variant="destructive" className="bg-destructive/5 border-2 border-destructive/20 rounded-[2rem] p-6">
-        <AlertCircle className="h-6 w-6" />
-        <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">Payment Warning</AlertTitle>
-        <AlertDescription className="text-sm font-medium mt-2 ml-2 leading-relaxed">
-          activation is 100% automated. <b>You MUST enter the EXACT value</b> shown for your chosen plan. Incorrect amounts will NOT activate automatically.
-        </AlertDescription>
-      </Alert>
 
       {isEligibleForDiscount && (
         <a href={PAYMENT_LINK} target="_blank" className="block group">
@@ -151,12 +99,12 @@ export default function PricingPage() {
                   </div>
                 </div>
                 <h2 className="text-3xl font-black tracking-tighter">20% Welcome Discount!</h2>
-                <p className="opacity-80 font-medium">Upgrade now to claim your discount. Valid for any VIP tier.</p>
+                <p className="opacity-80 font-medium">Upgrade now to claim your discounted Pro VIP status.</p>
               </div>
               <div className="text-center px-8 py-4 bg-white/20 rounded-2xl border border-white/30 backdrop-blur-md">
                 <p className="text-[10px] font-black uppercase opacity-70">Claim For Only</p>
-                <p className="text-4xl font-black">MWK 240</p>
-                <p className="text-[8px] font-bold">Standard VIP (30 Days)</p>
+                <p className="text-4xl font-black">MWK {discountedPrice}</p>
+                <p className="text-[8px] font-bold">Pro VIP (30 Days)</p>
               </div>
             </div>
           </Card>
@@ -168,54 +116,113 @@ export default function PricingPage() {
           <Badge className="bg-secondary text-secondary-foreground font-black mb-4 px-6 py-1.5 rounded-full">ACTIVE VIP STATUS</Badge>
           <h3 className="text-3xl font-black flex items-center justify-center gap-3 text-foreground">
             <Crown className="h-8 w-8 text-secondary fill-secondary" />
-            You are {activeBenefit.type}
+            You are a Pro VIP Member
           </h3>
           <p className="text-base text-muted-foreground mt-2 font-medium">Active until <b>{new Date(activeBenefit.expiresAt).toLocaleDateString()}</b></p>
         </Card>
       )}
 
-      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {PLANS.map((plan) => (
-          <Card key={plan.name} className={cn(
-            "relative border-2 transition-all hover:scale-[1.02] flex flex-col rounded-[3rem] overflow-hidden shadow-xl",
-            plan.color,
-            plan.recommended && "ring-4 ring-primary border-transparent"
-          )}>
-            {plan.recommended && (
-              <div className="absolute top-6 right-6 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase shadow-lg">
-                Recommended
-              </div>
-            )}
-            <CardHeader className="p-8">
-              <CardTitle className="text-2xl font-black tracking-tight">{plan.name}</CardTitle>
-              <div className="flex items-baseline gap-1 mt-4">
-                <span className="text-5xl font-black">MWK {plan.price}</span>
-                <span className="text-sm text-muted-foreground font-bold">/ {plan.duration}</span>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1 px-8">
-              <ul className="space-y-4">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-sm font-medium">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4 p-8">
-              <Button className="w-full rounded-full font-black h-16 text-lg shadow-2xl bg-primary" asChild>
-                <a href={plan.paymentLink} target="_blank">
-                  <CreditCard className="mr-3 h-5 w-5" /> Pay MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}
-                </a>
-              </Button>
-              <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
-                Enter Exactly: <span className="text-primary">MWK {isEligibleForDiscount ? Math.floor(plan.price * 0.8) : plan.price}</span>
-              </p>
-            </CardFooter>
-          </Card>
-        ))}
-      </section>
+      <div className="grid gap-8 md:grid-cols-2">
+        {/* FREE TIER CARD */}
+        <Card className="border-2 border-muted bg-muted/20 rounded-[3rem] p-8 flex flex-col">
+          <CardHeader className="p-0 mb-6">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-2xl font-black">Standard Pro</CardTitle>
+              <Badge variant="outline" className="font-black uppercase tracking-widest text-[9px]">Free Forever</Badge>
+            </div>
+            <div className="flex items-baseline gap-1 mt-4">
+              <span className="text-5xl font-black">MWK 0</span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 flex-1">
+            <ul className="space-y-4">
+              {[
+                "Digital Evidence Profile",
+                "Basic Job Logging",
+                "Client Verification Link",
+                "Public Search Presence"
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-3 text-sm font-medium">
+                  <CheckCircle2 className="h-5 w-5 text-primary/40 shrink-0" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="p-0 mt-8">
+            <Button variant="outline" className="w-full rounded-full h-14 font-black border-primary text-primary" asChild>
+              <Link href="/dashboard">Current Status</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* PRO VIP TIER CARD */}
+        <Card className="border-4 border-primary bg-primary/5 rounded-[3rem] p-8 flex flex-col relative overflow-hidden shadow-2xl">
+          <div className="absolute top-6 right-6">
+            <Crown className="h-8 w-8 text-secondary fill-secondary" />
+          </div>
+          <CardHeader className="p-0 mb-6">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-2xl font-black">Pro VIP</CardTitle>
+              <Badge className="bg-secondary text-secondary-foreground font-black text-[10px] uppercase">Highly Recommended</Badge>
+            </div>
+            <div className="flex items-baseline gap-1 mt-4">
+              <span className="text-5xl font-black">MWK {proPrice}</span>
+              <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 flex-1">
+            <ul className="space-y-4">
+              {[
+                "10 High-Res Photos per job",
+                "Verified VIP Badge on Profile",
+                "National Ranking Boost",
+                "Priority AI Verification",
+                "Advanced Trust Score Analytics"
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-3 text-sm font-medium">
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="p-0 mt-8 flex flex-col gap-4">
+            <Button className="w-full rounded-full h-16 text-lg font-black shadow-xl" asChild>
+              <a href={PAYMENT_LINK} target="_blank">
+                <CreditCard className="mr-3 h-5 w-5" /> Pay MWK {isEligibleForDiscount ? discountedPrice : proPrice}
+              </a>
+            </Button>
+            <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
+              Enter Exactly: <span className="text-primary">MWK {isEligibleForDiscount ? discountedPrice : proPrice}</span>
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <Alert variant="destructive" className="bg-destructive/5 border-2 border-destructive/20 rounded-[2rem] p-6">
+        <AlertCircle className="h-6 w-6" />
+        <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">Important Instructions</AlertTitle>
+        <AlertDescription className="text-sm font-medium mt-2 ml-2 leading-relaxed">
+          Activation is 100% automated. <b>You MUST enter the EXACT value</b> (MWK {isEligibleForDiscount ? discountedPrice : proPrice}) in the PayChangu payment form. Incorrect amounts will delay your activation.
+        </AlertDescription>
+      </Alert>
+
+      <Card className="border-none bg-secondary/10 p-8 rounded-[3rem] shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+          <Gift className="h-40 w-40" />
+        </div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-2 text-center md:text-left">
+            <Badge className="bg-secondary text-secondary-foreground font-black mb-2">EARN FOR FREE</Badge>
+            <h3 className="text-3xl font-black tracking-tight">Unlock VIP without Cash</h3>
+            <p className="text-sm opacity-80 max-w-md font-medium">Can't pay? Complete one quick survey or offer from our partners to unlock Pro VIP status instantly. Support the network with your time.</p>
+          </div>
+          <Button size="lg" className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-16 shadow-xl" asChild>
+            <Link href="/rewards">Open Reward Center <ArrowRight className="ml-2 h-5 w-5" /></Link>
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }
