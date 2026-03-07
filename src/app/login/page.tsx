@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, Sparkles, Wand2, Loader2, Gift } from "lucide-react";
+import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -89,14 +89,13 @@ function LoginContent() {
           const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
           addDoc(inviterNotifRef, {
             type: "profile_update",
-            message: "New Referral! Someone joined Globlync using your link. You're closer to earning your Pro status!",
+            message: "New Referral! Someone joined Globlync using your link. You're closer to earning your VIP status!",
             isRead: false,
             createdAt: serverTimestamp()
           }).catch(() => {});
         }
       }
 
-      // Assign a professional default avatar if no Google photo exists
       const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
       const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
       const profilePictureUrl = auth.currentUser?.photoURL || randomAvatar;
@@ -143,47 +142,11 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     const provider = new GoogleAuthProvider();
-    provider.addScope('email');
-    provider.addScope('profile');
-    provider.addScope('openid');
-
     try {
       const result = await signInWithPopup(auth, provider);
       await handlePostAuth(result.user.uid);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message,
-      });
-      setIsLoading(false);
-    }
-  };
-
-  const handleMagicLinkSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setIsLoading(true);
-    
-    const actionCodeSettings = {
-      url: window.location.origin + '/login' + (referralCode ? `?ref=${referralCode}` : ''),
-      handleCodeInApp: true,
-    };
-
-    try {
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
-      toast({
-        title: "Link Sent!",
-        description: "Check your email for your magic sign-in link.",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Failed to send link",
-        description: error.message,
-      });
-    } finally {
+      toast({ variant: "destructive", title: "Login Failed", description: error.message });
       setIsLoading(false);
     }
   };
@@ -200,111 +163,107 @@ function LoginContent() {
       }
       await handlePostAuth(result.user.uid);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Failed",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Auth Failed", description: error.message });
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center py-12 px-4">
-      {referralCode && (
-        <div className="mb-8 bg-primary/10 border-2 border-primary/20 p-6 rounded-[2rem] flex items-center gap-4 animate-in slide-in-from-top-4 duration-500 shadow-xl">
-          <div className="bg-primary p-3 rounded-2xl shadow-lg">
-            <Gift className="h-6 w-6 text-primary-foreground" />
+    <div className="grid lg:grid-cols-2 min-h-[80vh] items-center gap-12 py-12 px-4 max-w-6xl mx-auto">
+      <div className="space-y-8 text-center lg:text-left">
+        <div className="flex justify-center lg:justify-start">
+          <Logo className="scale-150 mb-4" />
+        </div>
+        <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
+          Build your <span className="text-primary italic">Global Reputation.</span>
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
+          Join the professional movement. Log verified work, earn trust points, and connect with global opportunities.
+        </p>
+        
+        <div className="grid grid-cols-3 gap-4 pt-4">
+          <div className="flex flex-col items-center lg:items-start gap-2">
+            <div className="bg-primary/10 p-3 rounded-2xl"><ShieldCheck className="h-6 w-6 text-primary" /></div>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Verified Trust</p>
           </div>
-          <div className="text-left">
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary">Invitation Active</p>
-            <p className="text-sm font-bold leading-tight mt-0.5">Join via link to unlock <br/>10 starter Trust Points!</p>
+          <div className="flex flex-col items-center lg:items-start gap-2">
+            <div className="bg-secondary/10 p-3 rounded-2xl"><Users className="h-6 w-6 text-secondary" /></div>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Artisan Hub</p>
+          </div>
+          <div className="flex flex-col items-center lg:items-start gap-2">
+            <div className="bg-blue-500/10 p-3 rounded-2xl"><Globe className="h-6 w-6 text-blue-500" /></div>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Global Work</p>
           </div>
         </div>
-      )}
-      <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="space-y-1 text-center bg-muted/30 pb-10 pt-10">
-          <div className="flex justify-center mb-6">
-            <Logo className="scale-125" />
-          </div>
-          <CardDescription className="font-medium text-sm">
-            {isSignUp ? "Register your professional account" : "Sign in to your worker profile"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6 p-8">
-          <Button 
-            variant="outline" 
-            className="w-full rounded-full py-8 border-2 font-black text-base hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center" 
-            onClick={handleGoogleLogin} 
-            disabled={isLoading}
-          >
-            <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
-          </Button>
-          
-          <div className="flex gap-2 p-1.5 bg-muted rounded-full">
-            <button className={cn("flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all", authMode === "password" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("password")}>Password</button>
-            <button className={cn("flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all", authMode === "magic-link" ? "bg-white shadow-sm text-primary" : "text-muted-foreground")} onClick={() => setAuthMode("magic-link")}>Magic Link</button>
-          </div>
+      </div>
 
-          {authMode === "password" ? (
+      <div className="relative">
+        {referralCode && (
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[280px] z-20">
+            <div className="bg-secondary text-secondary-foreground p-3 rounded-2xl flex items-center gap-3 shadow-xl border-2 border-white animate-bounce">
+              <Gift className="h-5 w-5 shrink-0" />
+              <p className="text-[10px] font-black leading-none uppercase">Referral active: +10 Trust Points!</p>
+            </div>
+          </div>
+        )}
+        
+        <Card className="border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
+          <CardHeader className="bg-muted/30 pb-8 pt-10 text-center">
+            <CardDescription className="font-bold text-sm">
+              {isSignUp ? "Create your professional account" : "Welcome back to Globlync"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6 p-8">
+            <Button 
+              variant="outline" 
+              className="w-full rounded-full py-8 border-2 font-black text-base hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center" 
+              onClick={handleGoogleLogin} 
+              disabled={isLoading}
+            >
+              <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </Button>
+            
+            <div className="relative flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
+              <span className="relative bg-white px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">Or use email</span>
+            </div>
+
             <form onSubmit={handleEmailAuth} className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
-                  <Input id="email" type="email" placeholder="professional@gmail.com" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Email</Label>
+                <Input type="email" placeholder="professional@example.com" className="h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
-                  <Input id="password" type="password" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Password</Label>
+                <Input type="password" placeholder="••••••••" className="h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </div>
-              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>{isLoading ? "Verifying..." : isSignUp ? "Create Account" : "Sign In"}</Button>
+              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+                {isSignUp ? "Create Account" : "Sign In"}
+              </Button>
             </form>
-          ) : (
-            <form onSubmit={handleMagicLinkSignIn} className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="magic-email" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-4 h-4 w-4 text-muted-foreground" />
-                  <Input id="magic-email" type="email" placeholder="professional@gmail.com" className="pl-12 h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-              </div>
-              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>{isLoading ? "Sending..." : "Send Magic Link"}<Sparkles className="ml-3 h-5 w-5" /></Button>
-            </form>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col gap-6 p-8 pt-0">
-          <p className="text-center text-sm font-medium text-muted-foreground w-full">
-            {isSignUp ? "Already part of the network?" : "New professional?"}{" "}
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Register Free"}</button>
-          </p>
-          <div className="flex justify-center gap-6 text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em] opacity-50">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
-          </div>
-        </CardFooter>
-      </Card>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4 p-8 pt-0">
+            <p className="text-center text-sm font-medium text-muted-foreground">
+              {isSignUp ? "Already part of the network?" : "New professional?"}{" "}
+              <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Register Free"}</button>
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-[80vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    }>
+    <Suspense fallback={<div className="flex min-h-[80vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
       <LoginContent />
     </Suspense>
   );

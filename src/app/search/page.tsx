@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -21,7 +22,9 @@ import {
   X,
   Trophy,
   Medal,
-  ChevronRight
+  ChevronRight,
+  Globe,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -31,26 +34,10 @@ import { cn } from "@/lib/utils";
 import { AdBanner } from "@/components/AdBanner";
 
 const SKILL_CATEGORIES = [
-  { 
-    name: "Construction", 
-    icon: HardHat, 
-    skills: ["Mason", "Carpenter", "Welder", "Painter", "Bricklayer", "Tiler", "Plasterer"] 
-  },
-  { 
-    name: "Home Services", 
-    icon: Home, 
-    skills: ["Plumber", "Electrician", "Solar Tech", "Gardener", "Housekeeper", "Nanny", "Laundry"] 
-  },
-  { 
-    name: "Technical", 
-    icon: Laptop, 
-    skills: ["Mechanic", "IT Support", "Phone Repair", "Tailor", "Cobbler", "Barber", "Beautician"] 
-  },
-  { 
-    name: "Professional", 
-    icon: GraduationCap, 
-    skills: ["Tutor", "Accountant", "Sales Agent", "Driver", "Photographer", "Event Planner"] 
-  },
+  { name: "Construction", icon: HardHat, skills: ["Mason", "Carpenter", "Welder", "Painter"] },
+  { name: "Home Services", icon: Home, skills: ["Plumber", "Electrician", "Gardener", "Solar Tech"] },
+  { name: "Technical", icon: Laptop, skills: ["Mechanic", "IT Support", "Repair", "Tailor"] },
+  { name: "Expert Pro", icon: GraduationCap, skills: ["Tutor", "Accountant", "Sales", "Driver"] },
 ];
 
 export default function SearchPage() {
@@ -73,21 +60,15 @@ export default function SearchPage() {
   const filteredWorkers = useMemo(() => {
     if (!allWorkers) return [];
     return allWorkers.filter(w => {
-      const name = w.name?.toLowerCase() || "";
-      const trade = w.tradeSkill?.toLowerCase() || "";
-      const bio = w.bio?.toLowerCase() || "";
-      const username = w.username?.toLowerCase() || "";
       const search = searchTerm.toLowerCase();
-
       const matchesSearch = search === "" || 
-        name.includes(search) || 
-        trade.includes(search) ||
-        bio.includes(search) ||
-        username.includes(search);
+        (w.name || "").toLowerCase().includes(search) || 
+        (w.tradeSkill || "").toLowerCase().includes(search) ||
+        (w.bio || "").toLowerCase().includes(search);
       
       const categorySkills = SKILL_CATEGORIES.find(c => c.name === selectedCategory)?.skills || [];
       const matchesCategory = !selectedCategory || 
-        categorySkills.some(s => trade.includes(s.toLowerCase()));
+        categorySkills.some(s => (w.tradeSkill || "").toLowerCase().includes(s.toLowerCase()));
 
       return matchesSearch && matchesCategory;
     });
@@ -99,25 +80,27 @@ export default function SearchPage() {
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden w-full">
       <header className="flex flex-col gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-black tracking-tighter text-primary">Discover the World's Best.</h1>
+          <div className="flex items-center gap-2 text-primary">
+            <Globe className="h-4 w-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Discovery</span>
+          </div>
+          <h1 className="text-4xl font-black tracking-tighter">Discover the <span className="italic text-primary">World's Best.</span></h1>
           <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals globally.</p>
         </div>
 
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground" />
-            <Input 
-              placeholder="Search by trade, name, or location..." 
-              className="pl-14 h-16 rounded-[1.5rem] shadow-xl border-2 focus-visible:ring-primary text-lg font-medium" 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm("")} className="absolute right-4 top-5">
-                <X className="h-6 w-6 text-muted-foreground hover:text-primary" />
-              </button>
-            )}
-          </div>
+        <div className="relative group">
+          <Search className="absolute left-4 top-4 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Input 
+            placeholder="Search by trade, name, or city..." 
+            className="pl-14 h-16 rounded-[1.5rem] shadow-xl border-2 focus-visible:ring-primary text-lg font-medium" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} className="absolute right-4 top-5 bg-muted p-1 rounded-full">
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -129,7 +112,7 @@ export default function SearchPage() {
                 key={cat.name}
                 onClick={() => setSelectedCategory(isActive ? null : cat.name)}
                 className={cn(
-                  "flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all gap-3",
+                  "flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all gap-3 shadow-sm",
                   isActive 
                     ? "bg-primary border-primary text-primary-foreground shadow-2xl scale-105" 
                     : "bg-card border-muted hover:border-primary/30 hover:shadow-md"
@@ -143,8 +126,8 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {/* Global Leaderboard Section */}
-      {!searchTerm && !selectedCategory && allWorkers && (
+      {/* Global Leaderboard - Shown when not searching */}
+      {!searchTerm && !selectedCategory && (
         <Card className="border-none bg-primary/5 rounded-[3rem] overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-8 pb-4">
             <div className="flex items-center gap-3">
@@ -153,15 +136,15 @@ export default function SearchPage() {
               </div>
               <CardTitle className="text-2xl font-black">Global Leaderboard</CardTitle>
             </div>
-            <Badge variant="secondary" className="bg-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase">Top Professionals</Badge>
+            <Badge variant="secondary" className="bg-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase">Top Rated</Badge>
           </CardHeader>
           <CardContent className="p-8 pt-0 space-y-4">
-            {allWorkers.slice(0, 3).map((worker, idx) => (
+            {allWorkers ? allWorkers.slice(0, 3).map((worker, idx) => (
               <Link key={worker.id} href={`/public/${worker.id}`} className="block group">
                 <div className="flex items-center gap-6 p-5 bg-white rounded-[2rem] border-2 border-transparent group-hover:border-primary/20 transition-all shadow-sm group-hover:shadow-md">
                   <div className="relative shrink-0">
                     <div className="h-16 w-16 rounded-2xl overflow-hidden border-2">
-                      <img src={worker.profilePictureUrl} alt={worker.name} className="h-full w-full object-cover" />
+                      <img src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/100/100`} alt={worker.name} className="h-full w-full object-cover" />
                     </div>
                     <div className="absolute -top-2 -left-2 bg-secondary text-secondary-foreground h-7 w-7 rounded-full flex items-center justify-center font-black text-xs shadow-lg ring-2 ring-white">
                       {idx + 1}
@@ -178,11 +161,15 @@ export default function SearchPage() {
                     <div className="flex items-center gap-1.5 text-primary font-black">
                       <Star className="h-4 w-4 fill-primary" /> {worker.trustScore}
                     </div>
-                    <p className="text-[8px] font-black text-muted-foreground uppercase mt-1">Trust Score</p>
+                    <p className="text-[8px] font-black text-muted-foreground uppercase mt-1">Trust Points</p>
                   </div>
                 </div>
               </Link>
-            ))}
+            )) : (
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-white/50 animate-pulse rounded-[2rem]" />)}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -190,16 +177,19 @@ export default function SearchPage() {
       <AdBanner id={NATIVE_AD_ID} className="w-full" />
 
       <section className="space-y-6">
-        <h2 className="text-2xl font-black flex items-center gap-3 px-2">
-          {searchTerm || selectedCategory ? "Search Results" : "Verified Professionals"}
-          {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
-        </h2>
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-2xl font-black flex items-center gap-3">
+            {searchTerm || selectedCategory ? "Search Results" : "Verified Professionals"}
+            {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
+          </h2>
+          <Badge variant="outline" className="font-black text-[10px] uppercase">{filteredWorkers.length} Experts found</Badge>
+        </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
           {filteredWorkers.length > 0 ? (
             filteredWorkers.map((worker) => (
-              <Link key={worker.id} href={`/public/${worker.id}`} className="block">
-                <Card className="group hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl cursor-pointer overflow-hidden rounded-[2.5rem] h-full flex flex-col box-border">
+              <Link key={worker.id} href={`/public/${worker.id}`} className="block group">
+                <Card className="hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl cursor-pointer overflow-hidden rounded-[2.5rem] h-full flex flex-col">
                   <div className="h-48 w-full bg-muted relative shrink-0">
                     <img 
                       src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/400/300`} 
@@ -212,7 +202,7 @@ export default function SearchPage() {
                       </Badge>
                       {worker.isPro && (
                         <Badge className="bg-secondary text-secondary-foreground font-black shadow-xl rounded-full border-none">
-                          <Medal className="h-3.5 w-3.5 mr-1" /> VIP
+                          <Zap className="h-3.5 w-3.5 mr-1" /> VIP
                         </Badge>
                       )}
                     </div>
@@ -221,12 +211,12 @@ export default function SearchPage() {
                     <div className="flex-1">
                       <h3 className="text-xl font-black group-hover:text-primary transition-colors">{worker.name}</h3>
                       <p className="text-xs text-primary font-bold uppercase tracking-widest mt-1 mb-3">{worker.tradeSkill}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{worker.bio}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{worker.bio || "No professional summary provided."}</p>
                     </div>
                     <div className="mt-6 flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
                         <MapPin className="h-3.5 w-3.5" /> 
-                        {worker.serviceAreas?.[0] || "Global"}
+                        {worker.serviceAreas?.[0] || "Remote / Global"}
                       </div>
                       <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-2 transition-transform" />
                     </div>
@@ -234,10 +224,10 @@ export default function SearchPage() {
                 </Card>
               </Link>
             ))
-          ) : (
-            <div className="col-span-full text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed">
+          ) : !isLoading && (
+            <div className="col-span-full text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted/20">
               <Search className="h-20 w-20 text-muted-foreground mx-auto mb-6 opacity-10" />
-              <p className="text-muted-foreground font-bold text-lg">No professionals match your search.</p>
+              <p className="text-muted-foreground font-bold text-lg">No professionals match your criteria.</p>
               <Button variant="ghost" className="mt-4 font-black text-primary" onClick={() => {setSearchTerm(""); setSelectedCategory(null);}}>Clear All Filters</Button>
             </div>
           )}

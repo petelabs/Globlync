@@ -1,6 +1,8 @@
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
+import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
@@ -68,12 +70,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background text-foreground overflow-x-hidden w-full">
+      <body className="font-body antialiased bg-background text-foreground overflow-x-hidden w-full flex flex-col min-h-screen">
         <FirebaseClientProvider>
           <Navigation />
-          <main className="mx-auto min-h-screen max-w-screen-xl px-0 sm:px-4 pb-28 pt-20 md:pb-12 md:pt-28 w-full box-border overflow-hidden">
+          <main className="mx-auto flex-1 max-w-screen-xl px-0 sm:px-4 pb-28 pt-20 md:pb-12 md:pt-28 w-full box-border overflow-hidden">
             {children}
           </main>
+          <Footer />
           <OnboardingTutorial />
           <InstallPrompt />
           <Toaster />

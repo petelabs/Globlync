@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -15,7 +16,8 @@ import {
   ChevronDown,
   Gift,
   Sparkles,
-  Crown
+  Crown,
+  Link as LinkIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -35,19 +37,13 @@ import { collection, query, where, doc } from "firebase/firestore";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1 sm:gap-2", className)}>
-      <img 
-        src="/logo.png" 
-        alt="Logo" 
-        className="h-7 w-auto sm:h-8 object-contain" 
-        onError={(e) => (e.currentTarget.style.display = 'none')}
-      />
-      <div className="flex items-center gap-0.5 sm:gap-1">
-        <span className="text-xl sm:text-2xl font-black tracking-tighter italic text-primary">Glob</span>
-        <div className="relative flex items-center h-6 w-10 sm:h-8 sm:w-12 overflow-visible">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 sm:h-7 sm:w-7 text-primary absolute left-0 animate-link-left"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /></svg>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 sm:h-7 sm:w-7 text-secondary absolute right-0 animate-link-right"><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
-        </div>
+    <div className={cn("flex items-center gap-2", className)}>
+      <div className="bg-primary p-1.5 rounded-xl shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+        <LinkIcon className="h-5 w-5 text-white" />
+      </div>
+      <div className="flex flex-col -space-y-1">
+        <span className="text-xl font-black tracking-tighter italic text-primary">Globlync</span>
+        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">Pro Network</span>
       </div>
     </div>
   );
@@ -107,21 +103,19 @@ export function Navigation() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur-md h-16 safe-top">
         <div className="mx-auto flex h-full max-w-screen-xl items-center justify-between px-3 sm:px-4">
-          <Link href="/" className="flex items-center gap-1 hover:opacity-90 transition-opacity shrink-0">
+          <Link href="/" className="flex items-center gap-1 hover:opacity-90 transition-opacity shrink-0 group">
             <Logo className="scale-90 sm:scale-100" />
           </Link>
           
           <div className="flex-1 flex justify-center px-2 sm:px-4 md:px-8 max-w-md">
-            {/* Full bar for desktop/tablet */}
             <Button 
               variant="outline" 
               className="hidden sm:flex w-full justify-start text-muted-foreground rounded-full h-10 px-6 bg-muted/20 hover:bg-muted/40 transition-all border-2 border-primary/10 hover:border-primary/30 group" 
               onClick={() => router.push('/search')}
             >
               <Search className="h-4 w-4 mr-3 shrink-0 text-primary/60 group-hover:text-primary transition-colors" />
-              <span className="text-sm font-bold tracking-tight truncate">Search national network...</span>
+              <span className="text-sm font-bold tracking-tight truncate">Search global network...</span>
             </Button>
-            {/* Simple icon for small mobile */}
             <Button 
               variant="ghost" 
               size="icon"

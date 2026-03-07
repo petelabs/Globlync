@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -24,7 +25,9 @@ import {
   MapPin,
   Info,
   Building2,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Camera,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -58,16 +61,25 @@ export default function Home() {
   }, [workersRef]);
 
   const { data: testimonials } = useCollection(appRatingsQuery);
-  const { data: newcomers, isLoading: isNewcomersLoading } = useCollection(newcomersQuery);
+  const { data: newcomers } = useCollection(newcomersQuery);
 
   const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
+
+  // Demo workers if DB is empty to prevent blank UI
+  const demoWorkers = newcomers && newcomers.length > 0 ? newcomers : [
+    { id: '1', name: 'James Mwale', tradeSkill: 'Master Plumber', trustScore: 120, profilePictureUrl: 'https://images.unsplash.com/photo-1635221798248-8a3452ad07cd?q=80&w=400&auto=format&fit=crop' },
+    { id: '2', name: 'Blessings Phiri', tradeSkill: 'Solar Technician', trustScore: 95, profilePictureUrl: 'https://images.unsplash.com/photo-1618090584176-7132b9911657?q=80&w=400&auto=format&fit=crop' },
+    { id: '3', name: 'Maria Banda', tradeSkill: 'Interior Designer', trustScore: 88, profilePictureUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop' },
+    { id: '4', name: 'Chifundo Gondwe', tradeSkill: 'Bricklayer', trustScore: 110, profilePictureUrl: 'https://images.unsplash.com/photo-1626081062126-d3b192c1fcb0?q=80&w=400&auto=format&fit=crop' }
+  ];
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
       {/* Hero Section */}
-      <section className="flex flex-col items-center text-center gap-6 py-12 px-4">
+      <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         <div className="mb-4 animate-in zoom-in duration-700">
-          <Logo className="scale-[2.5] mb-8" />
+          <Logo className="scale-[2] mb-8" />
         </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary animate-float">
           <Sparkles className="h-4 w-4" />
@@ -92,9 +104,9 @@ export default function Home() {
       {/* Ad placement 1: Hero Bottom */}
       <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
 
-      {/* Explicit Purpose Section (for Global Verification) */}
-      <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4">
-        <div className="max-w-4xl mx-auto space-y-8">
+      {/* Explicit Purpose Section */}
+      <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4 shadow-inner">
+        <div className="max-w-4xl mx-auto space-y-12">
           <div className="flex flex-col items-center text-center gap-4">
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
               Global Purpose
@@ -105,153 +117,99 @@ export default function Home() {
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
-              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
-                <Users className="text-primary h-6 w-6" />
+            {[
+              { title: "Informal Workers", desc: "Artisans building portable trust globally.", icon: Users },
+              { title: "Formal Sector", desc: "Professional specialists verifying expertise.", icon: Building2 },
+              { title: "Job Seekers", desc: "Seeking opportunities across the globe.", icon: SearchIcon },
+              { title: "Advertisers", desc: "Businesses connecting with global audiences.", icon: Sparkles }
+            ].map((item, i) => (
+              <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default group">
+                <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:text-white transition-colors">
+                  <item.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-sm">{item.title}</h3>
+                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
               </div>
-              <h3 className="font-bold text-sm">Informal Workers</h3>
-              <p className="text-[10px] text-muted-foreground">Artisans building portable trust globally.</p>
-            </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
-              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
-                <Building2 className="text-primary h-6 w-6" />
-              </div>
-              <h3 className="font-bold text-sm">Formal Sector</h3>
-              <p className="text-[10px] text-muted-foreground">Professional specialists verifying expertise.</p>
-            </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
-              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
-                <SearchIcon className="text-primary h-6 w-6" />
-              </div>
-              <h3 className="font-bold text-sm">Job Seekers</h3>
-              <p className="text-[10px] text-muted-foreground">Seeking opportunities across the globe.</p>
-            </div>
-            <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default">
-              <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
-                <Sparkles className="text-primary h-6 w-6" />
-              </div>
-              <h3 className="font-bold text-sm">Advertisers</h3>
-              <p className="text-[10px] text-muted-foreground">Businesses connecting with global audiences.</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Ad placement 2: Mid-Content */}
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
-
       {/* Global Workers Showcase */}
-      {newcomers && newcomers.length > 0 && (
-        <section className="space-y-6 px-4">
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-2">
-              <div className="bg-secondary/20 p-1.5 rounded-lg">
-                <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
-              </div>
-              <h2 className="text-2xl font-black tracking-tight">Global Professionals</h2>
+      <section className="space-y-6 px-4">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <div className="bg-secondary/20 p-1.5 rounded-lg">
+              <Sparkles className="h-5 w-5 text-secondary fill-secondary" />
             </div>
-            <Button variant="ghost" size="sm" className="text-primary font-bold" asChild>
-              <Link href="/search">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
-            </Button>
+            <h2 className="text-2xl font-black tracking-tight">Global Professionals</h2>
           </div>
-          
-          <div className="flex gap-4 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide">
-            {newcomers.map((worker) => (
-              <Link key={worker.id} href={`/public/${worker.id}`} className="shrink-0 transition-transform hover:scale-[1.02] active:scale-95">
-                <Card className="w-56 border-none shadow-lg overflow-hidden bg-card">
-                  <div className="h-40 w-full bg-muted relative">
-                    <img 
-                      src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/300/300`} 
-                      alt={worker.name} 
-                      className="h-full w-full object-cover" 
-                    />
-                    <div className="absolute top-2 right-2 bg-white/95 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1 text-[10px] font-black text-primary shadow-lg">
-                      <ShieldCheck className="h-3.5 w-3.5" /> {worker.trustScore || 0}
-                    </div>
+          <Button variant="ghost" size="sm" className="text-primary font-bold" asChild>
+            <Link href="/search">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
+          </Button>
+        </div>
+        
+        <div className="flex gap-4 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide">
+          {demoWorkers.map((worker) => (
+            <Link key={worker.id} href={`/public/${worker.id}`} className="shrink-0 transition-transform hover:scale-[1.02] active:scale-95">
+              <Card className="w-56 border-none shadow-lg overflow-hidden bg-card">
+                <div className="h-40 w-full bg-muted relative">
+                  <img 
+                    src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/300/300`} 
+                    alt={worker.name} 
+                    className="h-full w-full object-cover" 
+                  />
+                  <div className="absolute top-2 right-2 bg-white/95 backdrop-blur px-2 py-1 rounded-full flex items-center gap-1 text-[10px] font-black text-primary shadow-lg">
+                    <ShieldCheck className="h-3.5 w-3.5" /> {worker.trustScore || 0}
                   </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-bold text-sm truncate">{worker.name}</h3>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-tighter truncate mt-0.5">
-                      {worker.tradeSkill || "Verified Professional"}
-                    </p>
-                    <div className="mt-3 flex items-center gap-1.5 text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
-                      <Clock className="h-3 w-3" /> 
-                      {worker.createdAt?.seconds 
-                        ? formatDistanceToNow(new Date(worker.createdAt.seconds * 1000), { addSuffix: true }) 
-                        : "joined recently"}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Community Testimonials */}
-      {testimonials && testimonials.length > 0 && (
-        <section className="py-12 bg-accent/30 rounded-[3rem] px-8 mx-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-10 flex items-center justify-center gap-3">
-              Voices of Professionals
-              <Star className="h-6 w-6 text-secondary fill-secondary" />
-            </h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {testimonials.map((t) => (
-                <Card key={t.id} className="border-none shadow-sm hover:shadow-md transition-shadow">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex text-secondary">
-                      {[...Array(t.score)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-current" />
-                      ))}
-                    </div>
-                    <div className="relative">
-                      <Quote className="absolute -top-2 -left-2 h-4 w-4 text-primary/10" />
-                      <p className="text-sm italic text-muted-foreground leading-relaxed pl-4">
-                        {t.comment || "Globlync is changing how I find work!"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 pt-2 border-t">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary uppercase">
-                        {t.workerName?.charAt(0)}
-                      </div>
-                      <span className="text-xs font-bold">{t.workerName}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-sm truncate">{worker.name}</h3>
+                  <p className="text-[10px] text-primary font-black uppercase tracking-tighter truncate mt-0.5">
+                    {worker.tradeSkill || "Verified Professional"}
+                  </p>
+                  <div className="mt-3 flex items-center gap-1.5 text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
+                    <Clock className="h-3 w-3" /> joined recently
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* How it Works */}
-      <section className="py-12 px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">Building Global Trust</h2>
-        <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+      <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
+        <h2 className="text-3xl font-bold text-center mb-16">Building Global Trust</h2>
+        <div className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
           {[
             {
               step: "01",
-              title: "Create Your Profile",
+              title: "Create Profile",
               desc: "Sign up as a professional. Upload a professional photo to build instant trust globally.",
-              icon: Sparkles
+              icon: Camera,
+              color: "bg-blue-500"
             },
             {
               step: "02",
               title: "Log & Verify",
-              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise nationwide and beyond.",
-              icon: QrCode
+              desc: "Log your completed jobs. Use AI and client QR scans to prove your expertise worldwide.",
+              icon: QrCode,
+              color: "bg-primary"
             },
             {
               step: "03",
-              title: "Scale Your Career",
+              title: "Scale Career",
               desc: "Your verifiable reputation attracts higher-paying jobs and better global opportunities.",
-              icon: Award
+              icon: Zap,
+              color: "bg-secondary"
             }
           ].map((item, i) => (
-            <div key={i} className="relative p-8 rounded-3xl bg-card border shadow-sm flex flex-col items-center text-center">
-              <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-black px-3 py-1 rounded-full">PHASE {item.step}</span>
-              <item.icon className="h-12 w-12 text-primary mb-6" />
+            <div key={i} className="relative p-10 rounded-[3rem] bg-white border shadow-sm flex flex-col items-center text-center group hover:shadow-xl transition-all">
+              <span className={`absolute -top-6 left-1/2 -translate-x-1/2 ${item.color} text-white text-xs font-black px-4 py-2 rounded-2xl shadow-lg group-hover:scale-110 transition-transform`}>STEP {item.step}</span>
+              <div className={`p-6 rounded-[2.5rem] ${item.color}/10 mb-6`}>
+                <item.icon className={`h-12 w-12 ${item.color.replace('bg-', 'text-')}`} />
+              </div>
               <h3 className="text-xl font-bold mb-3">{item.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
             </div>
@@ -259,61 +217,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Ad placement 3: Footer Top */}
-      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full mb-8 px-4" />
-
-      {/* Footer Branding */}
-      <footer className="bg-primary/5 py-16 border-t mt-12 px-6">
-        <div className="max-w-screen-xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-24">
-            <div className="space-y-6 text-center md:text-left">
-              <Logo className="justify-center md:justify-start" />
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto md:mx-0">
-                Building a verifiable labor market for every professional across the globe.
-              </p>
-              <div className="flex items-center justify-center md:justify-start gap-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
-                <MapPin className="h-3 w-3" /> HQ: Mulanje, Malawi (Global Support)
-              </div>
-            </div>
-
-            <div className="space-y-6 text-center md:text-left">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Platform</h4>
-              <nav className="flex flex-col gap-3">
-                <Link href="/search" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Find Professionals</Link>
-                <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Find Work</Link>
-                <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Advertising</Link>
-              </nav>
-            </div>
-
-            <div className="space-y-6 text-center md:text-left">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Support</h4>
-              <nav className="flex flex-col gap-3">
-                <Link href="/contact" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Contact Us</Link>
-                <Link href="/privacy" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
-              </nav>
-            </div>
-
-            <div className="space-y-6 text-center md:text-left">
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-primary">Office</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Petediano Tech<br/>
-                Dzenje Village, Mulanje<br/>
-                Republic of Malawi
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-            <p>© 2026 Petediano Tech • Global</p>
-            <div className="flex gap-6">
-              <Link href="/contact" className="hover:text-primary transition-colors">Report an Ad</Link>
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <AdBanner id={NATIVE_AD_ID} className="max-w-4xl mx-auto w-full px-4" />
     </div>
   );
 }
