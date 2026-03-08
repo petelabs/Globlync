@@ -33,7 +33,9 @@ import {
   Loader2,
   Globe,
   Laptop,
-  GraduationCap
+  GraduationCap,
+  ThumbsUp,
+  ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking, useUser, addDocumentNonBlocking } from "@/firebase";
@@ -42,15 +44,16 @@ import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
-import { generateDailyTip } from "@/ai/flows/generate-daily-tip-flow";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { MOTIVATIONAL_QUOTES } from "@/lib/motivational-quotes";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
-  const [globalTip, setGlobalTip] = useState<{ title: string; content: string } | null>(null);
+  const [globalTip, setGlobalTip] = useState<{ title: string; content: string; author: string } | null>(null);
   const [isTipLoading, setIsTipLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -90,20 +93,25 @@ export default function Home() {
           const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
           
           if (diffHours < 24) {
-            setGlobalTip({ title: data.title, content: data.content });
+            setGlobalTip({ title: data.title, content: data.content, author: data.author || "Professional Mentor" });
             needsUpdate = false;
           }
         }
 
         if (needsUpdate) {
-          const result = await generateDailyTip({ trade: "Global Professional & Remote Scaling" });
+          // Select from predefined motivations list based on the day
+          const dayIndex = Math.floor(now.getTime() / (1000 * 60 * 60 * 24)) % MOTIVATIONAL_QUOTES.length;
+          const selected = MOTIVATIONAL_QUOTES[dayIndex];
+          
           const tipData = {
-            title: result.tipTitle,
-            content: result.tipContent,
+            title: selected.title,
+            content: selected.content,
+            author: selected.author,
             updatedAt: serverTimestamp()
           };
+          
           await setDocumentNonBlocking(tipRef, tipData, { merge: true });
-          setGlobalTip({ title: result.tipTitle, content: result.tipContent });
+          setGlobalTip(tipData);
         }
       } catch (err) {
         console.error("Tip sync error:", err);
@@ -181,13 +189,14 @@ export default function Home() {
             </div>
             <div className="space-y-2 flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Global Career Insight</Badge>
+                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Daily Mentor Tip</Badge>
                 {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
               </div>
               {globalTip ? (
                 <>
                   <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalTip.title}</h3>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{globalTip.content}</p>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">"{globalTip.content}"</p>
+                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-2">— {globalTip.author}</p>
                 </>
               ) : (
                 <div className="space-y-2 py-2">
@@ -272,7 +281,7 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="text-xs font-black uppercase tracking-widest">{t.userName}</p>
-                    <p className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(t.createdAt?.seconds * 1000), { addSuffix: true })}</p>
+                    <p className="text-[10px] text-muted-foreground">{t.createdAt?.seconds ? formatDistanceToNow(new Date(t.createdAt.seconds * 1000), { addSuffix: true }) : 'just now'}</p>
                   </div>
                 </div>
               </Card>
@@ -320,45 +329,5 @@ export default function Home() {
         <AdBanner className="w-full" />
       </div>
     </div>
-  );
-}
-
-function ArrowRight({ className }: { className?: string }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-function ThumbsUp({ className }: { className?: string }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <path d="M7 10v12" />
-      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" />
-    </svg>
   );
 }

@@ -175,7 +175,8 @@ export default function DashboardPage() {
                 {globalTip ? (
                   <>
                     <h3 className="text-xl font-black tracking-tight">{globalTip.title}</h3>
-                    <p className="text-sm text-muted-foreground max-w-xl">{globalTip.content}</p>
+                    <p className="text-sm text-muted-foreground max-w-xl">"{globalTip.content}"</p>
+                    <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-1">— {globalTip.author || "Professional Mentor"}</p>
                   </>
                 ) : (
                   <>
