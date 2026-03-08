@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,7 +19,7 @@ import {
   Sparkles,
   X,
   ArrowDown,
-  SearchCode
+  Languages
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
@@ -43,7 +44,6 @@ export default function JobsBoardPage() {
           getArbeitnowJobs(),
           searchJoobleJobs("remote")
         ]);
-        // Interleave for diversity or just append
         setAllJobs([...aJobs, ...jJobs].sort((a, b) => b.createdAt - a.createdAt));
       } catch (err) {
         console.error("Error loading initial jobs:", err);
@@ -54,7 +54,6 @@ export default function JobsBoardPage() {
     loadInitialJobs();
   }, []);
 
-  // Real-time keyword search triggering Jooble API
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!searchTerm.trim()) return;
@@ -70,7 +69,6 @@ export default function JobsBoardPage() {
     }
   };
 
-  // Quick Skill Click Search
   const handleQuickSearch = async (kw: string) => {
     setSearchTerm(kw);
     setIsSearching(true);
@@ -82,6 +80,12 @@ export default function JobsBoardPage() {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const openTranslation = (text: string) => {
+    const cleanText = text.replace(/<[^>]*>?/gm, '');
+    const translateUrl = `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(cleanText)}&op=translate`;
+    window.open(translateUrl, '_blank');
   };
 
   const generateSchemaMarkup = (job: any) => {
@@ -107,27 +111,34 @@ export default function JobsBoardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-full mx-auto px-3 sm:px-4 overflow-x-hidden w-full box-border">
-      <header className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-secondary">
+    <div className="flex flex-col gap-12 py-8 max-w-full mx-auto px-3 sm:px-4 overflow-x-hidden w-full box-border">
+      {/* Hero Search Section - Undistracted Focus */}
+      <header className="flex flex-col gap-10 w-full max-w-4xl mx-auto text-center py-12 px-4 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px] -z-10" />
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-center gap-2 text-secondary">
             <div className="h-2 w-2 rounded-full bg-secondary animate-ping" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">100+ Global Jobs Posted Hourly Worldwide</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em]">100+ Global Roles Posted Hourly</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-primary">Global Career Moves.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Search verified roles and international vacancies powered by Jooble & Arbeitnow.</p>
+          <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground leading-none">
+            Find Your <span className="text-primary">Next Move.</span>
+          </h1>
+          <p className="text-muted-foreground text-lg font-medium max-w-2xl mx-auto">
+            The world's largest remote career engine. Search the entire internet for high-value professional roles in one clean place.
+          </p>
         </div>
         
-        <form onSubmit={handleSearch} className="space-y-4 w-full">
+        <form onSubmit={handleSearch} className="space-y-6 w-full max-w-3xl mx-auto">
           <div className="relative group w-full">
-            <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-8 top-8 h-10 w-10 text-muted-foreground group-focus-within:text-primary transition-all scale-90 group-focus-within:scale-100" />
             <Input 
-              placeholder="Search roles (Developer, AI, Designer, Sales)..." 
-              className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 text-xl font-black w-full focus-visible:ring-primary"
+              placeholder="Job title, skill, or global company..." 
+              className="pl-20 h-24 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] border-4 border-primary/5 focus-visible:border-primary/20 text-2xl font-black w-full focus-visible:ring-0 transition-all placeholder:text-muted-foreground/40"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="absolute right-4 top-4 flex gap-2">
+            <div className="absolute right-6 top-6 flex gap-2">
               {searchTerm && !isSearching && (
                 <button 
                   type="button"
@@ -135,29 +146,29 @@ export default function JobsBoardPage() {
                     setSearchTerm("");
                     window.location.reload();
                   }}
-                  className="p-3 hover:bg-muted rounded-full transition-colors"
+                  className="p-4 hover:bg-muted rounded-full transition-colors"
                 >
-                  <X className="h-6 w-6 text-muted-foreground" />
+                  <X className="h-8 w-8 text-muted-foreground" />
                 </button>
               )}
               <Button 
                 type="submit" 
-                className="h-12 rounded-full px-6 font-black uppercase tracking-tighter shadow-lg"
+                className="h-12 md:h-14 rounded-full px-8 md:px-12 font-black uppercase tracking-tighter shadow-2xl hover:scale-105 transition-transform"
                 disabled={isSearching || !searchTerm}
               >
-                {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : "Search"}
+                {isSearching ? <Loader2 className="h-6 w-6 animate-spin" /> : "Search Jobs"}
               </Button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 px-1">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground self-center mr-2">Top Skills:</span>
+          <div className="flex flex-wrap justify-center gap-3 px-1">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground self-center mr-2">Quick Search:</span>
             {SUGGESTED_KEYWORDS.map(kw => (
               <button
                 key={kw}
                 type="button"
                 onClick={() => handleQuickSearch(kw)}
-                className="px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all uppercase tracking-tight"
+                className="px-5 py-2.5 rounded-full bg-white border-2 border-primary/5 text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all uppercase tracking-tight shadow-sm"
               >
                 {kw}
               </button>
@@ -168,21 +179,21 @@ export default function JobsBoardPage() {
 
       <div className="my-2 w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
-        <div className="flex flex-col items-center gap-2 animate-bounce mt-4 text-primary">
-          <span className="text-[10px] font-black uppercase tracking-widest">Discover Live Listings Below</span>
+        <div className="flex flex-col items-center gap-2 animate-bounce mt-8 text-primary">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50">Scroll to Explore Results</span>
           <ArrowDown className="h-5 w-5" />
         </div>
       </div>
 
-      <section className="grid gap-4 w-full max-w-4xl mx-auto overflow-hidden">
-        <div className="flex items-center justify-between px-2 mb-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
-              {searchTerm ? `Search Results for "${searchTerm}"` : "Active Global & Remote Listings"}
+      <section className="grid gap-6 w-full max-w-4xl mx-auto overflow-hidden pb-20">
+        <div className="flex items-center justify-between px-4 mb-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-black uppercase tracking-[0.2em] text-primary">
+              {searchTerm ? `Results for "${searchTerm}"` : "Active Global Opportunities"}
             </h2>
-            <Badge variant="outline" className="text-[10px] font-bold">{allJobs.length}</Badge>
+            <Badge variant="secondary" className="text-[10px] font-black bg-primary/10 text-primary border-none">{allJobs.length}</Badge>
           </div>
-          {(isInitialLoading || isSearching) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+          {(isInitialLoading || isSearching) && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
         </div>
 
         {allJobs.length > 0 ? (
@@ -192,99 +203,102 @@ export default function JobsBoardPage() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
               />
-              <Card className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group w-full border-l-4 border-l-transparent hover:border-l-primary flex flex-col h-full box-border">
-                <CardHeader className="pb-2 w-full min-w-0">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 w-full min-w-0">
+              <Card className="border-none shadow-sm hover:shadow-2xl transition-all overflow-hidden group w-full border-l-8 border-l-transparent hover:border-l-primary flex flex-col h-full box-border rounded-[2.5rem] bg-white">
+                <CardHeader className="p-8 pb-4 w-full min-w-0">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 w-full min-w-0">
                     <div className="flex-1 min-w-0 w-full">
-                      <CardTitle className="text-xl font-bold text-primary group-hover:underline cursor-pointer break-words leading-tight w-full">
+                      <CardTitle className="text-2xl font-black text-primary group-hover:underline cursor-pointer break-words leading-tight w-full">
                         <a href={job.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                           {job.title}
-                          <ExternalLink className="h-4 w-4 opacity-30 shrink-0" />
+                          <ExternalLink className="h-5 w-5 opacity-20 shrink-0" />
                         </a>
                       </CardTitle>
-                      <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground w-full">
-                        <Building2 className="h-4 w-4 shrink-0" />
+                      <div className="flex items-center gap-2 text-base font-bold mt-2 text-muted-foreground w-full">
+                        <Building2 className="h-5 w-5 shrink-0 text-primary/40" />
                         <span className="truncate">{job.company}</span>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1 items-end">
-                      <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full whitespace-nowrap">
-                        {job.type === 'jooble' ? "Global Web Search" : job.remote ? "Remote Verified" : "Global Role"}
+                    <div className="flex flex-col gap-2 items-end">
+                      <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[10px] font-black shrink-0 px-4 py-1.5 rounded-full whitespace-nowrap shadow-sm">
+                        {job.type === 'jooble' ? "Global Web" : job.remote ? "Remote Pro" : "On-Site"}
                       </Badge>
-                      {job.type === 'jooble' && <span className="text-[8px] font-bold text-muted-foreground uppercase opacity-50 px-1">via Jooble</span>}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => openTranslation(job.description || job.title)}
+                        className="h-8 rounded-full text-[9px] font-black uppercase text-primary/60 hover:text-primary hover:bg-primary/5 flex items-center gap-1.5"
+                      >
+                        <Languages className="h-3.5 w-3.5" /> Translate
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 flex-1 w-full min-w-0">
-                  <div className="flex flex-wrap gap-x-3 gap-y-2 text-sm text-muted-foreground w-full">
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md max-w-full">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-primary/60" />
+                <CardContent className="px-8 pb-6 space-y-6 flex-1 w-full min-w-0">
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground w-full">
+                    <div className="flex items-center gap-2 font-black text-[10px] uppercase bg-muted/50 px-3 py-1.5 rounded-xl max-w-full">
+                      <MapPin className="h-4 w-4 shrink-0 text-primary/60" />
                       <span className="truncate">{job.location}</span>
                     </div>
-                    <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
-                      <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
+                    <div className="flex items-center gap-2 font-black text-[10px] uppercase bg-muted/50 px-3 py-1.5 rounded-xl">
+                      <Clock className="h-4 w-4 shrink-0 text-primary/60" />
                       <span>{formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}</span>
                     </div>
                   </div>
-                  <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full">
+                  <p className="text-base leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full text-muted-foreground">
                     {job.description ? job.description.replace(/<[^>]*>?/gm, '') : "Check full details on the application page."}
                   </p>
                 </CardContent>
-                <CardFooter className="bg-muted/30 flex justify-between items-center p-4 w-full min-w-0">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-primary/60 uppercase">
-                    <Sparkles className="h-3 w-3" /> Global Professional Listing
+                <CardFooter className="bg-muted/30 flex justify-between items-center p-6 w-full min-w-0 px-8">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-primary/40 uppercase tracking-widest">
+                    <Sparkles className="h-4 w-4" /> Professional Opportunity
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 rounded-full font-black text-[10px] uppercase tracking-tighter" asChild>
-                    <a href={job.url} target="_blank">View Details <ChevronRight className="ml-1 h-3.5 w-3.5" /></a>
+                  <Button className="rounded-full font-black px-8 h-12 uppercase tracking-tighter shadow-lg hover:scale-105 transition-transform" asChild>
+                    <a href={job.url} target="_blank">Apply Now <ChevronRight className="ml-2 h-4 w-4" /></a>
                   </Button>
                 </CardFooter>
               </Card>
             </div>
           ))
         ) : (!isInitialLoading && !isSearching) ? (
-          <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed mx-2 flex flex-col items-center gap-4">
-            <div className="bg-white p-6 rounded-full shadow-inner">
-              <Search className="h-12 w-12 text-muted-foreground/30" />
+          <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed mx-2 flex flex-col items-center gap-6">
+            <div className="bg-white p-8 rounded-full shadow-2xl">
+              <Search className="h-16 w-16 text-muted-foreground/20" />
             </div>
-            <div className="space-y-1">
-              <p className="text-muted-foreground font-black text-lg px-4">No results for "{searchTerm}"</p>
-              <p className="text-xs text-muted-foreground/60 px-4">Try searching for broader keywords like "Developer", "Designer", or "Engineer".</p>
+            <div className="space-y-2">
+              <p className="text-muted-foreground font-black text-2xl px-4">No matching roles found.</p>
+              <p className="text-sm text-muted-foreground/60 px-4 max-w-md mx-auto">Try searching for broader titles like "React", "Manager", or "Designer" to see more global results.</p>
             </div>
-            <Button variant="ghost" className="mt-4 font-black uppercase tracking-tighter" onClick={() => {setSearchTerm(""); window.location.reload();}}>Show all listings</Button>
+            <Button variant="outline" className="mt-4 font-black uppercase tracking-widest border-2 rounded-full h-14 px-10" onClick={() => {setSearchTerm(""); window.location.reload();}}>View All Listings</Button>
           </div>
         ) : (
-          <div className="space-y-4 w-full">
+          <div className="space-y-6 w-full">
             {[1, 2, 3].map(i => (
-              <Card key={i} className="h-48 animate-pulse bg-muted/20 border-none rounded-3xl w-full" />
+              <Card key={i} className="h-64 animate-pulse bg-muted/20 border-none rounded-[2.5rem] w-full" />
             ))}
           </div>
         )}
       </section>
 
-      <div className="mt-4 w-full max-w-4xl mx-auto">
-        <AdBanner id={NATIVE_AD_ID} className="w-full" />
-      </div>
-
-      <Card className="border-none bg-primary text-primary-foreground p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden group w-full max-w-4xl mx-auto">
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Sparkles className="h-48 w-48 md:h-64 md:w-64" />
+      <Card className="border-none bg-primary text-primary-foreground p-10 md:p-16 rounded-[3rem] shadow-[0_40px_80px_-15px_rgba(0,121,107,0.4)] relative overflow-hidden group w-full max-w-4xl mx-auto text-center md:text-left">
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-1000">
+          <Sparkles className="h-64 w-64 md:h-96 md:w-96" />
         </div>
-        <div className="relative z-10 space-y-6 w-full">
-          <div className="space-y-2">
-            <h3 className="font-black text-3xl md:text-4xl tracking-tighter leading-none">Hire Global Excellence.</h3>
-            <p className="text-sm md:text-base opacity-80 max-w-md font-medium leading-relaxed">
-              Reach thousands of verified professionals worldwide. Advertise your brand or post vacancies directly on our network.
+        <div className="relative z-10 space-y-8 w-full">
+          <div className="space-y-4">
+            <h3 className="font-black text-4xl md:text-6xl tracking-tighter leading-none">Hire Verified <br/>Global Excellence.</h3>
+            <p className="text-lg md:text-xl opacity-80 max-w-2xl font-medium leading-relaxed mx-auto md:mx-0">
+              Reach thousands of verified remote professionals. Post your vacancies directly on our network to find high-trust talent.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Button variant="secondary" className="rounded-full font-black px-8 h-14 w-full sm:w-auto shadow-xl hover:scale-105 transition-transform" asChild>
+          <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center md:justify-start">
+            <Button variant="secondary" className="rounded-full font-black px-10 h-16 w-full sm:w-auto shadow-2xl hover:scale-105 transition-transform text-lg" asChild>
               <a href="https://wa.me/0987066051" target="_blank">
-                <Mail className="mr-2 h-5 w-5" /> Contact Partnerships
+                <Mail className="mr-3 h-6 w-6" /> Contact Partnerships
               </a>
             </Button>
-            <Button variant="outline" className="rounded-full font-black px-8 bg-transparent border-white hover:bg-white/10 h-14 w-full sm:w-auto" asChild>
+            <Button variant="outline" className="rounded-full font-black px-10 bg-transparent border-white hover:bg-white/10 h-16 w-full sm:w-auto text-lg" asChild>
               <a href="mailto:globlync+ads@gmail.com">
-                <Globe className="mr-2 h-5 w-5" /> Ad Partnerships
+                <Globe className="mr-3 h-6 w-6" /> Ad Inquiries
               </a>
             </Button>
           </div>
