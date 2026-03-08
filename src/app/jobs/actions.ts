@@ -1,3 +1,4 @@
+
 "use server";
 
 /**
@@ -5,7 +6,7 @@
  * This keeps API keys secure and avoids CORS issues.
  */
 
-const JOOBLE_API_KEY = "11f7354d-81e2-4517-ba04-1399caa395ce";
+const JOOBLE_API_KEY = process.env.JOOBLE_API_KEY || "11f7354d-81e2-4517-ba04-1399caa395ce";
 
 export async function getArbeitnowJobs() {
   try {
@@ -64,7 +65,7 @@ export async function searchJoobleJobs(keywords: string = "remote", location: st
       description: job.snippet,
       url: job.link,
       type: 'jooble',
-      remote: true, // Jooble snippets usually contain remote context or we assume global
+      remote: true, 
       createdAt: job.updated ? new Date(job.updated).getTime() : Date.now()
     }));
   } catch (error) {
