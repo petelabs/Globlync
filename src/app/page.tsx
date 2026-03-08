@@ -28,14 +28,15 @@ import {
   Search as SearchIcon,
   Camera,
   Zap,
-  HardHat,
+  Hammer,
   Lightbulb,
   Loader2,
   Globe,
   Laptop,
   GraduationCap,
   ThumbsUp,
-  ArrowRight
+  ArrowRight,
+  Construction
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking, useUser, addDocumentNonBlocking } from "@/firebase";
@@ -214,7 +215,7 @@ export default function Home() {
       <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { label: "Jobs Hourly", value: "100+", icon: Briefcase },
-          { label: "Verified Pros", value: `${proCount}+`, icon: ShieldCheck },
+          { label: "Verified Pros", value: `${proCount}`, icon: ShieldCheck },
           { label: "Remote Focus", value: "92%", icon: Globe },
           { label: "Trust Earned", value: "4.9/5", icon: Star }
         ].map((stat, i) => (
@@ -312,7 +313,7 @@ export default function Home() {
               { title: "Tech Experts", desc: "Developers, Designers, and IT Specialists.", icon: Laptop },
               { title: "Business Pros", desc: "Accountants, Virtual Assistants, and Sales.", icon: Building2 },
               { title: "Creatives", desc: "Writers, Editors, and Media Experts.", icon: Sparkles },
-              { title: "Skilled Trades", desc: "Engineering and Expert Technical Services.", icon: HardHat }
+              { title: "Skilled Trades", desc: "Engineering and Expert Technical Services.", icon: Construction }
             ].map((item, i) => (
               <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default group">
                 <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:text-white transition-colors">

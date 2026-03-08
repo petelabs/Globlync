@@ -12,6 +12,7 @@ service cloud.firestore {
     }
 
     // Global System Settings (Daily Tips, etc.)
+    // Must be at the top and highly permissive for global sync
     match /system/{document} {
       allow read: if true;
       allow write: if true; 
@@ -62,7 +63,7 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
     }
 
-    // App Global Feedback
+    // App Global Feedback (Real Ratings)
     match /appRatings/{ratingId} {
       allow read: if true;
       allow create: if isSignedIn();

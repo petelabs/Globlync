@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -17,7 +18,7 @@ import {
   Home,
   Laptop,
   GraduationCap,
-  HardHat,
+  Hammer,
   X,
   Trophy,
   Medal,
@@ -25,7 +26,8 @@ import {
   Globe,
   Zap,
   Briefcase,
-  MessageSquare
+  MessageSquare,
+  Construction
 } from "lucide-react";
 import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -38,7 +40,7 @@ const SKILL_CATEGORIES = [
   { name: "Tech & Dev", icon: Laptop, skills: ["Developer", "Designer", "IT", "Engineer", "Web", "Mobile"] },
   { name: "Global Services", icon: Briefcase, skills: ["Accountant", "Sales", "Tutor", "Virtual Assistant", "Writer"] },
   { name: "Expert Pros", icon: GraduationCap, skills: ["Consultant", "Manager", "Analyst", "Marketing"] },
-  { name: "Specialized", icon: HardHat, skills: ["Electrician", "Solar", "Architecture", "Technician"] },
+  { name: "Specialized", icon: Construction, skills: ["Electrician", "Solar", "Architecture", "Technician", "Mechanic"] },
 ];
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (

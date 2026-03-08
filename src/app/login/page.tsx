@@ -95,10 +95,9 @@ function LoginContent() {
         }
       }
 
-      // Mandatory yellow placeholder for new professionals
+      // Branded Yellow placeholder for all new professionals
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDMTA3O3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBMDAwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
-      const profilePictureUrl = yellowAvatar;
-
+      
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
       const finalName = manualName || auth.currentUser?.displayName || "New Professional";
@@ -111,7 +110,7 @@ function LoginContent() {
         username: finalUsername,
         tradeSkill: "",
         bio: "",
-        profilePictureUrl,
+        profilePictureUrl: yellowAvatar,
         trustScore: invitedBy ? 10 : 0,
         profileViews: 0,
         referralCode: newCode,

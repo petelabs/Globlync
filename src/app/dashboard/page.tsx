@@ -63,7 +63,8 @@ export default function DashboardPage() {
   }, [profile]);
 
   const stats = useMemo(() => {
-    if (!profile && isProfileLoading) return null;
+    // If we're loading or profile is truly missing, return dummy/loading stats
+    if (isProfileLoading) return null;
     
     const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
     const avgRating = ratings && ratings.length 
