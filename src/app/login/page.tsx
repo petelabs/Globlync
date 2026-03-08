@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -94,9 +95,9 @@ function LoginContent() {
         }
       }
 
-      // Set mandatory yellow placeholder for new professionals
+      // Mandatory yellow placeholder for new professionals
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDMTA3O3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBMDAwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
-      const profilePictureUrl = auth.currentUser?.photoURL || yellowAvatar;
+      const profilePictureUrl = yellowAvatar;
 
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
@@ -296,7 +297,7 @@ function LoginContent() {
                   </div>
                   <div className="grid gap-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired Username</Label>
-                    <Input placeholder="e.g. jdoe_plumber" className="h-14 rounded-2xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
+                    <Input placeholder="e.g. jdoe_dev" className="h-14 rounded-2xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
                   </div>
                   {!urlReferral && (
                     <div className="grid gap-2">

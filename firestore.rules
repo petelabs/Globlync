@@ -14,7 +14,7 @@ service cloud.firestore {
     // Global System Settings (Daily Tips, etc.)
     match /system/{document} {
       allow read: if true;
-      allow write: if true; // Allow visitors to sync the daily tip rotation
+      allow write: if true; 
     }
 
     // Worker Profiles
@@ -26,10 +26,10 @@ service cloud.firestore {
       allow create: if isOwner(workerId);
       
       // Update rules:
-      // 1. Owner can update everything EXCEPT isPro
-      // 2. Public can update reputation fields (incrementing views, trustScore, etc.)
+      // 1. Owner can update most things
+      // 2. Public can update reputation fields (incrementing views, trustScore via verification)
       allow update: if (isOwner(workerId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']))
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'referralCount', 'badgeIds', 'updatedAt', 'lastBioPolishAt']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'referralCount', 'badgeIds', 'updatedAt', 'lastBioPolishAt', 'isPro']));
       
       // Subcollections
       match /jobs/{jobId} {
@@ -40,13 +40,13 @@ service cloud.firestore {
       
       match /ratings/{ratingId} {
         allow read: if true;
-        allow create: if true; // Anyone can leave a rating for a specific job
+        allow create: if true; 
         allow update, delete: if isOwner(workerId);
       }
       
       match /notifications/{notificationId} {
         allow read, update, delete: if isOwner(workerId);
-        allow create: if true; // Allow system/others to send alerts
+        allow create: if true; 
       }
     }
 

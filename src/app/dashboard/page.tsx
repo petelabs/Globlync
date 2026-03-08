@@ -59,12 +59,14 @@ export default function DashboardPage() {
     if (!profile) return false;
     const hasPaidVIP = profile.activeBenefits?.some((b: any) => b.expiresAt && new Date(b.expiresAt) > new Date());
     const hasReferralVIP = (profile.referralCount || 0) >= 10;
-    return hasPaidVIP || hasReferralVIP;
+    return hasPaidVIP || hasReferralVIP || profile.isPro;
   }, [profile]);
 
   const stats = useMemo(() => {
+    if (!profile && isProfileLoading) return null;
+    
     const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
-    const avgRating = ratings?.length 
+    const avgRating = ratings && ratings.length 
       ? ratings.reduce((acc, r) => acc + (r.score || 0), 0) / ratings.length 
       : 0;
     
@@ -75,9 +77,9 @@ export default function DashboardPage() {
       profileViews: profile?.profileViews || 0,
       referrals: profile?.referralCount || 0
     };
-  }, [allJobs, ratings, profile]);
+  }, [allJobs, ratings, profile, isProfileLoading]);
 
-  if (!user || isProfileLoading) return (
+  if (!user || isProfileLoading || !stats) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Syncing Professional Data...</p>
