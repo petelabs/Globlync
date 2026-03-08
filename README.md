@@ -1,7 +1,7 @@
 
 # Globlync - Evidence-Based Reputation for Skilled Workers
 
-Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation in Malawi.
+Globlync is a professional platform designed for informal workers (plumbers, electricians, etc.) to build a digital, evidence-based reputation globally.
 
 ## 💳 PayChangu Setup (Action Required)
 To enable automatic "Pro" upgrades when someone pays:
@@ -16,13 +16,12 @@ To enable automatic "Pro" upgrades when someone pays:
    - **FIREBASE_SERVICE_ACCOUNT**: (This is your unique Firebase Backend ID). Go to Firebase Console > Settings > Service Accounts > Generate New Private Key. Paste the ENTIRE JSON content here.
    - **GOOGLE_GENAI_API_KEY**: Add your Gemini API Key.
 
-3. **How Tiers Work**:
-   - The system automatically detects the tier based on the amount paid:
-     - **700+ MWK**: Gold Pro (30 Days)
-     - **500+ MWK**: Silver Pro (15 Days)
-     - **250+ MWK**: Standard Pro (7 Days)
-     - **Under 250 MWK**: Trial Pro (2 Days)
-   - *Note: Payments are non-refundable.*
+3. **How Tiers Work (Global Pricing)**:
+   - The system automatically detects the tier based on the amount paid (USD):
+     - **$2.9**: Gold Pro (30 Days) - https://pay.paychangu.com/SC-PuzKtb
+     - **$1.9**: Silver Pro (15 Days) - https://pay.paychangu.com/SC-0siw5Z
+     - **$0.9**: Bronze Pro (7 Days) - https://pay.paychangu.com/SC-oz0qsN
+   - *Note: Payments are non-refundable and processed automatically.*
 
 ## 🎨 Branding & Icons
 Your branding files are correctly placed in the `public/` folder:

@@ -77,13 +77,26 @@ export async function POST(req: Request) {
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // Pro VIP Logic: MWK 240+ (Discounted) or 300+ gets 30 days
+      // Global Pricing Logic (USD)
       let tierName = "Pro VIP";
       let days = 30;
 
-      if (amount < 240) {
+      if (amount >= 2.5) {
+        tierName = "Gold Pro";
+        days = 30;
+      } else if (amount >= 1.5) {
+        tierName = "Silver Pro";
+        days = 15;
+      } else if (amount >= 0.5) {
+        tierName = "Bronze Pro";
+        days = 7;
+      } else if (amount >= 240) {
+        // Fallback for legacy MWK amounts
+        tierName = "Standard Pro";
+        days = 30;
+      } else {
         tierName = "Trial Pro";
-        days = 2; // Safety for micro-payments or testing
+        days = 2;
       }
 
       const expiryDate = new Date();
@@ -107,7 +120,7 @@ export async function POST(req: Request) {
       const notifRef = userDoc.ref.collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `Pro VIP Status Activated! You now have full access for ${days} days. Expiry: ${expiryDate.toLocaleDateString()}.`,
+        message: `${tierName} Activated! You now have full access for ${days} days. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
