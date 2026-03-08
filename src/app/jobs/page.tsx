@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,55 +10,79 @@ import {
   Briefcase, 
   Mail, 
   Clock, 
-  Filter,
   Building2,
   ChevronRight,
-  Info,
-  MessageSquare,
-  Users,
-  GraduationCap,
   Loader2,
   ExternalLink,
   Globe,
   Sparkles,
   X,
-  ArrowDown
+  ArrowDown,
+  SearchCode
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
-import Link from "next/link";
-import { getArbeitnowJobs } from "./actions";
+import { getArbeitnowJobs, searchJoobleJobs } from "./actions";
+import { formatDistanceToNow } from "date-fns";
 
 const SUGGESTED_KEYWORDS = ["Developer", "Designer", "Engineer", "Sales", "Manager", "Marketing"];
 
 export default function JobsBoardPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [externalJobs, setExternalJobs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allJobs, setAllJobs] = useState<any[]>([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
 
+  // Initial Load: Combine both sources
   useEffect(() => {
-    async function loadJobs() {
-      setIsLoading(true);
-      const jobs = await getArbeitnowJobs();
-      setExternalJobs(jobs);
-      setIsLoading(false);
+    async function loadInitialJobs() {
+      setIsInitialLoading(true);
+      try {
+        const [aJobs, jJobs] = await Promise.all([
+          getArbeitnowJobs(),
+          searchJoobleJobs("remote")
+        ]);
+        // Interleave for diversity or just append
+        setAllJobs([...aJobs, ...jJobs].sort((a, b) => b.createdAt - a.createdAt));
+      } catch (err) {
+        console.error("Error loading initial jobs:", err);
+      } finally {
+        setIsInitialLoading(false);
+      }
     }
-    loadJobs();
+    loadInitialJobs();
   }, []);
 
-  const filteredJobs = externalJobs.filter(job => {
-    const search = searchTerm.toLowerCase();
-    const title = (job.title || "").toLowerCase();
-    const company = (job.company_name || "").toLowerCase();
-    const location = (job.location || "").toLowerCase();
-    const description = (job.description || "").toLowerCase();
+  // Real-time keyword search triggering Jooble API
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!searchTerm.trim()) return;
 
-    return title.includes(search) || 
-           company.includes(search) || 
-           location.includes(search) ||
-           description.includes(search);
-  });
+    setIsSearching(true);
+    try {
+      const results = await searchJoobleJobs(searchTerm);
+      setAllJobs(results);
+    } catch (err) {
+      console.error("Search failed:", err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Quick Skill Click Search
+  const handleQuickSearch = async (kw: string) => {
+    setSearchTerm(kw);
+    setIsSearching(true);
+    try {
+      const results = await searchJoobleJobs(kw);
+      setAllJobs(results);
+    } catch (err) {
+      console.error("Quick search failed:", err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const generateSchemaMarkup = (job: any) => {
     return {
@@ -67,10 +90,10 @@ export default function JobsBoardPage() {
       "@type": "JobPosting",
       "title": job.title,
       "description": job.description ? job.description.substring(0, 200) + "..." : "Professional job opportunity via Globlync Global.",
-      "datePosted": job.created_at || new Date().toISOString(),
+      "datePosted": new Date(job.createdAt).toISOString(),
       "hiringOrganization": {
         "@type": "Organization",
-        "name": job.company_name,
+        "name": job.company,
       },
       "jobLocation": {
         "@type": "Place",
@@ -89,13 +112,13 @@ export default function JobsBoardPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-secondary">
             <div className="h-2 w-2 rounded-full bg-secondary animate-ping" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">100+ Jobs Posted Hourly Worldwide</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">100+ Global Jobs Posted Hourly Worldwide</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-primary">Global Career Moves.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Explore verified remote roles and international vacancies from top global companies.</p>
+          <p className="text-muted-foreground text-sm font-medium">Search verified roles and international vacancies powered by Jooble & Arbeitnow.</p>
         </div>
         
-        <div className="space-y-4 w-full">
+        <form onSubmit={handleSearch} className="space-y-4 w-full">
           <div className="relative group w-full">
             <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
@@ -104,14 +127,27 @@ export default function JobsBoardPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            {searchTerm && (
-              <button 
-                onClick={() => setSearchTerm("")}
-                className="absolute right-6 top-7 p-1.5 hover:bg-muted rounded-full transition-colors"
+            <div className="absolute right-4 top-4 flex gap-2">
+              {searchTerm && !isSearching && (
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    window.location.reload();
+                  }}
+                  className="p-3 hover:bg-muted rounded-full transition-colors"
+                >
+                  <X className="h-6 w-6 text-muted-foreground" />
+                </button>
+              )}
+              <Button 
+                type="submit" 
+                className="h-12 rounded-full px-6 font-black uppercase tracking-tighter shadow-lg"
+                disabled={isSearching || !searchTerm}
               >
-                <X className="h-6 w-6 text-muted-foreground" />
-              </button>
-            )}
+                {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : "Search"}
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2 px-1">
@@ -119,14 +155,15 @@ export default function JobsBoardPage() {
             {SUGGESTED_KEYWORDS.map(kw => (
               <button
                 key={kw}
-                onClick={() => setSearchTerm(kw)}
+                type="button"
+                onClick={() => handleQuickSearch(kw)}
                 className="px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all uppercase tracking-tight"
               >
                 {kw}
               </button>
             ))}
           </div>
-        </div>
+        </form>
       </header>
 
       <div className="my-2 w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
@@ -143,14 +180,14 @@ export default function JobsBoardPage() {
             <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">
               {searchTerm ? `Search Results for "${searchTerm}"` : "Active Global & Remote Listings"}
             </h2>
-            <Badge variant="outline" className="text-[10px] font-bold">{filteredJobs.length}</Badge>
+            <Badge variant="outline" className="text-[10px] font-bold">{allJobs.length}</Badge>
           </div>
-          {isLoading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+          {(isInitialLoading || isSearching) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
         </div>
 
-        {filteredJobs.length > 0 ? (
-          filteredJobs.map((job, idx) => (
-            <div key={job.slug || idx} className="w-full min-w-0">
+        {allJobs.length > 0 ? (
+          allJobs.map((job, idx) => (
+            <div key={job.id} className="w-full min-w-0">
               <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchemaMarkup(job)) }}
@@ -167,12 +204,15 @@ export default function JobsBoardPage() {
                       </CardTitle>
                       <div className="flex items-center gap-2 text-sm font-medium mt-1 text-muted-foreground w-full">
                         <Building2 className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{job.company_name}</span>
+                        <span className="truncate">{job.company}</span>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full whitespace-nowrap">
-                      {job.remote ? "Remote Verified" : "Global Role"}
-                    </Badge>
+                    <div className="flex flex-col gap-1 items-end">
+                      <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full whitespace-nowrap">
+                        {job.type === 'jooble' ? "Global Web Search" : job.remote ? "Remote Verified" : "Global Role"}
+                      </Badge>
+                      {job.type === 'jooble' && <span className="text-[8px] font-bold text-muted-foreground uppercase opacity-50 px-1">via Jooble</span>}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 flex-1 w-full min-w-0">
@@ -183,7 +223,7 @@ export default function JobsBoardPage() {
                     </div>
                     <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
                       <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-                      <span>{job.created_at ? formatDistanceToNow(new Date(job.created_at * 1000), { addSuffix: true }) : 'Just Now'}</span>
+                      <span>{formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}</span>
                     </div>
                   </div>
                   <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full">
@@ -195,13 +235,13 @@ export default function JobsBoardPage() {
                     <Sparkles className="h-3 w-3" /> Global Professional Listing
                   </div>
                   <Button variant="ghost" size="sm" className="h-8 rounded-full font-black text-[10px] uppercase tracking-tighter" asChild>
-                    <a href={job.url} target="_blank">Apply Now <ChevronRight className="ml-1 h-3.5 w-3.5" /></a>
+                    <a href={job.url} target="_blank">View Details <ChevronRight className="ml-1 h-3.5 w-3.5" /></a>
                   </Button>
                 </CardFooter>
               </Card>
             </div>
           ))
-        ) : !isLoading ? (
+        ) : (!isInitialLoading && !isSearching) ? (
           <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed mx-2 flex flex-col items-center gap-4">
             <div className="bg-white p-6 rounded-full shadow-inner">
               <Search className="h-12 w-12 text-muted-foreground/30" />
@@ -210,7 +250,7 @@ export default function JobsBoardPage() {
               <p className="text-muted-foreground font-black text-lg px-4">No results for "{searchTerm}"</p>
               <p className="text-xs text-muted-foreground/60 px-4">Try searching for broader keywords like "Developer", "Designer", or "Engineer".</p>
             </div>
-            <Button variant="ghost" className="mt-4 font-black uppercase tracking-tighter" onClick={() => setSearchTerm("")}>Show all listings</Button>
+            <Button variant="ghost" className="mt-4 font-black uppercase tracking-tighter" onClick={() => {setSearchTerm(""); window.location.reload();}}>Show all listings</Button>
           </div>
         ) : (
           <div className="space-y-4 w-full">
@@ -239,12 +279,12 @@ export default function JobsBoardPage() {
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <Button variant="secondary" className="rounded-full font-black px-8 h-14 w-full sm:w-auto shadow-xl hover:scale-105 transition-transform" asChild>
               <a href="https://wa.me/0987066051" target="_blank">
-                <MessageSquare className="mr-2 h-5 w-5" /> Contact Partnerships
+                <Mail className="mr-2 h-5 w-5" /> Contact Partnerships
               </a>
             </Button>
             <Button variant="outline" className="rounded-full font-black px-8 bg-transparent border-white hover:bg-white/10 h-14 w-full sm:w-auto" asChild>
               <a href="mailto:globlync+ads@gmail.com">
-                <Mail className="mr-2 h-5 w-5" /> Ad Partnerships
+                <Globe className="mr-2 h-5 w-5" /> Ad Partnerships
               </a>
             </Button>
           </div>
