@@ -1,35 +1,27 @@
 
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   PlusCircle, 
   Star, 
   TrendingUp, 
   QrCode, 
-  Award, 
-  Users, 
-  Gift, 
   Crown, 
   Zap, 
-  ShieldCheck, 
-  Medal, 
-  ThumbsUp, 
   Lightbulb, 
   ArrowRight, 
   Loader2, 
   Eye, 
-  Briefcase, 
-  Trophy, 
   ChevronRight, 
   ClipboardCheck, 
-  Sparkles 
+  Users 
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit, doc } from "firebase/firestore";
+import { collection, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -81,8 +73,6 @@ export default function DashboardPage() {
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
       profileViews: profile?.profileViews || 0,
-      tier: (profile?.trustScore || 0) > 100 ? "Platinum" : (profile?.trustScore || 0) > 50 ? "Gold" : "Bronze",
-      badges: profile?.badgeIds || [],
       referrals: profile?.referralCount || 0
     };
   }, [allJobs, ratings, profile]);

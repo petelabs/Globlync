@@ -99,7 +99,6 @@ export default function Home() {
         }
 
         if (needsUpdate) {
-          // Select from predefined motivations list based on the day
           const dayIndex = Math.floor(now.getTime() / (1000 * 60 * 60 * 24)) % MOTIVATIONAL_QUOTES.length;
           const selected = MOTIVATIONAL_QUOTES[dayIndex];
           
@@ -143,6 +142,8 @@ export default function Home() {
       setIsSubmitting(false);
     }
   };
+
+  const proCount = allWorkers?.length || 0;
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
@@ -213,7 +214,7 @@ export default function Home() {
       <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { label: "Jobs Hourly", value: "100+", icon: Briefcase },
-          { label: "Verified Pros", value: allWorkers ? `${allWorkers.length}+` : "12K+", icon: ShieldCheck },
+          { label: "Verified Pros", value: `${proCount}+`, icon: ShieldCheck },
           { label: "Remote Focus", value: "92%", icon: Globe },
           { label: "Trust Earned", value: "4.9/5", icon: Star }
         ].map((stat, i) => (
@@ -277,7 +278,7 @@ export default function Home() {
                 <p className="text-sm font-medium italic leading-relaxed">"{t.feedback}"</p>
                 <div className="flex items-center gap-3 pt-2">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary text-xs">
-                    {t.userName.charAt(0)}
+                    {t.userName?.charAt(0) || "P"}
                   </div>
                   <div>
                     <p className="text-xs font-black uppercase tracking-widest">{t.userName}</p>

@@ -13,38 +13,44 @@ service cloud.firestore {
 
     // Global System Settings (Daily Tips, etc.)
     match /system/{document} {
-      allow get: if true;
-      allow write: if true; // Allow the first daily visitor to trigger AI tip generation
+      allow read: if true;
+      allow write: if true; // Allow visitors to sync the daily tip rotation
     }
 
+    // Worker Profiles
     match /workerProfiles/{workerId} {
+      // Publicly readable for discovery and profile visits
       allow get, list: if true;
+      
+      // Only the owner can create their profile
       allow create: if isOwner(workerId);
       
-      // Allow owner to update profile (except isPro)
-      // Allow others/system to update reputation fields (referralCount, badgeIds, trustScore, updatedAt, profileViews)
+      // Update rules:
+      // 1. Owner can update everything EXCEPT isPro
+      // 2. Public can update reputation fields (incrementing views, trustScore, etc.)
       allow update: if (isOwner(workerId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']))
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'trustScore', 'updatedAt', 'lastBioPolishAt', 'profileViews']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'referralCount', 'badgeIds', 'updatedAt', 'lastBioPolishAt']));
       
+      // Subcollections
       match /jobs/{jobId} {
-        allow get, list: if true;
+        allow read: if true;
         allow create: if isOwner(workerId);
-        // Allow owner to edit job OR client to verify job via unique link
         allow update: if isOwner(workerId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isVerified', 'updatedAt']);
       }
       
       match /ratings/{ratingId} {
         allow read: if true;
-        allow create: if true; // Anyone can leave a rating for a job
+        allow create: if true; // Anyone can leave a rating for a specific job
         allow update, delete: if isOwner(workerId);
       }
       
       match /notifications/{notificationId} {
         allow read, update, delete: if isOwner(workerId);
-        allow create: if true; // Allow system/others to send alerts to the worker
+        allow create: if true; // Allow system/others to send alerts
       }
     }
 
+    // Registries
     match /usernames/{username} {
       allow get: if true;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
@@ -56,6 +62,7 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
     }
 
+    // App Global Feedback
     match /appRatings/{ratingId} {
       allow read: if true;
       allow create: if isSignedIn();
