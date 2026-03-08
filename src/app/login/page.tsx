@@ -95,8 +95,7 @@ function LoginContent() {
         }
       }
 
-      // Branded Yellow placeholder for all new professionals
-      const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDMTA3O3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBMDAwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
+      const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "";
       
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
@@ -120,6 +119,7 @@ function LoginContent() {
         badgeIds: [],
         onboardingCompleted: false,
         isPro: false,
+        isAvailable: true,
         contactEmail: auth.currentUser?.email || email || "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -139,7 +139,7 @@ function LoginContent() {
 
     setIsSuccess(true);
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push("/profile"); // Changed from dashboard to profile
       toast({ title: "Welcome to Globlync!" });
     }, 1500);
   };
@@ -207,7 +207,7 @@ function LoginContent() {
         </div>
         <div className="space-y-2">
           <h2 className="text-4xl font-black tracking-tighter text-primary">Success!</h2>
-          <p className="text-muted-foreground text-lg font-medium">Preparing your professional dashboard...</p>
+          <p className="text-muted-foreground text-lg font-medium">Preparing your professional gateway...</p>
         </div>
         <Loader2 className="h-6 w-6 animate-spin text-primary opacity-50" />
       </div>

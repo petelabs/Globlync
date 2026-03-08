@@ -1,3 +1,4 @@
+
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -5,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: ['/', '/privacy', '/terms', '/contact', '/search', '/pricing'],
-      disallow: ['/dashboard/', '/profile/', '/notifications/'],
+      disallow: ['/profile/', '/notifications/'],
     },
     sitemap: 'https://globlync.vercel.app/sitemap.xml',
   }

@@ -27,13 +27,17 @@ import {
   Phone,
   Crown,
   Zap,
-  Clock
+  Clock,
+  Eye,
+  TrendingUp,
+  ClipboardCheck,
+  Star
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { generateProfessionalBio } from "@/ai/flows/generate-bio-flow";
-import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
-import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { doc, getDoc, setDoc, serverTimestamp, deleteDoc, collection } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -66,7 +70,19 @@ export default function ProfilePage() {
     return doc(db, "workerProfiles", user.uid);
   }, [db, user?.uid]);
 
-  const { data: profile } = useDoc(workerRef);
+  const jobsRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return collection(db, "workerProfiles", user.uid, "jobs");
+  }, [db, user?.uid]);
+
+  const ratingsRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return collection(db, "workerProfiles", user.uid, "ratings");
+  }, [db, user?.uid]);
+
+  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
+  const { data: allJobs } = useCollection(jobsRef);
+  const { data: ratings } = useCollection(ratingsRef);
 
   const [username, setUsername] = useState("");
   const [trade, setTrade] = useState("");
@@ -111,7 +127,26 @@ export default function ProfilePage() {
     }
   }, [profile, user?.email]);
 
-  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+  const isPro = useMemo(() => {
+    if (!profile) return false;
+    const hasPaidVIP = profile.activeBenefits?.some((b: any) => b.expiresAt && new Date(b.expiresAt) > new Date());
+    const hasReferralVIP = (profile.referralCount || 0) >= 10;
+    return hasPaidVIP || hasReferralVIP || profile.isPro;
+  }, [profile]);
+
+  const stats = useMemo(() => {
+    const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
+    const avgRating = ratings && ratings.length 
+      ? ratings.reduce((acc, r) => acc + (r.score || 0), 0) / ratings.length 
+      : 0;
+    
+    return {
+      totalVerified: verifiedJobs.length,
+      averageRating: avgRating.toFixed(1),
+      trustScore: profile?.trustScore || 0,
+      profileViews: profile?.profileViews || 0
+    };
+  }, [allJobs, ratings, profile]);
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -242,14 +277,24 @@ export default function ProfilePage() {
     }
   };
 
+  if (!user || isProfileLoading) return (
+    <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Syncing Profile Hub...</p>
+    </div>
+  );
+
   const displayPhoto = newProfilePic || profile?.profilePictureUrl || user?.photoURL || "";
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight">My Profile</h1>
-          <p className="text-muted-foreground text-sm">Control your professional identity and availability.</p>
+          <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
+            My Professional Hub
+            {isPro && <Crown className="h-5 w-5 text-secondary fill-secondary" />}
+          </h1>
+          <p className="text-muted-foreground text-sm">Control your global visibility and evidence-based reputation.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild className="rounded-full hidden sm:flex font-bold">
@@ -264,6 +309,46 @@ export default function ProfilePage() {
           </Button>
         </div>
       </header>
+
+      {/* Real-Time Stats Grid (Formerly on Dashboard) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Eye className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Global Views</p>
+              <p className="text-xl font-black">{stats.profileViews}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><TrendingUp className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Trust Score</p>
+              <p className="text-xl font-black">{stats.trustScore}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><ClipboardCheck className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Verified Jobs</p>
+              <p className="text-xl font-black">{stats.totalVerified}</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Star className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Avg Rating</p>
+              <p className="text-xl font-black">{stats.averageRating}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-1 space-y-6">
@@ -295,7 +380,7 @@ export default function ProfilePage() {
               </div>
             </CardContent>
             <div className="bg-muted/30 p-4 border-t flex items-center justify-between">
-              <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase tracking-widest">Visibility</Label>
+              <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase tracking-widest">Global Visibility</Label>
               <Switch id="availability-toggle" checked={isAvailable} onCheckedChange={setIsAvailable} />
             </div>
           </Card>
@@ -316,8 +401,8 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <p className="text-xs font-medium leading-relaxed opacity-90">
                 {isPro 
-                  ? "Your VIP status is currently active. You have full access to HD photos and priority visibility." 
-                  : "Unlock national ranking boost and a professional VIP badge on your profile."}
+                  ? "Your VIP status is active. You have full access to HD photos and priority ranking." 
+                  : "Unlock national ranking boost and a professional VIP badge on your public profile."}
               </p>
               {!isPro && (
                 <Button variant="secondary" className="w-full rounded-full font-black shadow-lg" asChild>
@@ -332,19 +417,17 @@ export default function ProfilePage() {
           <form onSubmit={handleUpdate} className="grid gap-6">
             <Card className="border-none shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Professional Details</CardTitle>
-                <CardDescription>Keep your skills and locations updated for clients.</CardDescription>
+                <CardTitle className="text-lg">Professional Identity</CardTitle>
+                <CardDescription>Keep your skills and locations updated for clients worldwide.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="username">Public Username</Label>
-                  </div>
+                  <Label htmlFor="username">Public Global Username</Label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input 
                       id="username" 
-                      placeholder="e.g. john_plumber"
+                      placeholder="e.g. john_dev"
                       value={username} 
                       onChange={(e) => {
                         setUsername(e.target.value);
@@ -365,12 +448,12 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="trade">Main Trade / Occupation</Label>
+                  <Label htmlFor="trade">Main Professional Skill</Label>
                   <div className="relative">
                     <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input 
                       id="trade" 
-                      placeholder="e.g. Master Electrician"
+                      placeholder="e.g. Senior React Developer"
                       value={trade} 
                       onChange={(e) => setTrade(e.target.value)}
                       className="pl-10 h-12 rounded-xl" 
@@ -380,7 +463,7 @@ export default function ProfilePage() {
 
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="bio">Professional Summary</Label>
+                    <Label htmlFor="bio">Professional Story</Label>
                     <div className="flex items-center gap-2">
                       {bioCooldownText && !isPro && (
                         <span className="text-[10px] font-black text-muted-foreground uppercase flex items-center gap-1">
@@ -405,7 +488,7 @@ export default function ProfilePage() {
                   </div>
                   <Textarea 
                     id="bio" 
-                    placeholder="Describe your years of experience and top services..."
+                    placeholder="Describe your expertise and top professional highlights..."
                     value={bio} 
                     onChange={(e) => setBio(e.target.value)}
                     className="min-h-[100px] rounded-xl" 
@@ -413,7 +496,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label>Service Areas ({serviceAreas.length})</Label>
+                  <Label>Coverage Areas ({serviceAreas.length})</Label>
                   <Collapsible open={isAreasOpen} onOpenChange={setIsAreasOpen} className="w-full space-y-2">
                     <CollapsibleTrigger asChild>
                       <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-xl">
@@ -447,7 +530,7 @@ export default function ProfilePage() {
 
             <Card className="border-none shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Contact Information</CardTitle>
+                <CardTitle className="text-lg">Global Contact Info</CardTitle>
                 <CardDescription>Visible on your public profile for client inquiries.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
@@ -466,7 +549,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="contact-email">Email</Label>
+                  <Label htmlFor="contact-email">Professional Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input id="contact-email" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="pl-10 h-12 rounded-xl" />
@@ -481,7 +564,7 @@ export default function ProfilePage() {
                   className="w-full rounded-full py-6 text-lg shadow-lg font-black" 
                 >
                   {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                  Save Professional Profile
+                  Save Profile & Go Live
                 </Button>
               </CardFooter>
             </Card>

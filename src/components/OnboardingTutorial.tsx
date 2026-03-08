@@ -23,22 +23,22 @@ const TUTORIAL_STEPS: Step[] = [
   {
     id: "welcome",
     title: "Welcome to Globlync!",
-    message: "Let's build your professional reputation. First, we need to set up your profile.",
-    path: "/dashboard",
+    message: "Let's build your professional reputation. First, we need to set up your professional hub.",
+    path: "/profile",
     arrow: "none"
   },
   {
     id: "goto-profile",
-    title: "Find Your Profile",
-    message: "Tap on your profile icon in the navigation bar to start customizing your professional identity.",
-    path: "/dashboard",
+    title: "Find Your Hub",
+    message: "Tap on your profile icon in the navigation bar to access your stats and settings.",
+    path: "/profile",
     targetId: "nav-user-menu",
     arrow: "up"
   },
   {
     id: "upload-photo",
     title: "Look Professional",
-    message: "A professional photo builds instant trust. Tap the camera to upload a clear photo of yourself.",
+    message: "A high-trust photo builds instant confidence. Tap the camera to upload a clear professional photo.",
     path: "/profile",
     targetId: "profile-camera-btn",
     arrow: "down"
@@ -46,7 +46,7 @@ const TUTORIAL_STEPS: Step[] = [
   {
     id: "save-profile",
     title: "Finalize Setup",
-    message: "Tell us your trade and save your settings to go live!",
+    message: "Tell the world your main skill and save your profile to go live globally!",
     path: "/profile",
     targetId: "profile-save-btn",
     arrow: "up"
@@ -138,19 +138,15 @@ export function OnboardingTutorial() {
   const currentStep = TUTORIAL_STEPS[currentStepIdx];
   const isWrongPage = pathname !== currentStep.path;
   
-  // Decide where to put the card so it doesn't cover the spotlight
-  // If the target element is in the top half of the screen, move the card to the bottom
   const cardPositionClass = rect && rect.top < 400 ? "bottom-10" : "top-10";
 
   return (
     <div className="fixed inset-0 z-[1000] pointer-events-none">
-      {/* Dark Backdrop */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity pointer-events-auto" 
         onClick={handleSkip}
       />
 
-      {/* Spotlight Effect */}
       {rect && !isWrongPage && (
         <div 
           className="absolute border-4 border-secondary shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] rounded-xl pointer-events-auto transition-all duration-500 ease-in-out"
@@ -161,7 +157,6 @@ export function OnboardingTutorial() {
             height: rect.height + 16,
           }}
         >
-          {/* Animated Arrow */}
           {currentStep.arrow === "up" && (
             <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center">
               <ArrowUp className="h-12 w-12 text-secondary" />
@@ -175,7 +170,6 @@ export function OnboardingTutorial() {
         </div>
       )}
 
-      {/* Tutorial Card */}
       <div className={cn("absolute left-1/2 -translate-x-1/2 w-full max-w-xs px-4 transition-all duration-500 pointer-events-auto", cardPositionClass)}>
         <Card className="shadow-2xl border-none animate-in zoom-in-95 duration-300">
           <CardHeader className="text-center pb-2">
@@ -190,7 +184,7 @@ export function OnboardingTutorial() {
             {currentStep.message}
             {isWrongPage && (
                <p className="mt-2 text-[10px] font-black text-primary animate-pulse flex items-center justify-center gap-1">
-                 <ChevronRight className="h-3 w-3" /> Auto-navigating to {currentStep.path.replace('/', '')}...
+                 <ChevronRight className="h-3 w-3" /> Auto-navigating to Hub...
                </p>
             )}
           </CardContent>
