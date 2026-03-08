@@ -8,14 +8,14 @@ To ensure all professional features work correctly in production, add these **En
 
 1. **`GOOGLE_GENAI_API_KEY`**: Your Gemini API Key for AI Bio Polish and Daily Tips.
 2. **`FIREBASE_SERVICE_ACCOUNT`**: Go to Firebase Console > Settings > Service Accounts > Generate New Private Key. Copy the **entire** JSON content and paste it here.
-3. **`JOOBLE_API_KEY`**: `11f7354d-81e2-4517-ba04-1399caa395ce` (or your updated key).
-4. **`PAYCHANGU_SECRET_KEY`**: Your live Secret Key from PayChangu.
-5. **`PAYCHANGU_WEBHOOK_SECRET`**: (Optional) The secret for signature verification.
+3. **`JOOBLE_API_KEY`**: `11f7354d-81e2-4517-ba04-1399caa395ce`
+4. **`PAYCHANGU_SECRET_KEY`**: Your live Secret Key from PayChangu (Required for payment verification).
+5. **`PAYCHANGU_WEBHOOK_SECRET`**: (Optional) The secret for signature verification. If your dashboard doesn't provide this, the app will automatically use API verification as a fallback.
 
 ## 💳 PayChangu Webhook Setup (Step-by-Step)
 1. **Login**: Access your [PayChangu Dashboard](https://app.paychangu.com).
 2. **Navigate**: Click **Settings** -> **API Keys & Webhooks**.
-3. **Set URL**: In the **Webhook URL** field, enter: `https://your-domain.vercel.app/api/paychangu-webhook`
+3. **Set URL**: In the **Webhook URL** field, enter: `https://globlync.vercel.app/api/paychangu-webhook`
 4. **Activate**: Ensure the "Receive Webhook Notifications" toggle is **ON**.
 5. **Match Email**: Users must pay using the **same email address** registered on their Globlync profile for automatic Pro activation.
 
@@ -30,5 +30,5 @@ The app uses a synchronized system to minimize API costs. Only **1 API call per 
 ## 🚀 Deployment Steps
 1. Connect your GitHub repo to Vercel.
 2. Add the Environment Variables listed above.
-3. Ensure `globlync.vercel.app` (or your domain) is added to **Authorized Domains** in Firebase Console > Auth > Settings.
+3. Ensure `globlync.vercel.app` is added to **Authorized Domains** in Firebase Console > Auth > Settings.
 4. Deploy!
