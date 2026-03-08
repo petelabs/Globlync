@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useMemo } from "react";
@@ -26,7 +25,9 @@ import {
   Trash2,
   Crown,
   Facebook,
-  Twitter
+  Twitter,
+  Save,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -38,10 +39,9 @@ import { Badge } from "@/components/ui/badge";
 
 const FREE_LIMIT = 1;
 const PRO_LIMIT = 10;
-const FREE_SIZE_LIMIT = 5 * 1024 * 1024; // Increased to 5MB
-const PRO_SIZE_LIMIT = 10 * 1024 * 1024; // Increased to 10MB
+const FREE_SIZE_LIMIT = 5 * 1024 * 1024;
+const PRO_SIZE_LIMIT = 10 * 1024 * 1024;
 
-// Official WhatsApp Logo as Inline SVG
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -69,6 +69,7 @@ export default function WorkLogPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<{ isMatch: boolean; analysis: string } | null>(null);
   const [lastGeneratedLink, setLastGeneratedLink] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const jobsRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -128,6 +129,8 @@ export default function WorkLogPage() {
       setAiAnalysis(result);
       if (result.isMatch) {
         toast({ title: "AI Verified!", description: "Gemini confirms your primary photo matches the work." });
+      } else {
+        toast({ variant: "destructive", title: "Review Required", description: "The AI noticed a discrepancy. Please check the feedback below." });
       }
     } catch (error) {
       toast({ variant: "destructive", title: "Analysis Failed", description: "Could not verify photo." });
@@ -140,6 +143,7 @@ export default function WorkLogPage() {
     e.preventDefault();
     if (!jobsRef || !user) return;
 
+    setIsSaving(true);
     const newJob = {
       workerId: user.uid,
       title,
@@ -156,7 +160,6 @@ export default function WorkLogPage() {
     try {
       const docRef = await addDocumentNonBlocking(jobsRef, newJob);
       if (docRef) {
-        // Build professional domain link
         const verificationUrl = `https://globlync.vercel.app/v/${user.uid}/${docRef.id}`;
         setLastGeneratedLink(verificationUrl);
         
@@ -165,9 +168,13 @@ export default function WorkLogPage() {
         setPhotos([]);
         setAiAnalysis(null);
         
-        toast({ title: "Job Logged Successfully" });
+        toast({ title: "Evidence Secured!", description: "Your job has been saved to Firestore and is ready for client verification." });
       }
-    } catch (e) {}
+    } catch (e) {
+      toast({ variant: "destructive", title: "Save Failed" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const shareNative = async () => {
@@ -217,7 +224,7 @@ export default function WorkLogPage() {
   const currentLimit = isPro ? PRO_LIMIT : FREE_LIMIT;
 
   return (
-    <div className="flex flex-col gap-6 py-4 px-2">
+    <div className="flex flex-col gap-6 py-4 px-2 max-w-5xl mx-auto">
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-black tracking-tight">Evidence Log</h1>
         {!isPro && (
@@ -238,8 +245,8 @@ export default function WorkLogPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="border-none shadow-md rounded-[2rem]">
               <CardHeader>
-                <CardTitle className="text-xl">Log Completed Work</CardTitle>
-                <CardDescription>Details for your client to verify your expertise.</CardDescription>
+                <CardTitle className="text-xl">Build Evidence-Based Trust</CardTitle>
+                <CardDescription>Details for your client to verify your expertise. Accurate photos increase your Trust Score.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleJobLog} className="grid gap-4">
@@ -275,7 +282,7 @@ export default function WorkLogPage() {
                     </Label>
                     <div className="grid grid-cols-2 gap-3">
                       {photos.map((uri, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border group">
+                        <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border group shadow-sm">
                           <img src={uri} alt={`Job ${idx}`} className="h-full w-full object-cover" />
                           <button type="button" onClick={() => removePhoto(idx)} className="absolute top-2 right-2 bg-destructive text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"><Trash2 className="h-3 w-3" /></button>
                           {idx === 0 && <span className="absolute bottom-2 left-2 bg-primary/90 text-white text-[8px] px-2 py-0.5 rounded-full font-black uppercase shadow-lg">Primary</span>}
@@ -293,23 +300,49 @@ export default function WorkLogPage() {
                     {photos.length > 0 && !aiAnalysis && (
                       <Button type="button" variant="secondary" className="w-full bg-accent text-accent-foreground h-14 rounded-xl font-bold shadow-sm" onClick={handleAiVerify} disabled={isAnalyzing}>
                         {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                        AI Quality Analysis
+                        Run AI Quality Verification
                       </Button>
                     )}
 
                     {aiAnalysis && (
-                      <div className={cn("flex items-start gap-3 p-4 rounded-2xl border-2", aiAnalysis.isMatch ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200")}>
-                        {aiAnalysis.isMatch ? <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" /> : <AlertCircle className="h-6 w-6 text-amber-600 mt-0.5" />}
+                      <div className={cn("flex items-start gap-3 p-5 rounded-2xl border-2 transition-all animate-in zoom-in-95", aiAnalysis.isMatch ? "bg-green-50 border-green-500/30" : "bg-destructive/5 border-destructive/20")}>
+                        {aiAnalysis.isMatch ? <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" /> : <AlertCircle className="h-6 w-6 text-destructive mt-0.5" />}
                         <div className="text-sm">
-                          <p className="font-black text-xs uppercase tracking-tight">{aiAnalysis.isMatch ? "Proof Accepted" : "AI Flags Review"}</p>
-                          <p className="text-muted-foreground text-[11px] font-medium leading-tight mt-1">{aiAnalysis.analysis}</p>
+                          <p className={cn("font-black text-xs uppercase tracking-tight", aiAnalysis.isMatch ? "text-green-700" : "text-destructive")}>
+                            {aiAnalysis.isMatch ? "Verification Successful!" : "Action Required: Accurate Evidence Needed"}
+                          </p>
+                          <p className="text-muted-foreground text-[11px] font-medium leading-tight mt-1">
+                            {aiAnalysis.analysis}
+                          </p>
+                          {aiAnalysis.isMatch ? (
+                            <p className="mt-3 text-[10px] font-black text-green-700 animate-pulse uppercase tracking-widest">
+                              ✨ Looks Great! Tap "Save Evidence" below to store this in Firestore.
+                            </p>
+                          ) : (
+                            <p className="mt-3 text-[10px] font-black text-destructive uppercase tracking-widest">
+                              ⚠️ Tip: Provide a clearer photo or a more detailed description to satisfy verification.
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <Button type="submit" className="w-full rounded-full py-8 text-xl mt-4 shadow-xl font-black" disabled={photos.length === 0}>
-                    Log & Create Client Link
+                  <Button 
+                    type="submit" 
+                    className={cn(
+                      "w-full rounded-full py-8 text-xl mt-4 shadow-xl font-black transition-all",
+                      aiAnalysis?.isMatch ? "bg-green-600 hover:bg-green-700" : "bg-primary"
+                    )} 
+                    disabled={photos.length === 0 || isSaving}
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    ) : aiAnalysis?.isMatch ? (
+                      <><Save className="mr-2 h-6 w-6" /> Save Verified Evidence</>
+                    ) : (
+                      "Log & Create Client Link"
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -319,8 +352,13 @@ export default function WorkLogPage() {
               {lastGeneratedLink && (
                 <Card className="border-2 border-primary bg-primary/5 shadow-2xl animate-in fade-in slide-in-from-bottom-4 rounded-[2.5rem] overflow-hidden">
                   <CardHeader className="text-center">
-                    <CardTitle className="flex items-center justify-center gap-2 text-2xl font-black"><Send className="h-6 w-6 text-primary" />Verify Ready!</CardTitle>
-                    <CardDescription className="text-sm font-medium">Share this unique link with your client to build your score.</CardDescription>
+                    <div className="flex justify-center mb-2">
+                      <div className="bg-white p-3 rounded-2xl shadow-sm">
+                        <ShieldCheck className="h-8 w-8 text-primary" />
+                      </div>
+                    </div>
+                    <CardTitle className="flex items-center justify-center gap-2 text-2xl font-black">Link Ready!</CardTitle>
+                    <CardDescription className="text-sm font-medium">Share this unique link with your client. Once they confirm, your reputation grows.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-6 px-8">
                     <div className="flex items-center gap-2 rounded-2xl bg-white p-4 border-2 border-primary/10 group shadow-inner">
@@ -352,19 +390,19 @@ export default function WorkLogPage() {
               )}
 
               <Card className="border-none bg-muted/30 rounded-[2rem]">
-                <CardHeader><CardTitle className="text-sm font-black uppercase tracking-widest opacity-70">Trust Transparency</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-sm font-black uppercase tracking-widest opacity-70">Security & Privacy</CardTitle></CardHeader>
                 <CardContent className="text-[11px] text-muted-foreground space-y-3 px-6 pb-8">
                   <div className="flex gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1" />
-                    <p>Your unique link allows clients to verify work without signing in, protecting your reputation.</p>
+                    <p>Your unique link allows clients to verify work without signing in, protecting your professional identity.</p>
                   </div>
                   <div className="flex gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1" />
-                    <p>Every verified job adds significant points to your global <span className="font-black">National Trust Score</span>.</p>
+                    <p>Every verified job adds significant points to your global <span className="font-black text-primary">Reputation Score</span>.</p>
                   </div>
                   <div className="flex gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 mt-1" />
-                    <p>VIP status unlocks high-speed storage for 10 HD photos per job log.</p>
+                    <p>Evidence is stored permanently in your private Firestore log, accessible only to you and authorized viewers.</p>
                   </div>
                 </CardContent>
               </Card>
