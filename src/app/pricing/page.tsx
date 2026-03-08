@@ -20,7 +20,11 @@ import {
   ArrowRight,
   Star,
   Medal,
-  Trophy
+  Trophy,
+  Globe,
+  Wallet,
+  Building2,
+  Lock
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -117,7 +121,7 @@ export default function PricingPage() {
               <CardTitle className="text-2xl font-black">{tier.name}</CardTitle>
               <div className="flex items-baseline gap-1 mt-4">
                 <span className="text-5xl font-black tracking-tight">${tier.price}</span>
-                <span className="text-sm text-muted-foreground font-bold">/ {tier.days} Days</span>
+                <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
               </div>
             </CardHeader>
             <CardContent className="p-0 flex-1">
@@ -144,13 +148,55 @@ export default function PricingPage() {
         ))}
       </div>
 
-      <Alert className="bg-muted/30 border-2 border-dashed rounded-[2rem] p-6 max-w-3xl mx-auto">
-        <Info className="h-6 w-6 text-primary" />
-        <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">How Activation Works</AlertTitle>
-        <AlertDescription className="text-sm font-medium mt-2 ml-2 leading-relaxed">
-          Upgrade is 100% automated. Once payment is successful, your account will be upgraded for 30 days instantly. Please ensure you use the same email address provided in your Globlync profile.
-        </AlertDescription>
-      </Alert>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-none bg-muted/30 p-8 rounded-[2.5rem] flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-xl text-primary">
+              <CreditCard className="h-6 w-6" />
+            </div>
+            <h3 className="text-xl font-black uppercase tracking-tight">Payment Methods</h3>
+          </div>
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Global Professionals</p>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
+                  <CreditCard className="h-3 w-3 text-primary" /> Visa
+                </Badge>
+                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
+                  <CreditCard className="h-3 w-3 text-primary" /> MasterCard
+                </Badge>
+                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
+                  <Building2 className="h-3 w-3 text-primary" /> Bank Transfer
+                </Badge>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Local Malawi Support</p>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
+                  <Wallet className="h-3 w-3 text-red-500" /> Airtel Money
+                </Badge>
+                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
+                  <Wallet className="h-3 w-3 text-green-600" /> TNM Mpamba
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Alert className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[2.5rem] p-8 flex flex-col items-start gap-4">
+          <div className="bg-primary/10 p-3 rounded-full">
+            <Lock className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <AlertTitle className="text-xl font-black uppercase tracking-tight mb-2">Automated Activation</AlertTitle>
+            <AlertDescription className="text-sm font-medium leading-relaxed opacity-80">
+              Upgrade is 100% automated. Whether you use a global card or local mobile money, your account will be upgraded for 30 days instantly upon successful checkout. Ensure you use the same email address as your Globlync profile.
+            </AlertDescription>
+          </div>
+        </Alert>
+      </div>
 
       <Card className="border-none bg-secondary/10 p-8 rounded-[3rem] shadow-xl relative overflow-hidden group max-w-4xl mx-auto w-full">
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
@@ -163,7 +209,7 @@ export default function PricingPage() {
             <p className="text-sm opacity-80 max-w-md font-medium leading-relaxed">Can't pay? Complete one quick survey or offer from our partners to unlock Bronze Pro status instantly. Support the network with your time.</p>
           </div>
           <Button size="lg" className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-16 shadow-xl hover:scale-105 transition-transform" asChild>
-            <Link href="/rewards">Open Reward Center <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            <Link href="/rewards">Open Reward Center <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
         </div>
       </Card>
