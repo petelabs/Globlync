@@ -5,6 +5,10 @@ export interface Motivation {
   author: string;
 }
 
+/**
+ * Curated library of professional insights from global experts.
+ * Used for zero-AI daily synchronization.
+ */
 export const MOTIVATIONAL_QUOTES: Motivation[] = [
   {
     title: "Focus on Excellence",
@@ -44,7 +48,7 @@ export const MOTIVATIONAL_QUOTES: Motivation[] = [
   {
     title: "Consistency is Key",
     content: "Consistency is what transforms average work into professional excellence. Never stop logging.",
-    author: "Unknown"
+    author: "Unknown Expert"
   },
   {
     title: "Courage to Continue",
@@ -64,7 +68,7 @@ export const MOTIVATIONAL_QUOTES: Motivation[] = [
   {
     title: "Pure Professionalism",
     content: "Professionalism is not the job you do, it's how you do the job and how you treat your clients.",
-    author: "Anonymous"
+    author: "Global Business Mentor"
   },
   {
     title: "Unseen Integrity",

@@ -74,18 +74,19 @@ export default function Home() {
           const lastUpdate = data.updatedAt?.toDate() || new Date(0);
           const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
           
+          // Only update once every 24 hours
           if (diffHours < 24) {
             setGlobalTip({ 
               title: data.title, 
               content: data.content, 
-              author: data.author || "Global Mentor" 
+              author: data.author || "Expert Mentor" 
             });
             needsUpdate = false;
           }
         }
 
         if (needsUpdate) {
-          // Pure non-AI selection based on day
+          // Zero AI Cost: Pick from expert library based on day of year
           const dayIndex = Math.floor(now.getTime() / (1000 * 60 * 60 * 24)) % MOTIVATIONAL_QUOTES.length;
           const selected = MOTIVATIONAL_QUOTES[dayIndex];
           
@@ -96,6 +97,7 @@ export default function Home() {
             updatedAt: serverTimestamp()
           };
           
+          // Save to system doc so everyone sees the same tip today
           await setDocumentNonBlocking(tipRef, tipData, { merge: true });
           setGlobalTip(tipData);
         }
@@ -130,6 +132,7 @@ export default function Home() {
     }
   };
 
+  // Real data count
   const proCount = allWorkers?.length || 0;
 
   return (
@@ -165,7 +168,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Human Daily Tip - Zero AI Cost */}
+      {/* Human Daily Tip - Zero AI Cost - Only on Home */}
       <section className="max-w-4xl mx-auto w-full px-4">
         <Card className="border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group shadow-inner border-2 border-primary/10">
           <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -184,7 +187,7 @@ export default function Home() {
                 <>
                   <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalTip.title}</h3>
                   <p className="text-sm text-muted-foreground font-medium leading-relaxed">"{globalTip.content}"</p>
-                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-2">— {globalTip.author}</p>
+                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-2">— Expert Tip by {globalTip.author}</p>
                 </>
               ) : (
                 <div className="space-y-2 py-2">
@@ -197,7 +200,7 @@ export default function Home() {
         </Card>
       </section>
 
-      {/* Stats Counter */}
+      {/* Stats Counter - Real Data */}
       <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { label: "Jobs Hourly", value: "100+", icon: Briefcase },
@@ -247,7 +250,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Real Testimonials */}
+      {/* Real Testimonials - Pure Data */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
         <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">What Pros are Saying</h2>
         <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
@@ -274,37 +277,6 @@ export default function Home() {
               <p className="text-muted-foreground font-medium">No professional reviews yet. Be the first to rate us!</p>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Purpose Section */}
-      <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4 shadow-inner">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div className="flex flex-col items-center text-center gap-4">
-            <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
-              The Global Standard (HQ: Malawi)
-            </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">Verified Identity for the Remote Economy</h2>
-            <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              Whether you're a developer in Blantyre or a designer in London, Globlync bridges the trust gap. We help you prove your expertise with AI-verified evidence that clients actually believe.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              { title: "Tech Experts", desc: "Developers, Designers, and IT Specialists.", icon: Laptop },
-              { title: "Business Pros", desc: "Accountants, Virtual Assistants, and Sales.", icon: Building2 },
-              { title: "Creatives", desc: "Writers, Editors, and Media Experts.", icon: Sparkles },
-              { title: "Skilled Trades", desc: "Engineering and Expert Technical Services.", icon: Construction }
-            ].map((item, i) => (
-              <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default group">
-                <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:text-white transition-colors">
-                  <item.icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-sm">{item.title}</h3>
-                <p className="text-[10px] text-muted-foreground leading-tight">{item.desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

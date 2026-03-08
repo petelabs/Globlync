@@ -95,6 +95,7 @@ function LoginContent() {
         }
       }
 
+      // Branded Yellow Avatar for all new professionals
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "";
       
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -109,7 +110,7 @@ function LoginContent() {
         username: finalUsername,
         tradeSkill: "",
         bio: "",
-        profilePictureUrl: yellowAvatar,
+        profilePictureUrl: yellowAvatar, // High-trust placeholder
         trustScore: invitedBy ? 10 : 0,
         profileViews: 0,
         referralCode: newCode,
@@ -139,7 +140,7 @@ function LoginContent() {
 
     setIsSuccess(true);
     setTimeout(() => {
-      router.push("/profile"); // Changed from dashboard to profile
+      router.push("/profile");
       toast({ title: "Welcome to Globlync!" });
     }, 1500);
   };
