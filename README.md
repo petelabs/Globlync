@@ -4,7 +4,7 @@
 Globlync is a professional platform designed for remote professionals and global freelancers to build a digital, evidence-based reputation. Headquartered in Malawi, serving the globe.
 
 ## 🚀 Vercel Production Deployment
-To ensure all professional features work correctly in production, add these **Environment Variables** in your Vercel Dashboard:
+To ensure all professional features work correctly in production, add these **Environment Variables** in your Vercel Dashboard (*Settings > Environment Variables*):
 
 1. **`GOOGLE_GENAI_API_KEY`**: Your Gemini API Key for AI Bio Polish and Daily Tips.
 2. **`FIREBASE_SERVICE_ACCOUNT`**: Go to Firebase Console > Settings > Service Accounts > Generate New Private Key. Copy the **entire** JSON content and paste it here.
@@ -12,9 +12,12 @@ To ensure all professional features work correctly in production, add these **En
 4. **`PAYCHANGU_SECRET_KEY`**: Your live Secret Key from PayChangu.
 5. **`PAYCHANGU_WEBHOOK_SECRET`**: (Optional) The secret for signature verification.
 
-## 💳 PayChangu Webhook Setup
-1. **Webhook URL**: Set to `https://your-domain.vercel.app/api/paychangu-webhook`
-2. **Settings**: Ensure "Receive Webhook Notifications" is **ON** in your PayChangu dashboard.
+## 💳 PayChangu Webhook Setup (Step-by-Step)
+1. **Login**: Access your [PayChangu Dashboard](https://app.paychangu.com).
+2. **Navigate**: Click **Settings** -> **API Keys & Webhooks**.
+3. **Set URL**: In the **Webhook URL** field, enter: `https://your-domain.vercel.app/api/paychangu-webhook`
+4. **Activate**: Ensure the "Receive Webhook Notifications" toggle is **ON**.
+5. **Match Email**: Users must pay using the **same email address** registered on their Globlync profile for automatic Pro activation.
 
 ## 🧠 Daily Tip Logic (Cost Optimization)
 The app uses a synchronized system to minimize API costs. Only **1 API call per day** is made for the entire platform. The first person to visit the site each day triggers the AI to update the `system/dailyTip` document in Firestore, which is then served to everyone else instantly.
