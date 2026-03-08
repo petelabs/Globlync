@@ -4,42 +4,23 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { 
   ShieldCheck, 
-  QrCode, 
-  TrendingUp, 
-  Award, 
   Sparkles, 
-  CheckCircle, 
-  Users, 
-  Lock,
-  Star,
-  Quote,
-  Share2,
-  Clock,
-  ChevronRight,
-  Mail,
-  LifeBuoy,
-  Briefcase,
-  MapPin,
-  Info,
-  Building2,
-  Search as SearchIcon,
-  Camera,
-  Zap,
-  Hammer,
-  Lightbulb,
-  Loader2,
-  Globe,
-  Laptop,
-  GraduationCap,
-  ThumbsUp,
-  ArrowRight,
+  Briefcase, 
+  Star, 
+  Globe, 
+  ArrowRight, 
+  Lightbulb, 
+  Loader2, 
+  ThumbsUp, 
+  Laptop, 
+  Building2, 
   Construction
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking, useUser, addDocumentNonBlocking } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase, useUser, addDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, limit, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -94,12 +75,17 @@ export default function Home() {
           const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
           
           if (diffHours < 24) {
-            setGlobalTip({ title: data.title, content: data.content, author: data.author || "Professional Mentor" });
+            setGlobalTip({ 
+              title: data.title, 
+              content: data.content, 
+              author: data.author || "Global Mentor" 
+            });
             needsUpdate = false;
           }
         }
 
         if (needsUpdate) {
+          // Pure non-AI selection based on day
           const dayIndex = Math.floor(now.getTime() / (1000 * 60 * 60 * 24)) % MOTIVATIONAL_QUOTES.length;
           const selected = MOTIVATIONAL_QUOTES[dayIndex];
           
@@ -179,7 +165,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Global AI Daily Tip */}
+      {/* Human Daily Tip - Zero AI Cost */}
       <section className="max-w-4xl mx-auto w-full px-4">
         <Card className="border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group shadow-inner border-2 border-primary/10">
           <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -229,12 +215,7 @@ export default function Home() {
         ))}
       </section>
 
-      {/* Reward Promotion */}
-      <div className="max-w-4xl mx-auto w-full px-4">
-        <AdBanner className="w-full" />
-      </div>
-
-      {/* App Rating Form (Visible to logged in users) */}
+      {/* App Rating Form */}
       {user && (
         <section className="max-w-xl mx-auto w-full px-4 text-center space-y-6">
           <h2 className="text-xl font-black uppercase tracking-widest text-primary">Rate your experience</h2>
@@ -266,7 +247,7 @@ export default function Home() {
         </section>
       )}
 
-      {/* Real Testimonials Section */}
+      {/* Real Testimonials */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
         <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">What Pros are Saying</h2>
         <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
@@ -296,7 +277,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Global Purpose Section */}
+      {/* Purpose Section */}
       <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4 shadow-inner">
         <div className="max-w-4xl mx-auto space-y-12">
           <div className="flex flex-col items-center text-center gap-4">

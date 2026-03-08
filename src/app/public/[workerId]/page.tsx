@@ -1,31 +1,29 @@
 
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useDoc, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { useDoc, useFirestore, useMemoFirebase, useCollection, updateDocumentNonBlocking } from "@/firebase";
 import { doc, collection, increment, serverTimestamp } from "firebase/firestore";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, 
   MapPin, 
-  Globe, 
-  MessageSquare, 
+  Briefcase, 
   Star, 
-  ClipboardCheck, 
-  Zap, 
-  ExternalLink, 
   Clock, 
+  CheckCircle2, 
+  Zap, 
+  Sparkles,
+  ExternalLink,
   Loader2,
-  CheckCircle2,
-  Share2,
-  Award
+  Award,
+  Globe
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -37,6 +35,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function PublicProfilePage() {
   const { workerId } = useParams() as { workerId: string };
   const db = useFirestore();
+  const [hasViewed, setHasViewed] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
@@ -53,224 +52,159 @@ export default function PublicProfilePage() {
     return collection(db, "workerProfiles", workerId, "ratings");
   }, [db, workerId]);
 
-  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
+  const { data: worker, isLoading: isWorkerLoading } = useDoc(workerRef);
   const { data: jobs } = useCollection(jobsRef);
   const { data: ratings } = useCollection(ratingsRef);
 
-  // Automated Profile View Logic
   useEffect(() => {
-    if (workerRef) {
+    if (workerRef && !hasViewed) {
       updateDocumentNonBlocking(workerRef, {
         profileViews: increment(1),
         updatedAt: serverTimestamp()
       });
+      setHasViewed(true);
     }
-  }, [workerId]); // Only increment once per mount of this specific ID
+  }, [workerRef, hasViewed]);
 
-  if (isProfileLoading) return (
-    <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
-      <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      <p className="text-[10px] font-black uppercase tracking-widest animate-pulse">Fetching Professional Evidence...</p>
-    </div>
-  );
+  if (isWorkerLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  if (!profile) return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center gap-4 px-6">
-      <div className="p-8 bg-muted rounded-full mb-4"><Globe className="h-12 w-12 text-muted-foreground/30" /></div>
-      <h1 className="text-2xl font-black">Profile Not Found</h1>
-      <p className="text-muted-foreground max-w-xs mx-auto">This professional profile may have been removed or the link is incorrect.</p>
-      <Button asChild className="rounded-full mt-4"><Link href="/">Back to Globlync</Link></Button>
-    </div>
-  );
+  if (!worker) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <h1 className="text-2xl font-bold">Profile Not Found</h1>
+        <Button asChild rounded-full><Link href="/">Return Home</Link></Button>
+      </div>
+    );
+  }
 
   const verifiedJobs = jobs?.filter(j => j.isVerified) || [];
-  const avgRating = ratings && ratings.length 
-    ? (ratings.reduce((acc, r) => acc + (r.score || 0), 0) / ratings.length).toFixed(1)
-    : "New";
 
   return (
-    <div className="flex flex-col gap-12 py-8 max-w-5xl mx-auto px-4 overflow-x-hidden">
-      <header className="flex flex-col md:flex-row items-center gap-10 text-center md:text-left">
-        <div className="relative group">
-          <Avatar className="h-48 w-48 border-8 border-white shadow-2xl">
-            <AvatarImage src={profile.profilePictureUrl} className="object-cover" />
-            <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary">{profile.name?.charAt(0)}</AvatarFallback>
+    <div className="flex flex-col gap-8 py-8 max-w-4xl mx-auto px-4">
+      <Card className="border-none shadow-xl overflow-hidden rounded-[3rem]">
+        <div className="h-32 bg-primary relative" />
+        <CardContent className="pt-0 flex flex-col items-center text-center px-8 pb-10">
+          <Avatar className="h-32 w-32 border-4 border-white shadow-2xl -mt-16 bg-white">
+            <AvatarImage src={worker.profilePictureUrl} className="object-cover" />
+            <AvatarFallback className="text-2xl font-black">{worker.name?.charAt(0)}</AvatarFallback>
           </Avatar>
-          {profile.isPro && (
-            <div className="absolute -top-2 -right-2 bg-secondary p-3 rounded-full border-4 border-white shadow-xl animate-pulse">
-              <Zap className="h-6 w-6 text-white fill-white" />
-            </div>
-          )}
-        </div>
-        <div className="flex-1 space-y-4">
-          <div className="space-y-1">
-            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-4 py-1 rounded-full uppercase text-[10px] tracking-widest mb-2">
-              <ShieldCheck className="h-3 w-3 mr-2" /> Verified Professional
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-tight">{profile.name}</h1>
-            <p className="text-xl md:text-2xl text-primary font-bold uppercase tracking-tight">@{profile.username} • {profile.tradeSkill || "General Professional"}</p>
-          </div>
           
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-2xl">
-              <Star className="h-4 w-4 text-secondary fill-secondary" />
-              <span className="font-black">{avgRating}</span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Rating</span>
+          <div className="mt-4 space-y-1">
+            <h1 className="text-3xl font-black tracking-tight flex items-center justify-center gap-2">
+              {worker.name}
+              {worker.isPro && <Zap className="h-5 w-5 text-secondary fill-secondary" />}
+            </h1>
+            <p className="text-primary font-black uppercase tracking-widest text-xs">@{worker.username}</p>
+            <p className="text-muted-foreground font-bold text-lg">{worker.tradeSkill || "Verified Professional"}</p>
+          </div>
+
+          <div className="flex gap-4 mt-6">
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-black">{worker.trustScore}</span>
+              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Trust Score</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-2xl">
-              <ClipboardCheck className="h-4 w-4 text-primary" />
-              <span className="font-black">{verifiedJobs.length}</span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Jobs Verified</span>
+            <div className="w-px h-10 bg-border" />
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-black">{verifiedJobs.length}</span>
+              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Verified Jobs</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-2xl text-primary">
-              <ShieldCheck className="h-4 w-4" />
-              <span className="font-black">{profile.trustScore}</span>
-              <span className="text-[10px] font-bold uppercase">Trust Score</span>
+            <div className="w-px h-10 bg-border" />
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-black">{worker.profileViews || 0}</span>
+              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Global Views</span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            {profile.whatsappNumber && (
-              <Button size="lg" className="rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black h-14 px-10 shadow-xl flex-1 md:flex-none" asChild>
-                <a href={`https://wa.me/${profile.whatsappNumber}`} target="_blank">
-                  <WhatsAppIcon className="mr-3 h-6 w-6" /> Connect on WhatsApp
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-8">
+            {worker.whatsappNumber && (
+              <Button className="rounded-full h-14 font-black text-lg bg-[#25D366] hover:bg-[#128C7E] shadow-lg" asChild>
+                <a href={`https://wa.me/${worker.whatsappNumber}`} target="_blank">
+                  <WhatsAppIcon className="mr-2 h-6 w-6" /> Connect on WhatsApp
                 </a>
               </Button>
             )}
-            <Button size="lg" variant="outline" className="rounded-full h-14 border-2 font-black px-10 flex-1 md:flex-none" onClick={() => {
-              navigator.share?.({ title: profile.name, url: window.location.href }).catch(() => {
-                navigator.clipboard.writeText(window.location.href);
-              });
-            }}>
-              <Share2 className="mr-3 h-5 w-5" /> Share Profile
+            <Button variant="outline" className="rounded-full h-14 font-black border-2" asChild>
+              <a href={`mailto:${worker.contactEmail || ""}`}>Message Professional</a>
             </Button>
           </div>
-        </div>
-      </header>
+        </CardContent>
+      </Card>
 
-      <div className="grid gap-10 md:grid-cols-12">
-        <div className="md:col-span-8 space-y-10">
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2 space-y-8">
           <section className="space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
-              <Award className="h-4 w-4" /> Professional Bio
-            </h3>
-            <p className="text-xl leading-relaxed text-foreground font-medium opacity-90">{profile.bio || "This professional is currently building their evidence log."}</p>
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex items-center justify-between border-b pb-4">
-              <h3 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
-                <ClipboardCheck className="h-4 w-4" /> Verified Evidence
-              </h3>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-none">{verifiedJobs.length}</Badge>
-            </div>
-            <div className="grid gap-6">
+            <h2 className="text-xl font-black uppercase tracking-widest flex items-center gap-2 px-2">
+              <ShieldCheck className="h-5 w-5 text-primary" /> Verified Evidence
+            </h2>
+            <div className="grid gap-4">
               {verifiedJobs.length > 0 ? (
                 verifiedJobs.map((job) => (
-                  <Card key={job.id} className="border-none shadow-sm rounded-[2.5rem] overflow-hidden group hover:shadow-xl transition-all">
+                  <Card key={job.id} className="overflow-hidden border-none shadow-sm rounded-3xl group hover:shadow-xl transition-all">
                     <CardContent className="p-0 flex flex-col sm:flex-row">
                       {job.photoUrl && (
-                        <div className="relative aspect-video w-full sm:w-64 bg-muted shrink-0">
+                        <div className="relative aspect-video w-full sm:w-48 bg-muted shrink-0">
                           <img src={job.photoUrl} alt={job.title} className="h-full w-full object-cover transition-transform group-hover:scale-110 duration-700" />
-                          {job.aiVerified && (
-                            <div className="absolute top-4 left-4 bg-primary text-primary-foreground text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xl">
-                              <Zap className="h-3.5 w-3.5" /> AI VERIFIED
-                            </div>
-                          )}
+                          {job.aiVerified && <div className="absolute top-2 left-2 bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" /> AI VERIFIED</div>}
                         </div>
                       )}
-                      <div className="p-8 flex flex-col justify-center gap-2">
-                        <h4 className="text-2xl font-black leading-tight">{job.title}</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{job.description}</p>
-                        <div className="flex items-center gap-2 mt-4 text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">
-                          <Clock className="h-3 w-3" />
-                          <span>{formatDistanceToNow(new Date(job.dateCompleted), { addSuffix: true })}</span>
-                          <span className="h-1 w-1 rounded-full bg-muted-foreground/30 mx-1" />
-                          <span className="text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Verified</span>
+                      <div className="p-6">
+                        <h3 className="font-black text-lg group-hover:text-primary transition-colors">{job.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{job.description}</p>
+                        <div className="mt-4 flex items-center gap-3">
+                          <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-none font-black text-[9px] uppercase"><CheckCircle2 className="h-3 w-3 mr-1" /> Client Verified</Badge>
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase">{formatDistanceToNow(new Date(job.dateCompleted), { addSuffix: true })}</span>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))
               ) : (
-                <div className="text-center py-20 bg-muted/20 rounded-[3rem] border-4 border-dashed border-muted/30">
-                  <ClipboardCheck className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                  <p className="text-muted-foreground font-bold">No verified job logs yet.</p>
+                <div className="p-12 text-center bg-muted/20 rounded-[2.5rem] border-2 border-dashed">
+                  <p className="text-muted-foreground font-bold">No verified evidence yet.</p>
                 </div>
               )}
             </div>
           </section>
         </div>
 
-        <div className="md:col-span-4 space-y-8">
-          <Card className="border-none bg-primary text-primary-foreground rounded-[2.5rem] p-8 shadow-2xl overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-6 opacity-10">
-              <ShieldCheck className="h-24 w-24" />
+        <div className="space-y-8">
+          <Card className="border-none shadow-sm rounded-[2.5rem] bg-accent/30 p-6 space-y-4">
+            <h3 className="font-black text-xs uppercase tracking-[0.2em] text-primary">About Professional</h3>
+            <p className="text-sm font-medium leading-relaxed opacity-80">{worker.bio || "No professional summary provided."}</p>
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <Globe className="h-4 w-4 text-primary/60" />
+                <span>{worker.serviceAreas?.join(", ") || "Remote / Global"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <Clock className="h-4 w-4 text-primary/60" />
+                <span>Active on Globlync since {worker.createdAt?.toDate ? worker.createdAt.toDate().getFullYear() : '2026'}</span>
+              </div>
             </div>
-            <CardHeader className="p-0 mb-6">
-              <CardTitle className="text-sm font-black uppercase tracking-widest opacity-70">Trust Metrics</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 space-y-6">
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[10px] font-black uppercase opacity-60">Total Reach</p>
-                  <p className="text-4xl font-black tracking-tighter">{profile.profileViews || 0}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-black uppercase opacity-60">Reputation</p>
-                  <p className="text-4xl font-black tracking-tighter">{profile.trustScore}</p>
-                </div>
-              </div>
-              <div className="space-y-4 pt-4 border-t border-white/10">
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 opacity-60" />
-                  <div>
-                    <p className="text-[10px] font-black uppercase opacity-60">Service Areas</p>
-                    <p className="text-xs font-bold leading-tight">{profile.serviceAreas?.join(", ") || "Remote / Global"}</p>
-                  </div>
-                </div>
-                {profile.contactEmail && (
-                  <div className="flex items-center gap-3">
-                    <MessageSquare className="h-5 w-5 opacity-60" />
-                    <div>
-                      <p className="text-[10px] font-black uppercase opacity-60">Professional Contact</p>
-                      <p className="text-xs font-bold truncate max-w-[180px]">{profile.contactEmail}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
           </Card>
 
-          <section className="space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
-              <Star className="h-4 w-4" /> Client Feedback
-            </h3>
-            <div className="grid gap-4">
-              {ratings && ratings.length > 0 ? (
-                ratings.map((r, i) => (
-                  <Card key={i} className="border-none bg-muted/30 rounded-3xl p-6 shadow-sm">
-                    <div className="flex gap-1 mb-2">
-                      {[...Array(5)].map((_, idx) => (
-                        <Star key={idx} className={cn("h-3 w-3", idx < r.score ? "fill-secondary text-secondary" : "text-muted")} />
-                      ))}
-                    </div>
-                    <p className="text-xs italic leading-relaxed mb-3">"{r.comment || "Excellent professional work."}"</p>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">— Verified Client</p>
-                  </Card>
+          <Card className="border-none shadow-sm rounded-[2.5rem] p-6 space-y-4">
+            <h3 className="font-black text-xs uppercase tracking-[0.2em] text-primary">Badges & Awards</h3>
+            <div className="flex flex-wrap gap-2">
+              {worker.badgeIds?.length > 0 ? (
+                worker.badgeIds.map((bid: string) => (
+                  <Badge key={bid} className="bg-primary/10 text-primary border-none py-1.5 px-3 rounded-xl font-black text-[10px] uppercase">
+                    <Award className="h-3 w-3 mr-1.5" /> {bid.replace('-', ' ')}
+                  </Badge>
                 ))
               ) : (
-                <p className="text-[10px] text-muted-foreground font-medium text-center py-8">No client reviews yet.</p>
+                <p className="text-[10px] text-muted-foreground font-bold italic">Building milestones...</p>
               )}
             </div>
-          </section>
+          </Card>
         </div>
       </div>
-
-      <footer className="text-center py-12 border-t mt-12 opacity-40">
-        <Logo className="justify-center scale-75 grayscale mb-2" />
-        <p className="text-[9px] font-black uppercase tracking-[0.4em]">Evidence-Based Digital Reputation</p>
-      </footer>
     </div>
   );
 }

@@ -12,10 +12,9 @@ service cloud.firestore {
     }
 
     // Global System Settings (Daily Tips, etc.)
-    // Must be at the top and highly permissive for global sync
+    // Explicitly allowed for public read/write to ensure daily sync works for everyone
     match /system/{document} {
-      allow read: if true;
-      allow write: if true; 
+      allow read, write: if true;
     }
 
     // Worker Profiles
@@ -28,9 +27,9 @@ service cloud.firestore {
       
       // Update rules:
       // 1. Owner can update most things
-      // 2. Public can update reputation fields (incrementing views, trustScore via verification)
-      allow update: if (isOwner(workerId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']))
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'referralCount', 'badgeIds', 'updatedAt', 'lastBioPolishAt', 'isPro']));
+      // 2. Public can update ONLY specific reputation fields (Views, Trust Score)
+      allow update: if (isOwner(workerId))
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt']));
       
       // Subcollections
       match /jobs/{jobId} {
@@ -54,16 +53,16 @@ service cloud.firestore {
     // Registries
     match /usernames/{username} {
       allow get: if true;
-      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     match /referralCodes/{code} {
       allow get: if true;
-      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn();
     }
 
-    // App Global Feedback (Real Ratings)
+    // App Global Feedback
     match /appRatings/{ratingId} {
       allow read: if true;
       allow create: if isSignedIn();

@@ -63,9 +63,6 @@ export default function DashboardPage() {
   }, [profile]);
 
   const stats = useMemo(() => {
-    // If we're loading or profile is truly missing, return dummy/loading stats
-    if (isProfileLoading) return null;
-    
     const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
     const avgRating = ratings && ratings.length 
       ? ratings.reduce((acc, r) => acc + (r.score || 0), 0) / ratings.length 
@@ -78,9 +75,9 @@ export default function DashboardPage() {
       profileViews: profile?.profileViews || 0,
       referrals: profile?.referralCount || 0
     };
-  }, [allJobs, ratings, profile, isProfileLoading]);
+  }, [allJobs, ratings, profile]);
 
-  if (!user || isProfileLoading || !stats) return (
+  if (!user || isProfileLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Syncing Professional Data...</p>
@@ -169,7 +166,7 @@ export default function DashboardPage() {
                   <>
                     <h3 className="text-xl font-black tracking-tight">{globalTip.title}</h3>
                     <p className="text-sm text-muted-foreground max-w-xl">"{globalTip.content}"</p>
-                    <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-1">— {globalTip.author || "Professional Mentor"}</p>
+                    <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-1">— {globalTip.author || "Global Mentor"}</p>
                   </>
                 ) : (
                   <>
@@ -208,31 +205,6 @@ export default function DashboardPage() {
             </Button>
           </CardContent>
         </Card>
-
-        {!isPro && (
-          <Card className="md:col-span-12 border-none bg-primary text-primary-foreground shadow-2xl overflow-hidden relative group rounded-[3rem]">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-              <Zap className="h-40 w-40" />
-            </div>
-            <CardContent className="p-10 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10 text-center md:text-left">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="bg-white/20 p-6 rounded-[2rem] shadow-inner">
-                  <Crown className="h-12 w-12 text-secondary fill-secondary" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-3xl font-black tracking-tight">Optional Pro Upgrade</h3>
-                  <p className="text-base opacity-80 max-w-lg">Unlock HD photo logs, national search ranking boost, and a Pro badge for only $0.9 per month.</p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Button className="rounded-full bg-secondary text-secondary-foreground font-black px-12 h-16 text-xl hover:scale-105 transition-transform shadow-xl" asChild>
-                  <Link href="/pricing">Go Pro VIP</Link>
-                </Button>
-                <Link href="/referrals" className="text-[10px] font-black uppercase tracking-widest opacity-70 hover:opacity-100 text-center">Or Earn it by Inviting Friends</Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
