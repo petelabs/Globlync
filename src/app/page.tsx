@@ -43,8 +43,8 @@ import { generateDailyTip } from "@/ai/flows/generate-daily-tip-flow";
 
 export default function Home() {
   const db = useFirestore();
-  const [globalInsight, setGlobalInsight] = useState<{ title: string; content: string } | null>(null);
-  const [isInsightLoading, setIsInsightLoading] = useState(true);
+  const [globalTip, setGlobalTip] = useState<{ title: string; content: string } | null>(null);
+  const [isTipLoading, setIsTipLoading] = useState(true);
 
   const appRatingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -58,14 +58,14 @@ export default function Home() {
 
   const { data: testimonials } = useCollection(appRatingsQuery);
 
-  // Global Daily Insight Logic (1 API call per 24h for ALL users)
+  // Global Daily Tip Logic (1 API call per 24h for ALL users)
   useEffect(() => {
-    async function syncDailyInsight() {
+    async function syncDailyTip() {
       if (!db) return;
-      const insightRef = doc(db, "system", "dailyInsight");
+      const tipRef = doc(db, "system", "dailyTip");
       
       try {
-        const snap = await getDoc(insightRef);
+        const snap = await getDoc(tipRef);
         const now = new Date();
         let needsUpdate = true;
 
@@ -75,29 +75,29 @@ export default function Home() {
           const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
           
           if (diffHours < 24) {
-            setGlobalInsight({ title: data.title, content: data.content });
+            setGlobalTip({ title: data.title, content: data.content });
             needsUpdate = false;
           }
         }
 
         if (needsUpdate) {
           const result = await generateDailyTip({ trade: "Global Professional (All Skills)" });
-          const insightData = {
+          const tipData = {
             title: result.tipTitle,
             content: result.tipContent,
             updatedAt: serverTimestamp()
           };
-          await setDocumentNonBlocking(insightRef, insightData, { merge: true });
-          setGlobalInsight({ title: result.tipTitle, content: result.tipContent });
+          await setDocumentNonBlocking(tipRef, tipData, { merge: true });
+          setGlobalTip({ title: result.tipTitle, content: result.tipContent });
         }
       } catch (err) {
-        console.error("Insight sync error:", err);
+        console.error("Tip sync error:", err);
       } finally {
-        setIsInsightLoading(false);
+        setIsTipLoading(false);
       }
     }
 
-    syncDailyInsight();
+    syncDailyTip();
   }, [db]);
 
   return (
@@ -128,7 +128,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Global AI Daily Insight */}
+      {/* Global AI Daily Tip */}
       <section className="max-w-4xl mx-auto w-full px-4">
         <Card className="border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group shadow-inner border-2 border-primary/10">
           <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -141,12 +141,12 @@ export default function Home() {
             <div className="space-y-2 flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Global Daily Insight</Badge>
-                {isInsightLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
               </div>
-              {globalInsight ? (
+              {globalTip ? (
                 <>
-                  <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalInsight.title}</h3>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{globalInsight.content}</p>
+                  <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalTip.title}</h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{globalTip.content}</p>
                 </>
               ) : (
                 <div className="space-y-2 py-2">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -31,19 +32,21 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@
 import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { generateDailyTip, DailyTipOutput } from "@/ai/flows/generate-daily-tip-flow";
 import { Progress } from "@/components/ui/progress";
 
 export default function DashboardPage() {
   const { user } = useUser();
   const db = useFirestore();
-  const [dailyTip, setDailyTip] = useState<DailyTipOutput | null>(null);
-  const [isTipLoading, setIsTipLoading] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return doc(db, "workerProfiles", user.uid);
   }, [db, user?.uid]);
+
+  const tipRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "system", "dailyTip");
+  }, [db]);
 
   const jobsRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -56,17 +59,9 @@ export default function DashboardPage() {
   }, [db, user?.uid]);
 
   const { data: profile } = useDoc(workerRef);
+  const { data: globalTip, isLoading: isTipLoading } = useDoc(tipRef);
   const { data: allJobs } = useCollection(jobsRef);
   const { data: ratings } = useCollection(ratingsRef);
-
-  useEffect(() => {
-    if (profile?.tradeSkill) {
-      setIsTipLoading(true);
-      generateDailyTip({ trade: profile.tradeSkill })
-        .then(setDailyTip)
-        .finally(() => setIsTipLoading(false));
-    }
-  }, [profile?.tradeSkill]);
 
   const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
 
@@ -171,10 +166,10 @@ export default function DashboardPage() {
                   <span className="text-[10px] font-black uppercase tracking-widest text-primary">Daily Mentor Tip</span>
                   {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
                 </div>
-                {dailyTip ? (
+                {globalTip ? (
                   <>
-                    <h3 className="text-xl font-black tracking-tight">{dailyTip.tipTitle}</h3>
-                    <p className="text-sm text-muted-foreground max-w-xl">{dailyTip.tipContent}</p>
+                    <h3 className="text-xl font-black tracking-tight">{globalTip.title}</h3>
+                    <p className="text-sm text-muted-foreground max-w-xl">{globalTip.content}</p>
                   </>
                 ) : (
                   <>
@@ -226,7 +221,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-3xl font-black tracking-tight">Optional Pro Upgrade</h3>
-                  <p className="text-base opacity-80 max-w-lg">Unlock HD photo logs, national search ranking boost, and a Pro badge for only MWK 500 per month.</p>
+                  <p className="text-base opacity-80 max-w-lg">Unlock HD photo logs, national search ranking boost, and a Pro badge for only MWK 300 per month.</p>
                 </div>
               </div>
               <div className="flex flex-col gap-3">
