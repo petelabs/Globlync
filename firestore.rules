@@ -11,29 +11,37 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Global System Settings (Daily Tips, etc.)
+    match /system/{document} {
+      allow get: if true;
+      allow write: if true; // Allow the first daily visitor to trigger AI tip generation
+    }
+
     match /workerProfiles/{workerId} {
       allow get, list: if true;
       allow create: if isOwner(workerId);
       
-      // Prevent users from updating their own 'isPro' status
-      // Only internal logic/Admin SDK (like webhooks) can bypass this
-      allow update: if isOwner(workerId) 
-                   && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']);
-      
-      // Allow specific updates for reputation system
-      allow update: if isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'activeBenefits']);
+      // Allow owner to update profile (except isPro)
+      // Allow others/system to update reputation fields (referralCount, badgeIds, trustScore, updatedAt)
+      allow update: if (isOwner(workerId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']))
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'trustScore', 'updatedAt', 'lastBioPolishAt']));
       
       match /jobs/{jobId} {
         allow get, list: if true;
-        allow create, update: if isOwner(workerId);
+        allow create: if isOwner(workerId);
+        // Allow owner to edit job OR client to verify job via unique link
+        allow update: if isOwner(workerId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isVerified', 'updatedAt']);
       }
+      
       match /ratings/{ratingId} {
         allow read: if true;
-        allow create: if true;
+        allow create: if true; // Anyone can leave a rating for a job
         allow update, delete: if isOwner(workerId);
       }
+      
       match /notifications/{notificationId} {
         allow read, update, delete: if isOwner(workerId);
+        allow create: if true; // Allow system/others to send alerts to the worker
       }
     }
 

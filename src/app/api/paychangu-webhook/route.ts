@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
@@ -76,15 +77,16 @@ export async function POST(req: Request) {
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // All Global Plans are now unified to 30 Days
-      let tierName = "Pro VIP";
+      // Detection for Global Pricing Tiers ($0.9, $1.9, $2.9)
+      // All tiers grant 30 days as requested.
+      let tierName = "Pro Member";
       let days = 30;
 
-      if (amount >= 2.5) {
+      if (amount >= 2.9) {
         tierName = "Gold Pro";
-      } else if (amount >= 1.5) {
+      } else if (amount >= 1.9) {
         tierName = "Silver Pro";
-      } else if (amount >= 0.5) {
+      } else if (amount >= 0.9) {
         tierName = "Bronze Pro";
       } else {
         tierName = "Standard Pro";
