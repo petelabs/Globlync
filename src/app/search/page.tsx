@@ -24,7 +24,8 @@ import {
   Medal,
   ChevronRight,
   Globe,
-  Zap
+  Zap,
+  Briefcase
 } from "lucide-react";
 import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -34,10 +35,10 @@ import { cn } from "@/lib/utils";
 import { AdBanner } from "@/components/AdBanner";
 
 const SKILL_CATEGORIES = [
-  { name: "Tech & Dev", icon: Laptop, skills: ["Developer", "Designer", "IT", "Engineer"] },
-  { name: "Services", icon: Home, skills: ["Plumber", "Electrician", "Gardener", "Solar"] },
-  { name: "Skilled Trades", icon: HardHat, skills: ["Mason", "Welder", "Painter", "Carpenter"] },
-  { name: "Expert Pro", icon: GraduationCap, skills: ["Tutor", "Accountant", "Sales", "Driver"] },
+  { name: "Tech & Dev", icon: Laptop, skills: ["Developer", "Designer", "IT", "Engineer", "Web", "Mobile"] },
+  { name: "Global Services", icon: Briefcase, skills: ["Accountant", "Sales", "Tutor", "Virtual Assistant", "Writer"] },
+  { name: "Expert Pros", icon: GraduationCap, skills: ["Consultant", "Manager", "Analyst", "Marketing"] },
+  { name: "Specialized", icon: HardHat, skills: ["Electrician", "Solar", "Architecture", "Technician"] },
 ];
 
 export default function SearchPage() {
@@ -82,16 +83,16 @@ export default function SearchPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-primary">
             <Globe className="h-4 w-4" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Discovery (HQ: Malawi)</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Discovery Hub</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tighter">Discover <span className="text-primary">The Best.</span></h1>
-          <p className="text-muted-foreground text-sm font-medium">Verify skills and hire top-rated professionals worldwide.</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Discover <span className="text-primary">Top Talent.</span></h1>
+          <p className="text-muted-foreground text-sm font-medium">Connect with verified remote professionals and local experts worldwide.</p>
         </div>
 
         <div className="relative group">
           <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input 
-            placeholder="Search by trade, name, or city worldwide..." 
+            placeholder="Search by skill, name, or role worldwide..." 
             className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 focus-visible:ring-primary text-xl font-black" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -126,62 +127,15 @@ export default function SearchPage() {
         </div>
       </header>
 
-      {!searchTerm && !selectedCategory && (
-        <Card className="border-none bg-primary/5 rounded-[3rem] overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between p-8 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-3 rounded-2xl">
-                <Trophy className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-2xl font-black">Global Leaderboard</CardTitle>
-            </div>
-            <Badge variant="secondary" className="bg-white px-4 py-1.5 rounded-full font-black text-[10px] uppercase">Top Rated</Badge>
-          </CardHeader>
-          <CardContent className="p-8 pt-0 space-y-4">
-            {allWorkers ? allWorkers.slice(0, 3).map((worker, idx) => (
-              <Link key={worker.id} href={`/public/${worker.id}`} className="block group">
-                <div className="flex items-center gap-6 p-5 bg-white rounded-[2rem] border-2 border-transparent group-hover:border-primary/20 transition-all shadow-sm group-hover:shadow-md">
-                  <div className="relative shrink-0">
-                    <div className="h-16 w-16 rounded-2xl overflow-hidden border-2">
-                      <img src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/100/100`} alt={worker.name} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="absolute -top-2 -left-2 bg-secondary text-secondary-foreground h-7 w-7 rounded-full flex items-center justify-center font-black text-xs shadow-lg ring-2 ring-white">
-                      {idx + 1}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-black text-lg truncate">{worker.name}</h4>
-                      {worker.isPro && <ShieldCheck className="h-4 w-4 text-primary" />}
-                    </div>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">{worker.tradeSkill}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="flex items-center gap-1.5 text-primary font-black">
-                      <Star className="h-4 w-4 fill-primary" /> {worker.trustScore}
-                    </div>
-                    <p className="text-[8px] font-black text-muted-foreground uppercase mt-1">Trust Points</p>
-                  </div>
-                </div>
-              </Link>
-            )) : (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-white/50 animate-pulse rounded-[2rem]" />)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       <AdBanner id={NATIVE_AD_ID} className="w-full" />
 
       <section className="space-y-6">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-2xl font-black flex items-center gap-3">
-            {searchTerm || selectedCategory ? "Search Results" : "Verified Professionals Everywhere"}
+            {searchTerm || selectedCategory ? "Search Results" : "Verified Pros Everywhere"}
             {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
           </h2>
-          <Badge variant="outline" className="font-black text-[10px] uppercase">{filteredWorkers.length} Experts found</Badge>
+          <Badge variant="outline" className="font-black text-[10px] uppercase">{filteredWorkers.length} Found</Badge>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
@@ -214,8 +168,8 @@ export default function SearchPage() {
                     </div>
                     <div className="mt-6 flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
-                        <MapPin className="h-3.5 w-3.5" /> 
-                        {worker.serviceAreas?.[0] || "Everywhere"}
+                        <Globe className="h-3.5 w-3.5" /> 
+                        {worker.serviceAreas?.[0] || "Remote / Global"}
                       </div>
                       <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-2 transition-transform" />
                     </div>

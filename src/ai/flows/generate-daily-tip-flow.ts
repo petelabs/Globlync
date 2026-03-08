@@ -1,13 +1,14 @@
+
 "use server";
 /**
- * @fileOverview Generates a personalized daily professional tip for workers.
+ * @fileOverview Generates a personalized daily professional tip for global workers.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const DailyTipInputSchema = z.object({
-  trade: z.string().describe('The worker\'s trade.'),
+  trade: z.string().describe('The focus area or audience for the tip.'),
 });
 
 const DailyTipOutputSchema = z.object({
@@ -23,13 +24,14 @@ export async function generateDailyTip(input: DailyTipInput): Promise<DailyTipOu
     name: 'generateDailyTipPrompt',
     input: { schema: DailyTipInputSchema },
     output: { schema: DailyTipOutputSchema },
-    prompt: `You are a professional mentor for manual workers in Malawi.
-    Provide one highly practical, professional, or safety-related daily tip for a worker in the trade: {{{trade}}}.
+    prompt: `You are a professional mentor for global freelancers and remote workers.
+    Provide one highly practical, high-value professional tip or career hack for someone in: {{{trade}}}.
     
     The tip should be:
-    1. Relevant to the Malawian context (e.g., mention local tools, climate, or business practices).
-    2. Encouraging and expert.
-    3. Concise.`,
+    1. Relevant to the Global Remote Economy (scaling, productivity, or trust-building).
+    2. Mentions Malawian context where appropriate but remains globally relevant.
+    3. High-energy, professional, and encouraging.
+    4. Concise (maximum 2 sentences).`,
   });
 
   const { output } = await prompt(input);

@@ -30,7 +30,10 @@ import {
   Zap,
   HardHat,
   Lightbulb,
-  Loader2
+  Loader2,
+  Globe,
+  Laptop,
+  GraduationCap
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
@@ -58,7 +61,6 @@ export default function Home() {
 
   const { data: testimonials } = useCollection(appRatingsQuery);
 
-  // Global Daily Tip Logic (1 API call per 24h for ALL users)
   useEffect(() => {
     async function syncDailyTip() {
       if (!db) return;
@@ -81,7 +83,7 @@ export default function Home() {
         }
 
         if (needsUpdate) {
-          const result = await generateDailyTip({ trade: "Global Professional (All Skills)" });
+          const result = await generateDailyTip({ trade: "Global Professional & Remote Scaling" });
           const tipData = {
             title: result.tipTitle,
             content: result.tipContent,
@@ -105,25 +107,30 @@ export default function Home() {
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
+        
         <div className="mb-4 animate-in zoom-in duration-700">
           <Logo className="scale-[2] mb-8" />
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
-          <Sparkles className="h-4 w-4" />
-          <span>Professional Reputation for Everyone, Everywhere</span>
+
+        <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary animate-pulse">
+          <Globe className="h-3 w-3" />
+          <span>100+ Global Jobs Verified Hourly</span>
         </div>
+
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
           Trust is the new <span className="text-primary font-black animate-shimmer-text">Currency.</span>
         </h1>
-        <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium">
-          Building your professional identity is <span className="text-primary font-bold underline decoration-secondary">Free for Life</span>. Join the global network of verified professionals and build portable trust.
+        
+        <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
+          The global remote economy moves fast. Build a digital, evidence-based reputation that follows you everywhere. <span className="text-primary font-bold underline decoration-secondary">Free for Life</span>.
         </p>
+
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
-          <Button size="lg" className="rounded-full px-10 h-14 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
-            <Link href="/login">Create Free Profile</Link>
+          <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
+            <Link href="/login">Create Global Profile</Link>
           </Button>
-          <Button size="lg" variant="outline" className="rounded-full px-10 h-14 text-lg font-black" asChild>
-            <Link href="/search">Find Verified Pros</Link>
+          <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2" asChild>
+            <Link href="/jobs">Browse Remote Jobs <ArrowRight className="ml-2 h-5 w-5" /></Link>
           </Button>
         </div>
       </section>
@@ -140,7 +147,7 @@ export default function Home() {
             </div>
             <div className="space-y-2 flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Global Daily Insight</Badge>
+                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Global Career Insight</Badge>
                 {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
               </div>
               {globalTip ? (
@@ -159,6 +166,24 @@ export default function Home() {
         </Card>
       </section>
 
+      {/* Stats Counter */}
+      <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
+        {[
+          { label: "Jobs Hourly", value: "100+", icon: Briefcase },
+          { label: "Verified Pros", value: "12K+", icon: ShieldCheck },
+          { label: "Remote Focus", value: "92%", icon: Globe },
+          { label: "Trust Earned", value: "4.9/5", icon: Star }
+        ].map((stat, i) => (
+          <div key={i} className="flex flex-col items-center text-center gap-1 group cursor-default">
+            <div className="bg-muted/50 p-3 rounded-2xl group-hover:bg-primary/10 transition-colors">
+              <stat.icon className="h-5 w-5 text-primary/60" />
+            </div>
+            <p className="text-2xl font-black tracking-tighter">{stat.value}</p>
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{stat.label}</p>
+          </div>
+        ))}
+      </section>
+
       {/* Reward Promotion */}
       <div className="max-w-4xl mx-auto w-full px-4">
         <AdBanner className="w-full" />
@@ -169,26 +194,26 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-12">
           <div className="flex flex-col items-center text-center gap-4">
             <Badge variant="outline" className="bg-white px-4 py-1 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
-              Global Purpose (HQ: Malawi)
+              The Global Standard (HQ: Malawi)
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">A Verified Identity for All</h2>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-center">Verified Identity for the Remote Economy</h2>
             <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              We believe everyone deserves a way to prove their expertise. From local artisans to global specialists, Globlync is a free-to-use platform that bridges the trust gap with AI-powered verification.
+              Whether you're a developer in Blantyre or a designer in London, Globlync bridges the trust gap. We help you prove your expertise with AI-verified evidence that clients actually believe.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { title: "Artisans", desc: "Plumbers, Electricians, and Masons.", icon: HardHat },
-              { title: "Specialists", desc: "Corporate pros and office experts.", icon: Building2 },
-              { title: "Tech Experts", desc: "Designers and Software developers.", icon: SearchIcon },
-              { title: "Businesses", desc: "Looking for trusted, local talent.", icon: Sparkles }
+              { title: "Tech Experts", desc: "Developers, Designers, and IT Specialists.", icon: Laptop },
+              { title: "Business Pros", desc: "Accountants, Virtual Assistants, and Sales.", icon: Building2 },
+              { title: "Creatives", desc: "Writers, Editors, and Media Experts.", icon: Sparkles },
+              { title: "Skilled Trades", desc: "Engineering and Expert Technical Services.", icon: HardHat }
             ].map((item, i) => (
               <div key={i} className="bg-white p-6 rounded-[2rem] shadow-sm space-y-3 border border-primary/5 text-center hover:scale-105 transition-transform cursor-default group">
                 <div className="bg-primary/10 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto group-hover:bg-primary group-hover:text-white transition-colors">
                   <item.icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-bold text-sm">{item.title}</h3>
-                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -197,27 +222,27 @@ export default function Home() {
 
       {/* How it Works - The Trust Loop */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
-        <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">Universal Trust Loop</h2>
+        <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">Universal Reputation Loop</h2>
         <div className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
           {[
             {
               step: "01",
-              title: "Log Your Work",
-              desc: "Upload photos and details of your completed jobs. It's free and takes 1 minute.",
+              title: "Evidence Log",
+              desc: "Upload proof of your completed projects. Screen captures, photos, or documents. Takes 1 minute.",
               icon: Camera,
               color: "bg-blue-500"
             },
             {
               step: "02",
-              title: "AI Verification",
-              desc: "Our AI analyzes your work proof to build instant trust with future clients.",
+              title: "AI Analysis",
+              desc: "Our Gemini AI verifies your work against your claims to build instant portable trust.",
               icon: ShieldCheck,
               color: "bg-primary"
             },
             {
               step: "03",
-              title: "Get Hired",
-              desc: "Share your professional link with anyone. Your verified reputation gets you more work.",
+              title: "Scale Globally",
+              desc: "Share your verified professional link. Rank higher in searches and win remote roles faster.",
               icon: Zap,
               color: "bg-secondary"
             }
@@ -238,5 +263,25 @@ export default function Home() {
         <AdBanner className="w-full" />
       </div>
     </div>
+  );
+}
+
+function ArrowRight({ className }: { className?: string }) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </svg>
   );
 }

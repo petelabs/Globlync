@@ -87,15 +87,19 @@ export default function JobsBoardPage() {
     <div className="flex flex-col gap-6 py-4 max-w-full mx-auto px-3 sm:px-4 overflow-x-hidden w-full box-border">
       <header className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary">Global Career Moves.</h1>
-          <p className="text-muted-foreground text-sm font-medium">Explore remote roles and international vacancies verified for global professionals.</p>
+          <div className="flex items-center gap-2 text-secondary">
+            <div className="h-2 w-2 rounded-full bg-secondary animate-ping" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">100+ Jobs Posted Hourly Worldwide</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-primary">Global Career Moves.</h1>
+          <p className="text-muted-foreground text-sm font-medium">Explore verified remote roles and international vacancies from top global companies.</p>
         </div>
         
         <div className="space-y-4 w-full">
           <div className="relative group w-full">
             <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
-              placeholder="Search keywords (Developer, Designer, Engineer)..." 
+              placeholder="Search roles (Developer, AI, Designer, Sales)..." 
               className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 text-xl font-black w-full focus-visible:ring-primary"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -111,7 +115,7 @@ export default function JobsBoardPage() {
           </div>
 
           <div className="flex flex-wrap gap-2 px-1">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground self-center mr-2">Popular:</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground self-center mr-2">Top Skills:</span>
             {SUGGESTED_KEYWORDS.map(kw => (
               <button
                 key={kw}
@@ -128,7 +132,7 @@ export default function JobsBoardPage() {
       <div className="my-2 w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
         <AdBanner id={NATIVE_AD_ID} className="w-full" />
         <div className="flex flex-col items-center gap-2 animate-bounce mt-4 text-primary">
-          <span className="text-[10px] font-black uppercase tracking-widest">Scroll down to find Jobs</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Discover Live Listings Below</span>
           <ArrowDown className="h-5 w-5" />
         </div>
       </div>
@@ -167,7 +171,7 @@ export default function JobsBoardPage() {
                       </div>
                     </div>
                     <Badge variant="secondary" className="bg-secondary/10 text-secondary border-none uppercase text-[9px] font-black shrink-0 px-3 py-1 rounded-full whitespace-nowrap">
-                      {job.remote ? "Remote" : "Global"}
+                      {job.remote ? "Remote Verified" : "Global Role"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -179,7 +183,7 @@ export default function JobsBoardPage() {
                     </div>
                     <div className="flex items-center gap-1 font-bold text-[10px] uppercase bg-muted/50 px-2 py-1 rounded-md">
                       <Clock className="h-3.5 w-3.5 shrink-0 text-primary/60" />
-                      <span>Updated</span>
+                      <span>{job.created_at ? formatDistanceToNow(new Date(job.created_at * 1000), { addSuffix: true }) : 'Just Now'}</span>
                     </div>
                   </div>
                   <p className="text-sm leading-relaxed line-clamp-3 opacity-80 break-words font-medium w-full">
@@ -190,6 +194,9 @@ export default function JobsBoardPage() {
                   <div className="flex items-center gap-2 text-[10px] font-black text-primary/60 uppercase">
                     <Sparkles className="h-3 w-3" /> Global Professional Listing
                   </div>
+                  <Button variant="ghost" size="sm" className="h-8 rounded-full font-black text-[10px] uppercase tracking-tighter" asChild>
+                    <a href={job.url} target="_blank">Apply Now <ChevronRight className="ml-1 h-3.5 w-3.5" /></a>
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
