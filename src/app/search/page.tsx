@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -25,7 +24,8 @@ import {
   ChevronRight,
   Globe,
   Zap,
-  Briefcase
+  Briefcase,
+  MessageSquare
 } from "lucide-react";
 import Link from "next/link";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -40,6 +40,12 @@ const SKILL_CATEGORIES = [
   { name: "Expert Pros", icon: GraduationCap, skills: ["Consultant", "Manager", "Analyst", "Marketing"] },
   { name: "Specialized", icon: HardHat, skills: ["Electrician", "Solar", "Architecture", "Technician"] },
 ];
+
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -141,41 +147,57 @@ export default function SearchPage() {
         <div className="grid gap-6 sm:grid-cols-2">
           {filteredWorkers.length > 0 ? (
             filteredWorkers.map((worker) => (
-              <Link key={worker.id} href={`/public/${worker.id}`} className="block group">
-                <Card className="hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl cursor-pointer overflow-hidden rounded-[2.5rem] h-full flex flex-col">
-                  <div className="h-48 w-full bg-muted relative shrink-0">
-                    <img 
-                      src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/400/300`} 
-                      alt={worker.name} 
-                      className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                    />
-                    <div className="absolute top-4 left-4 flex gap-2">
-                      <Badge className="bg-white/95 backdrop-blur text-primary font-black shadow-xl rounded-full border-none">
-                        <ShieldCheck className="h-3.5 w-3.5 mr-1" /> {worker.trustScore}
+              <Card key={worker.id} className="hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl overflow-hidden rounded-[2.5rem] h-full flex flex-col group">
+                <Link href={`/public/${worker.id}`} className="block h-48 w-full bg-muted relative shrink-0">
+                  <img 
+                    src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/400/300`} 
+                    alt={worker.name} 
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                  />
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    <Badge className="bg-white/95 backdrop-blur text-primary font-black shadow-xl rounded-full border-none">
+                      <ShieldCheck className="h-3.5 w-3.5 mr-1" /> {worker.trustScore}
+                    </Badge>
+                    {worker.isPro && (
+                      <Badge className="bg-secondary text-secondary-foreground font-black shadow-xl rounded-full border-none">
+                        <Zap className="h-3.5 w-3.5 mr-1" /> VIP
                       </Badge>
-                      {worker.isPro && (
-                        <Badge className="bg-secondary text-secondary-foreground font-black shadow-xl rounded-full border-none">
-                          <Zap className="h-3.5 w-3.5 mr-1" /> VIP
-                        </Badge>
-                      )}
-                    </div>
+                    )}
                   </div>
-                  <CardContent className="p-6 flex flex-col flex-1">
-                    <div className="flex-1">
+                </Link>
+                <CardContent className="p-6 flex flex-col flex-1">
+                  <div className="flex-1">
+                    <Link href={`/public/${worker.id}`}>
                       <h3 className="text-xl font-black group-hover:text-primary transition-colors">{worker.name}</h3>
-                      <p className="text-xs text-primary font-bold uppercase tracking-widest mt-1 mb-3">{worker.tradeSkill}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2 font-medium leading-relaxed">{worker.bio || "No professional summary provided."}</p>
-                    </div>
-                    <div className="mt-6 flex items-center justify-between pt-4 border-t">
+                    </Link>
+                    <p className="text-xs text-primary font-bold uppercase tracking-widest mt-1 mb-3">{worker.tradeSkill || "Professional Expert"}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2 font-medium leading-relaxed">{worker.bio || "No professional summary provided."}</p>
+                  </div>
+                  
+                  <div className="mt-6 flex flex-col gap-3">
+                    <div className="flex items-center justify-between pt-4 border-t">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
                         <Globe className="h-3.5 w-3.5" /> 
                         {worker.serviceAreas?.[0] || "Remote / Global"}
                       </div>
-                      <ChevronRight className="h-5 w-5 text-primary group-hover:translate-x-2 transition-transform" />
+                      <Badge variant="outline" className="text-[8px] font-black uppercase opacity-50">{worker.profileViews || 0} Views</Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="outline" size="sm" asChild className="rounded-full font-black text-[10px] h-9">
+                        <Link href={`/public/${worker.id}`}>View Profile</Link>
+                      </Button>
+                      {worker.whatsappNumber && (
+                        <Button variant="secondary" size="sm" asChild className="rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white border-none font-black text-[10px] h-9">
+                          <a href={`https://wa.me/${worker.whatsappNumber}`} target="_blank">
+                            <WhatsAppIcon className="mr-1.5 h-3.5 w-3.5" /> Connect
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))
           ) : !isLoading && (
             <div className="col-span-full text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted/20">

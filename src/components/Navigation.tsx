@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -99,7 +98,7 @@ export function Navigation() {
   const navItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
-    { label: "Rewards", href: "/rewards", icon: Gift },
+    { label: "Network", href: "/search", icon: Users },
     { label: "Log Work", href: "/work-log", icon: ClipboardCheck, authRequired: true },
   ];
 

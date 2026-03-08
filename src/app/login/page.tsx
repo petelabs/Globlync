@@ -94,14 +94,13 @@ function LoginContent() {
         }
       }
 
-      const defaultAvatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-default-')).map(img => img.imageUrl);
-      const fallbackTeal = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA3OTZCO3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA0RDQwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
-      const randomAvatar = defaultAvatars.length > 0 ? defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)] : fallbackTeal;
-      const profilePictureUrl = auth.currentUser?.photoURL || randomAvatar;
+      // Set mandatory yellow placeholder for new professionals
+      const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImcxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZDMTA3O3N0b3Atb3BhY2l0eToxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRkZBMDAwO3N0b3Atb3BhY2l0eToxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnMSkiLz48L3N2Zz4=";
+      const profilePictureUrl = auth.currentUser?.photoURL || yellowAvatar;
 
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
-      const finalName = manualName || auth.currentUser?.displayName || "New Worker";
+      const finalName = manualName || auth.currentUser?.displayName || "New Professional";
       const fallbackUsername = `globlync_${finalName.toLowerCase().replace(/\s+/g, '_')}_${uid.substring(0, 4)}`;
       const finalUsername = manualUsername?.toLowerCase() || fallbackUsername;
 
@@ -113,6 +112,7 @@ function LoginContent() {
         bio: "",
         profilePictureUrl,
         trustScore: invitedBy ? 10 : 0,
+        profileViews: 0,
         referralCode: newCode,
         invitedBy,
         referralCount: 0,
@@ -234,11 +234,11 @@ function LoginContent() {
           </div>
           <div className="flex flex-col items-center lg:items-start gap-2">
             <div className="bg-secondary/10 p-3 rounded-2xl"><Users className="h-6 w-6 text-secondary" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Artisan Hub</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Global Hub</p>
           </div>
           <div className="flex flex-col items-center lg:items-start gap-2">
             <div className="bg-blue-500/10 p-3 rounded-2xl"><Globe className="h-6 w-6 text-blue-500" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Global Scale</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Remote Scale</p>
           </div>
         </div>
       </div>
