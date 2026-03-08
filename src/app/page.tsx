@@ -36,18 +36,30 @@ import {
   GraduationCap
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
+import { useFirestore, useCollection, useMemoFirebase, useDoc, updateDocumentNonBlocking, setDocumentNonBlocking, useUser, addDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, limit, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
 import { generateDailyTip } from "@/ai/flows/generate-daily-tip-flow";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
+  const { user } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
   const [globalTip, setGlobalTip] = useState<{ title: string; content: string } | null>(null);
   const [isTipLoading, setIsTipLoading] = useState(true);
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const workersRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "workerProfiles");
+  }, [db]);
 
   const appRatingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -59,6 +71,7 @@ export default function Home() {
     return query(appRatingsRef, orderBy("createdAt", "desc"), limit(6));
   }, [appRatingsRef]);
 
+  const { data: allWorkers } = useCollection(workersRef);
   const { data: testimonials } = useCollection(appRatingsQuery);
 
   useEffect(() => {
@@ -101,6 +114,27 @@ export default function Home() {
 
     syncDailyTip();
   }, [db]);
+
+  const handleRateApp = async () => {
+    if (!user || !appRatingsRef || rating === 0) return;
+    setIsSubmitting(true);
+    try {
+      await addDocumentNonBlocking(appRatingsRef, {
+        uid: user.uid,
+        userName: user.displayName || "Professional",
+        score: rating,
+        feedback,
+        createdAt: serverTimestamp()
+      });
+      setRating(0);
+      setFeedback("");
+      toast({ title: "Feedback Received", description: "Thanks for helping Globlync grow!" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Submission Failed" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
@@ -170,7 +204,7 @@ export default function Home() {
       <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { label: "Jobs Hourly", value: "100+", icon: Briefcase },
-          { label: "Verified Pros", value: "12K+", icon: ShieldCheck },
+          { label: "Verified Pros", value: allWorkers ? `${allWorkers.length}+` : "12K+", icon: ShieldCheck },
           { label: "Remote Focus", value: "92%", icon: Globe },
           { label: "Trust Earned", value: "4.9/5", icon: Star }
         ].map((stat, i) => (
@@ -188,6 +222,68 @@ export default function Home() {
       <div className="max-w-4xl mx-auto w-full px-4">
         <AdBanner className="w-full" />
       </div>
+
+      {/* App Rating Form (Visible to logged in users) */}
+      {user && (
+        <section className="max-w-xl mx-auto w-full px-4 text-center space-y-6">
+          <h2 className="text-xl font-black uppercase tracking-widest text-primary">Rate your experience</h2>
+          <Card className="border-none shadow-xl rounded-[2rem] p-8">
+            <CardContent className="space-y-6 p-0">
+              <div className="flex justify-center gap-3">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button key={s} onClick={() => setRating(s)} className="hover:scale-125 transition-transform">
+                    <Star className={cn("h-10 w-10", rating >= s ? "fill-secondary text-secondary" : "text-muted")} />
+                  </button>
+                ))}
+              </div>
+              <Textarea 
+                placeholder="How is Globlync helping your career?" 
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                className="rounded-2xl border-2 min-h-[100px]"
+              />
+              <Button 
+                onClick={handleRateApp} 
+                disabled={isSubmitting || rating === 0} 
+                className="w-full rounded-full h-14 font-black"
+              >
+                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <ThumbsUp className="mr-2 h-4 w-4" />}
+                Submit Review
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* Real Testimonials Section */}
+      <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
+        <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">What Pros are Saying</h2>
+        <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+          {testimonials && testimonials.length > 0 ? (
+            testimonials.map((t, i) => (
+              <Card key={i} className="rounded-[2rem] border-none shadow-sm p-8 space-y-4">
+                <div className="flex gap-1">
+                  {[...Array(t.score)].map((_, i) => <Star key={i} className="h-4 w-4 fill-secondary text-secondary" />)}
+                </div>
+                <p className="text-sm font-medium italic leading-relaxed">"{t.feedback}"</p>
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary text-xs">
+                    {t.userName.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest">{t.userName}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(t.createdAt?.seconds * 1000), { addSuffix: true })}</p>
+                  </div>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground font-medium">No professional reviews yet. Be the first to rate us!</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Global Purpose Section */}
       <section className="bg-primary/5 rounded-[3rem] p-10 md:p-16 border-2 border-primary/10 mx-4 shadow-inner">
@@ -220,45 +316,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it Works - The Trust Loop */}
-      <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
-        <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">Universal Reputation Loop</h2>
-        <div className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">
-          {[
-            {
-              step: "01",
-              title: "Evidence Log",
-              desc: "Upload proof of your completed projects. Screen captures, photos, or documents. Takes 1 minute.",
-              icon: Camera,
-              color: "bg-blue-500"
-            },
-            {
-              step: "02",
-              title: "AI Analysis",
-              desc: "Our Gemini AI verifies your work against your claims to build instant portable trust.",
-              icon: ShieldCheck,
-              color: "bg-primary"
-            },
-            {
-              step: "03",
-              title: "Scale Globally",
-              desc: "Share your verified professional link. Rank higher in searches and win remote roles faster.",
-              icon: Zap,
-              color: "bg-secondary"
-            }
-          ].map((item, i) => (
-            <div key={i} className="relative p-10 rounded-[3rem] bg-white border shadow-sm flex flex-col items-center text-center group hover:shadow-xl transition-all">
-              <span className={`absolute -top-6 left-1/2 -translate-x-1/2 ${item.color} text-white text-xs font-black px-4 py-2 rounded-2xl shadow-lg group-hover:scale-110 transition-transform`}>STEP {item.step}</span>
-              <div className={`p-6 rounded-[2.5rem] ${item.color}/10 mb-6`}>
-                <item.icon className={`h-12 w-12 ${item.color.replace('bg-', 'text-')}`} />
-              </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       <div className="max-w-4xl mx-auto w-full px-4 mb-12">
         <AdBanner className="w-full" />
       </div>
@@ -282,6 +339,26 @@ function ArrowRight({ className }: { className?: string }) {
     >
       <path d="M5 12h14" />
       <path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+function ThumbsUp({ className }: { className?: string }) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M7 10v12" />
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" />
     </svg>
   );
 }
