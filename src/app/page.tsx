@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,26 +19,35 @@ import {
   Construction
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase, useUser, addDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase";
-import { collection, query, orderBy, limit, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase, useUser, addDocumentNonBlocking } from "@/firebase";
+import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MOTIVATIONAL_QUOTES } from "@/lib/motivational-quotes";
+import { MOTIVATIONAL_QUOTES, type Motivation } from "@/lib/motivational-quotes";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
-  const [globalTip, setGlobalTip] = useState<{ title: string; content: string; author: string } | null>(null);
-  const [isTipLoading, setIsTipLoading] = useState(true);
+  
+  const [globalTip, setGlobalTip] = useState<Motivation | null>(null);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 100% Reliable Daily Tip Selection (Zero API Cost)
+  useEffect(() => {
+    // We use the current date to pick a quote so everyone sees the same one today
+    const now = new Date();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const tipIndex = dayOfYear % MOTIVATIONAL_QUOTES.length;
+    setGlobalTip(MOTIVATIONAL_QUOTES[tipIndex]);
+  }, []);
 
   const workersRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -58,58 +66,6 @@ export default function Home() {
 
   const { data: allWorkers } = useCollection(workersRef);
   const { data: testimonials } = useCollection(appRatingsQuery);
-
-  useEffect(() => {
-    async function syncDailyTip() {
-      if (!db) return;
-      const tipRef = doc(db, "system", "dailyTip");
-      
-      try {
-        const snap = await getDoc(tipRef);
-        const now = new Date();
-        let needsUpdate = true;
-
-        if (snap.exists()) {
-          const data = snap.data();
-          const lastUpdate = data.updatedAt?.toDate() || new Date(0);
-          const diffHours = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
-          
-          // Only update once every 24 hours
-          if (diffHours < 24) {
-            setGlobalTip({ 
-              title: data.title, 
-              content: data.content, 
-              author: data.author || "Expert Mentor" 
-            });
-            needsUpdate = false;
-          }
-        }
-
-        if (needsUpdate) {
-          // Zero AI Cost: Pick from expert library based on day of year
-          const dayIndex = Math.floor(now.getTime() / (1000 * 60 * 60 * 24)) % MOTIVATIONAL_QUOTES.length;
-          const selected = MOTIVATIONAL_QUOTES[dayIndex];
-          
-          const tipData = {
-            title: selected.title,
-            content: selected.content,
-            author: selected.author,
-            updatedAt: serverTimestamp()
-          };
-          
-          // Save to system doc so everyone sees the same tip today
-          await setDocumentNonBlocking(tipRef, tipData, { merge: true });
-          setGlobalTip(tipData);
-        }
-      } catch (err) {
-        console.error("Tip sync error:", err);
-      } finally {
-        setIsTipLoading(false);
-      }
-    }
-
-    syncDailyTip();
-  }, [db]);
 
   const handleRateApp = async () => {
     if (!user || !appRatingsRef || rating === 0) return;
@@ -132,7 +88,6 @@ export default function Home() {
     }
   };
 
-  // Real data count
   const proCount = allWorkers?.length || 0;
 
   return (
@@ -168,7 +123,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Human Daily Tip - Zero AI Cost - Only on Home */}
+      {/* Guaranteed Daily Mentor Tip - No AI, No Fail */}
       <section className="max-w-4xl mx-auto w-full px-4">
         <Card className="border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group shadow-inner border-2 border-primary/10">
           <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -181,14 +136,13 @@ export default function Home() {
             <div className="space-y-2 flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Daily Mentor Tip</Badge>
-                {isTipLoading && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
               </div>
               {globalTip ? (
-                <>
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000">
                   <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalTip.title}</h3>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">"{globalTip.content}"</p>
-                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-2">— Expert Tip by {globalTip.author}</p>
-                </>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed mt-2">"{globalTip.content}"</p>
+                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-3">— Expert Tip by {globalTip.author}</p>
+                </div>
               ) : (
                 <div className="space-y-2 py-2">
                   <div className="h-6 w-48 bg-muted animate-pulse rounded-md" />
