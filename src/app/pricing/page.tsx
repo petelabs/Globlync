@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -34,25 +33,25 @@ const TIERS = [
     id: "bronze",
     name: "Bronze Pro",
     price: 0.9,
-    days: 7,
+    days: 30,
     link: "https://pay.paychangu.com/SC-oz0qsN",
     icon: Medal,
     color: "text-orange-500",
     bgColor: "bg-orange-500/5",
     borderColor: "border-orange-200",
-    features: ["7 Days Access", "Verified Badge", "5 Photos per Job", "Search Visibility"]
+    features: ["30 Days Access", "Verified Badge", "5 Photos per Job", "Search Visibility"]
   },
   {
     id: "silver",
     name: "Silver Pro",
     price: 1.9,
-    days: 15,
+    days: 30,
     link: "https://pay.paychangu.com/SC-0siw5Z",
     icon: Star,
     color: "text-slate-400",
     bgColor: "bg-slate-400/5",
     borderColor: "border-slate-200",
-    features: ["15 Days Access", "Silver VIP Badge", "10 Photos per Job", "Ranking Boost"]
+    features: ["30 Days Access", "Silver VIP Badge", "10 Photos per Job", "Ranking Boost"]
   },
   {
     id: "gold",
@@ -89,7 +88,7 @@ export default function PricingPage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter sm:text-7xl">Go Pro <span className="text-primary">VIP.</span></h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg font-medium">
-          Building your professional identity is <b>Free for Life</b>. Upgrade to a Pro tier to unlock advanced tools and global ranking.
+          Building your professional identity is <b>Free for Life</b>. Upgrade to a Pro tier to unlock advanced tools and global ranking for 30 days.
         </p>
       </header>
 
@@ -149,7 +148,7 @@ export default function PricingPage() {
         <Info className="h-6 w-6 text-primary" />
         <AlertTitle className="text-lg font-black uppercase tracking-tight ml-2">How Activation Works</AlertTitle>
         <AlertDescription className="text-sm font-medium mt-2 ml-2 leading-relaxed">
-          Upgrade is 100% automated. Once payment is successful, your account will be upgraded instantly. Please ensure you use the same email address provided in your Globlync profile.
+          Upgrade is 100% automated. Once payment is successful, your account will be upgraded for 30 days instantly. Please ensure you use the same email address provided in your Globlync profile.
         </AlertDescription>
       </Alert>
 

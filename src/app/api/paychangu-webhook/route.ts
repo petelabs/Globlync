@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import crypto from 'crypto';
@@ -77,26 +76,18 @@ export async function POST(req: Request) {
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // Global Pricing Logic (USD)
+      // All Global Plans are now unified to 30 Days
       let tierName = "Pro VIP";
       let days = 30;
 
       if (amount >= 2.5) {
         tierName = "Gold Pro";
-        days = 30;
       } else if (amount >= 1.5) {
         tierName = "Silver Pro";
-        days = 15;
       } else if (amount >= 0.5) {
         tierName = "Bronze Pro";
-        days = 7;
-      } else if (amount >= 240) {
-        // Fallback for legacy MWK amounts
-        tierName = "Standard Pro";
-        days = 30;
       } else {
-        tierName = "Trial Pro";
-        days = 2;
+        tierName = "Standard Pro";
       }
 
       const expiryDate = new Date();
@@ -130,6 +121,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: 'No email found' });
   } catch (error: any) {
+    console.error('[Webhook] Internal Error:', error);
     return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
   }
 }
