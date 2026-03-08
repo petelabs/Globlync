@@ -1,38 +1,34 @@
+
 "use client";
 
-import { useDoc, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
-import { doc, collection, query, orderBy, limit } from "firebase/firestore";
+import { useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useDoc, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { doc, collection, query, orderBy, limit, increment, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, 
-  MapPin, 
   Star, 
+  MapPin, 
+  Briefcase, 
+  Calendar, 
   CheckCircle2, 
-  Award, 
-  Clock, 
+  Sparkles, 
   MessageSquare, 
   Phone, 
   Mail,
   Loader2,
-  Sparkles,
-  Medal,
-  ThumbsUp,
-  Briefcase
+  Crown,
+  Share2,
+  Clock,
+  ArrowLeft
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { AdBanner } from "@/components/AdBanner";
-
-const MILESTONE_BADGES: Record<string, { name: string; icon: any; color: string }> = {
-  'first-job': { name: "First Verified Job", icon: Medal, color: "text-blue-500 bg-blue-500/10" },
-  'reliable-worker': { name: "Reliable Pro", icon: ShieldCheck, color: "text-primary bg-primary/10" },
-  'perfect-streak': { name: "Customer Favorite", icon: ThumbsUp, color: "text-secondary bg-secondary/10" },
-  'growth-champion': { name: "Growth Leader", icon: Medal, color: "text-pink-500 bg-pink-500/10" },
-};
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -54,146 +50,215 @@ export default function PublicProfilePage() {
     return collection(db, "workerProfiles", workerId, "jobs");
   }, [db, workerId]);
 
-  const jobsQuery = useMemoFirebase(() => {
-    if (!jobsRef) return null;
-    return query(jobsRef, orderBy("createdAt", "desc"), limit(10));
-  }, [jobsRef]);
+  const ratingsRef = useMemoFirebase(() => {
+    if (!db || !workerId) return null;
+    return collection(db, "workerProfiles", workerId, "ratings");
+  }, [db, workerId]);
 
-  const { data: worker, isLoading: isWorkerLoading } = useDoc(workerRef);
-  const { data: jobs, isLoading: isJobsLoading } = useCollection(jobsQuery);
+  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
+  const { data: jobs } = useCollection(useMemoFirebase(() => query(jobsRef!, orderBy("createdAt", "desc"), limit(10)), [jobsRef]));
+  const { data: ratings } = useCollection(useMemoFirebase(() => query(ratingsRef!, orderBy("ratedAt", "desc"), limit(5)), [ratingsRef]));
 
-  if (isWorkerLoading) return <div className="flex h-[80vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  if (!worker) return <div className="text-center py-20"><h1 className="text-2xl font-bold">Worker Profile Not Found</h1></div>;
+  // Increment profile views on mount
+  useEffect(() => {
+    if (db && workerId) {
+      const ref = doc(db, "workerProfiles", workerId);
+      updateDocumentNonBlocking(ref, {
+        profileViews: increment(1),
+        updatedAt: serverTimestamp()
+      });
+    }
+  }, [db, workerId]);
 
-  const displayPhoto = worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/400/400`;
+  const isPro = profile?.activeBenefits?.some((b: any) => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+
+  if (isProfileLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Loading Reputation...</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center px-6">
+        <div className="bg-muted p-6 rounded-[2.5rem] mb-4">
+          <Briefcase className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <h1 className="text-2xl font-black">Profile Not Found</h1>
+        <p className="text-muted-foreground text-sm max-w-xs mx-auto">This professional profile may have been moved or removed.</p>
+        <Button variant="outline" className="rounded-full mt-4" asChild><Link href="/search">Back to Discovery</Link></Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">
-      <header className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left bg-primary/5 p-8 rounded-[3rem] border border-primary/10">
-        <div className="relative">
-          <Avatar className="h-40 w-40 border-4 border-white shadow-2xl">
-            <AvatarImage src={displayPhoto} />
-            <AvatarFallback className="text-4xl">{worker.name?.charAt(0)}</AvatarFallback>
+    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto px-4 overflow-x-hidden">
+      <header className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="rounded-full">
+          <Link href="/search"><ArrowLeft className="mr-2 h-4 w-4" /> Discover Others</Link>
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full font-bold h-9">
+          <Share2 className="mr-2 h-4 w-4" /> Share
+        </Button>
+      </header>
+
+      <section className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+        <div className="relative shrink-0">
+          <Avatar className={cn("h-40 w-40 border-4 shadow-2xl", isPro ? "border-secondary" : "border-primary")}>
+            <AvatarImage src={profile.profilePictureUrl} className="object-cover" />
+            <AvatarFallback className="text-4xl font-black">{profile.name?.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="absolute -bottom-2 -right-2 bg-white px-3 py-1 rounded-full shadow-lg border flex items-center gap-1.5 text-xs font-black text-primary animate-bounce">
-            <ShieldCheck className="h-4 w-4" /> {worker.trustScore || 0}
-          </div>
+          {isPro && (
+            <div className="absolute -top-2 -right-2 bg-secondary text-secondary-foreground p-2 rounded-full shadow-xl animate-pulse">
+              <Crown className="h-6 w-6 fill-secondary-foreground" />
+            </div>
+          )}
         </div>
         <div className="flex-1 space-y-4">
           <div className="space-y-1">
-            <div className="flex items-center justify-center md:justify-start gap-2">
-              <h1 className="text-3xl font-black tracking-tight">{worker.name}</h1>
-              {worker.isPro && <Badge className="bg-secondary text-secondary-foreground"><Sparkles className="h-3 w-3 mr-1" /> PRO</Badge>}
-            </div>
-            <p className="text-primary font-black uppercase tracking-widest text-xs">{worker.tradeSkill || "Skilled Manual Professional"}</p>
+            <h1 className="text-4xl font-black tracking-tighter flex items-center justify-center md:justify-start gap-3">
+              {profile.name}
+              {isPro && <ShieldCheck className="h-6 w-6 text-primary fill-primary/10" />}
+            </h1>
+            <p className="text-primary font-black uppercase tracking-widest text-xs">{profile.tradeSkill || "General Professional"}</p>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto md:mx-0">{worker.bio || "Building a reputation for reliability and quality work in Malawi."}</p>
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-             {worker.serviceAreas?.map(area => (
-               <Badge key={area} variant="outline" className="text-[10px]"><MapPin className="h-3 w-3 mr-1" /> {area}</Badge>
-             ))}
+          <div className="flex flex-wrap justify-center md:justify-start gap-2">
+            <Badge variant="secondary" className="rounded-full bg-primary/5 text-primary border-primary/10 font-bold px-4 py-1">
+              <Star className="h-3 w-3 mr-1.5 fill-primary" /> {profile.trustScore} Trust Score
+            </Badge>
+            <Badge variant="outline" className="rounded-full font-bold px-4 py-1">
+              <MapPin className="h-3 w-3 mr-1.5" /> {profile.serviceAreas?.[0] || "Global"}
+            </Badge>
+            {profile.isAvailable && (
+              <Badge className="rounded-full bg-green-500 text-white font-bold px-4 py-1 animate-pulse">
+                Available Now
+              </Badge>
+            )}
           </div>
+          <p className="text-muted-foreground text-base max-w-xl font-medium leading-relaxed">
+            {profile.bio || "Building a professional reputation through verified evidence and client satisfaction."}
+          </p>
         </div>
-      </header>
+      </section>
 
-      {/* Ad placement 6: Profile top */}
-      <AdBanner id="profile-top-ad" className="w-full" />
-
-      <div className="grid gap-8 md:grid-cols-12">
+      <div className="grid gap-6 md:grid-cols-12 mt-4">
         <div className="md:col-span-8 space-y-8">
-          <section>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 px-2"><Briefcase className="h-5 w-5 text-primary" /> Verified Job Gallery</h2>
+          <div className="space-y-4">
+            <h2 className="text-xl font-black uppercase tracking-widest flex items-center gap-2">
+              <ClipboardCheck className="h-5 w-5 text-primary" /> Verified Work Logs
+            </h2>
             <div className="grid gap-4">
-              {jobs && jobs.length > 0 ? (
-                jobs.map(job => (
-                  <Card key={job.id} className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              {jobs && jobs.filter(j => j.isVerified).length > 0 ? (
+                jobs.filter(j => j.isVerified).map((job) => (
+                  <Card key={job.id} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all rounded-[2rem] group">
                     <CardContent className="p-0 flex flex-col sm:flex-row">
-                      <div className="w-full sm:w-48 aspect-video bg-muted relative">
-                        <img src={job.photoUrl || `https://picsum.photos/seed/${job.id}/400/300`} alt={job.title} className="h-full w-full object-cover" />
-                        {job.aiVerified && (
-                          <div className="absolute top-2 left-2 bg-primary/90 text-white text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <Sparkles className="h-2 w-2" /> AI Verified
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4 flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-bold flex items-center gap-2">
-                            {job.title}
-                            {job.isVerified && <CheckCircle2 className="h-4 w-4 text-primary" />}
-                          </h3>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{job.description}</p>
+                      {job.photoUrl && (
+                        <div className="relative aspect-video w-full sm:w-48 shrink-0 overflow-hidden">
+                          <img src={job.photoUrl} alt={job.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          {job.aiVerified && (
+                            <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-[8px] font-black uppercase flex items-center gap-1">
+                              <Sparkles className="h-2.5 w-2.5" /> AI
+                            </div>
+                          )}
                         </div>
-                        <div className="mt-4 flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(job.dateCompleted).toLocaleDateString()}</span>
+                      )}
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-bold text-lg leading-tight">{job.title}</h3>
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{job.description}</p>
+                        <div className="mt-auto flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground/60">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(job.dateCompleted), "MMMM yyyy")}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))
               ) : (
-                <div className="text-center py-20 bg-muted/20 rounded-[2rem] border-2 border-dashed">
-                  <p className="text-muted-foreground">No job history available yet.</p>
+                <div className="text-center py-12 bg-muted/20 rounded-[2rem] border-2 border-dashed">
+                  <p className="text-xs font-bold text-muted-foreground">No verified work logs public yet.</p>
                 </div>
               )}
             </div>
-          </section>
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="text-xl font-black uppercase tracking-widest flex items-center gap-2">
+              <Star className="h-5 w-5 text-primary fill-primary" /> Recent Ratings
+            </h2>
+            <div className="grid gap-4">
+              {ratings && ratings.length > 0 ? (
+                ratings.map((r) => (
+                  <div key={r.id} className="p-6 bg-accent/30 rounded-[2rem] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={cn("h-3.5 w-3.5", i < r.score ? "fill-secondary text-secondary" : "text-muted-foreground/20")} />
+                        ))}
+                      </div>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{format(r.ratedAt?.toDate() || new Date(), "MMM d, yyyy")}</span>
+                    </div>
+                    <p className="text-sm font-medium leading-relaxed italic">"{r.comment || "Excellent professional work."}"</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12 bg-muted/20 rounded-[2rem] border-2 border-dashed">
+                  <p className="text-xs font-bold text-muted-foreground">No client ratings yet.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="md:col-span-4 space-y-6">
-          <Card className="border-none shadow-lg bg-primary text-primary-foreground rounded-[2.5rem] overflow-hidden">
-            <CardHeader className="text-center">
-              <CardTitle className="text-lg">Hire {worker.name?.split(' ')[0]}</CardTitle>
-              <CardDescription className="text-primary-foreground/70">Connect instantly via verified links.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              {worker.whatsappNumber && (
-                <Button className="w-full rounded-full h-14 bg-[#25D366] hover:bg-[#128C7E] font-black text-white shadow-xl" asChild>
-                  <a href={`https://wa.me/${worker.whatsappNumber}`} target="_blank">
-                    <WhatsAppIcon className="mr-2 h-5 w-5" /> Message on WhatsApp
+          <Card className="border-none bg-primary text-primary-foreground rounded-[2.5rem] p-8 shadow-2xl space-y-6 sticky top-24">
+            <div className="space-y-2">
+              <h3 className="font-black text-xl tracking-tight">Hire this Professional</h3>
+              <p className="text-xs opacity-80 leading-relaxed font-medium">Verified by Globlync Evidence-Based Reputation system.</p>
+            </div>
+            
+            <div className="space-y-3 pt-2">
+              {profile.whatsappNumber && (
+                <Button className="w-full h-14 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black" asChild>
+                  <a href={`https://wa.me/${profile.whatsappNumber}`} target="_blank">
+                    <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
                   </a>
                 </Button>
               )}
-              {worker.phoneNumber && (
-                <Button variant="secondary" className="w-full rounded-full h-14 font-black shadow-xl" asChild>
-                  <a href={`tel:${worker.phoneNumber}`}>
+              {profile.phoneNumber && (
+                <Button className="w-full h-14 rounded-full bg-white text-primary hover:bg-white/90 font-black shadow-lg" asChild>
+                  <a href={`tel:${profile.phoneNumber}`}>
                     <Phone className="mr-2 h-5 w-5" /> Direct Call
                   </a>
                 </Button>
               )}
-              {worker.contactEmail && (
-                <Button variant="ghost" className="w-full rounded-full h-12 font-bold text-white hover:bg-white/10" asChild>
-                  <a href={`mailto:${worker.contactEmail}`}>
-                    <Mail className="mr-2 h-4 w-4" /> Send Email
+              {profile.contactEmail && (
+                <Button variant="ghost" className="w-full text-white/80 hover:text-white hover:bg-white/10 font-bold" asChild>
+                  <a href={`mailto:${profile.contactEmail}`}>
+                    <Mail className="mr-2 h-4 w-4" /> Email Me
                   </a>
                 </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          {worker.badgeIds?.length > 0 && (
-            <Card className="border-none shadow-sm rounded-[2rem]">
-              <CardHeader><CardTitle className="text-sm">Earned Milestones</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                {worker.badgeIds.map(id => {
-                  const b = MILESTONE_BADGES[id];
-                  if (!b) return null;
-                  const Icon = b.icon;
-                  return (
-                    <div key={id} className={cn("p-3 rounded-2xl flex flex-col items-center gap-1.5 text-center", b.color)}>
-                      <Icon className="h-6 w-6" />
-                      <span className="text-[8px] font-black uppercase leading-tight">{b.name}</span>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          )}
+            <div className="pt-4 border-t border-white/10 space-y-4">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-70">
+                <span>Member Since</span>
+                <span>{profile.createdAt?.toDate() ? format(profile.createdAt.toDate(), "MMM yyyy") : "2026"}</span>
+              </div>
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-70">
+                <span>Last Updated</span>
+                <span>{profile.updatedAt?.toDate() ? format(profile.updatedAt.toDate(), "MMM d") : "Today"}</span>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
-
-      {/* Ad placement 7: Profile Footer */}
-      <AdBanner id="profile-footer-ad" className="w-full mt-12" />
     </div>
   );
 }

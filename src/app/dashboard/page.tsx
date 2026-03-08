@@ -58,12 +58,17 @@ export default function DashboardPage() {
     return collection(db, "workerProfiles", user.uid, "ratings");
   }, [db, user?.uid]);
 
-  const { data: profile } = useDoc(workerRef);
+  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
   const { data: globalTip, isLoading: isTipLoading } = useDoc(tipRef);
   const { data: allJobs } = useCollection(jobsRef);
   const { data: ratings } = useCollection(ratingsRef);
 
-  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+  const isPro = useMemo(() => {
+    if (!profile) return false;
+    const hasPaidVIP = profile.activeBenefits?.some((b: any) => b.expiresAt && new Date(b.expiresAt) > new Date());
+    const hasReferralVIP = (profile.referralCount || 0) >= 10;
+    return hasPaidVIP || hasReferralVIP;
+  }, [profile]);
 
   const stats = useMemo(() => {
     const verifiedJobs = allJobs?.filter(j => j.isVerified) || [];
@@ -82,9 +87,10 @@ export default function DashboardPage() {
     };
   }, [allJobs, ratings, profile]);
 
-  if (!user) return (
-    <div className="flex min-h-[60vh] items-center justify-center">
+  if (!user || isProfileLoading) return (
+    <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Syncing Professional Data...</p>
     </div>
   );
 
@@ -159,7 +165,7 @@ export default function DashboardPage() {
           <CardContent className="p-8 flex flex-col items-start gap-6 relative z-10">
             <div className="flex items-center gap-4">
               <div className="bg-primary/10 p-3 rounded-2xl">
-                <Lightbulb className="h-6 w-6 text-primary animate-pulse" />
+                <Lightbulb className={cn("h-6 w-6 text-primary", !isTipLoading && "animate-pulse")} />
               </div>
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
@@ -221,7 +227,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-3xl font-black tracking-tight">Optional Pro Upgrade</h3>
-                  <p className="text-base opacity-80 max-w-lg">Unlock HD photo logs, national search ranking boost, and a Pro badge for only MWK 300 per month.</p>
+                  <p className="text-base opacity-80 max-w-lg">Unlock HD photo logs, national search ranking boost, and a Pro badge for only $0.9 per month.</p>
                 </div>
               </div>
               <div className="flex flex-col gap-3">

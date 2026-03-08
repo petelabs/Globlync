@@ -22,9 +22,9 @@ service cloud.firestore {
       allow create: if isOwner(workerId);
       
       // Allow owner to update profile (except isPro)
-      // Allow others/system to update reputation fields (referralCount, badgeIds, trustScore, updatedAt)
+      // Allow others/system to update reputation fields (referralCount, badgeIds, trustScore, updatedAt, profileViews)
       allow update: if (isOwner(workerId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isPro']))
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'trustScore', 'updatedAt', 'lastBioPolishAt']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['referralCount', 'badgeIds', 'trustScore', 'updatedAt', 'lastBioPolishAt', 'profileViews']));
       
       match /jobs/{jobId} {
         allow get, list: if true;
