@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -10,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { 
   Camera, 
   Briefcase, 
@@ -31,7 +31,9 @@ import {
   Eye,
   TrendingUp,
   ClipboardCheck,
-  Star
+  Star,
+  Gift,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -144,7 +146,8 @@ export default function ProfilePage() {
       totalVerified: verifiedJobs.length,
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
-      profileViews: profile?.profileViews || 0
+      profileViews: profile?.profileViews || 0,
+      referralCount: profile?.referralCount || 0
     };
   }, [allJobs, ratings, profile]);
 
@@ -310,7 +313,7 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Real-Time Stats Grid (Formerly on Dashboard) */}
+      {/* Real-Time Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
@@ -383,6 +386,33 @@ export default function ProfilePage() {
               <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase tracking-widest">Global Visibility</Label>
               <Switch id="availability-toggle" checked={isAvailable} onCheckedChange={setIsAvailable} />
             </div>
+          </Card>
+
+          {/* Reward Progress Tracker */}
+          <Card className="border-none shadow-xl rounded-[2rem] bg-secondary text-secondary-foreground overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-6 opacity-10">
+              <Gift className="h-20 w-20" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                <Users className="h-4 w-4" /> Free VIP Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] font-black">
+                  <span>Next Milestone: 10 Invites</span>
+                  <span>{stats.referralCount} / 10</span>
+                </div>
+                <Progress value={(stats.referralCount / 10) * 100} className="h-2 bg-white/20" />
+              </div>
+              <p className="text-[10px] font-medium leading-relaxed opacity-90">
+                You've referred <b>{stats.referralCount}</b> professionals. Invite <b>{Math.max(0, 10 - stats.referralCount)}</b> more to unlock 7 days of Pro VIP status for free.
+              </p>
+              <Button variant="secondary" className="w-full rounded-full font-black shadow-lg bg-white text-secondary hover:bg-white/90" asChild>
+                <Link href="/referrals">Invite & Earn</Link>
+              </Button>
+            </CardContent>
           </Card>
 
           <Card className={cn(

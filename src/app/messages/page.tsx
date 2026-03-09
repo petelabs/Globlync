@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -6,10 +5,11 @@ import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@
 import { collection, query, where, orderBy, doc } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, Users, Loader2, Sparkles, Gift, ArrowRight } from "lucide-react";
+import { MessageSquare, Users, Loader2, Sparkles, Gift, ArrowRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
 
 export default function MessagesPage() {
   const { user } = useUser();
@@ -38,45 +38,7 @@ export default function MessagesPage() {
 
   const { data: chats, isLoading } = useCollection(chatsQuery);
 
-  const isUnlocked = (profile?.referralCount || 0) >= 1;
-
   if (!user) return null;
-
-  if (!isUnlocked) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-8 p-6 text-center max-w-lg mx-auto">
-        <div className="bg-primary/10 p-10 rounded-[3rem] shadow-inner relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10 animate-pulse">
-            <MessageSquare className="h-24 w-24" />
-          </div>
-          <Gift className="h-20 w-20 text-primary relative z-10 animate-bounce" />
-        </div>
-        <div className="space-y-4">
-          <h1 className="text-4xl font-black tracking-tighter">Messaging <span className="text-primary">Locked.</span></h1>
-          <p className="text-muted-foreground font-medium leading-relaxed">
-            To protect professional privacy, in-app messaging is only available to active contributors. 
-            <b>Invite at least 1 professional</b> to join your network to unlock private chat forever.
-          </p>
-        </div>
-        <Card className="w-full border-none bg-muted/30 p-6 rounded-[2rem] text-left">
-          <div className="flex gap-4">
-            <div className="bg-white p-3 rounded-2xl h-fit shadow-sm">
-              <Sparkles className="h-6 w-6 text-secondary" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm">Why is this locked?</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                By growing the network, you increase the pool of verified work. This builds trust for everyone including yourself.
-              </p>
-            </div>
-          </div>
-        </Card>
-        <Button size="lg" className="w-full rounded-full h-16 text-lg font-black shadow-xl" asChild>
-          <Link href="/referrals">Invite Now to Unlock <ArrowRight className="ml-2 h-5 w-5" /></Link>
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4">
@@ -86,21 +48,38 @@ export default function MessagesPage() {
           <p className="text-muted-foreground text-sm">Direct messaging with your global network.</p>
         </div>
         <div className="bg-primary/10 px-4 py-1.5 rounded-full flex items-center gap-2">
-          <Badge variant="secondary" className="bg-primary text-primary-foreground font-black text-[10px] uppercase">Unlocked</Badge>
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-[10px] font-black uppercase text-primary">Live Now</span>
         </div>
       </header>
+
+      {/* Soft Incentive Banner */}
+      <Card className="border-none bg-secondary/10 p-6 rounded-[2rem] relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+          <Users className="h-12 w-12" />
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+          <div className="bg-white p-3 rounded-2xl shadow-sm">
+            <Gift className="h-6 w-6 text-secondary" />
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h4 className="font-black text-sm uppercase tracking-tight">Invite to Unlock Free VIP</h4>
+            <p className="text-xs text-muted-foreground font-medium">Invite 10 professionals to get 7 days of Pro VIP status for free!</p>
+          </div>
+          <Button size="sm" className="rounded-full font-black px-6 shadow-md" asChild>
+            <Link href="/referrals">Invite Now</Link>
+          </Button>
+        </div>
+      </Card>
 
       <div className="grid gap-3">
         {isLoading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-primary/20" /></div>
         ) : chats && chats.length > 0 ? (
           chats.map((chat) => {
-            const otherParticipantId = chat.participants.find((p: string) => p !== user.uid);
-            // In a real app, you'd fetch the other user's profile info here.
-            // For now, we link to the chatId.
             return (
               <Link key={chat.id} href={`/messages/${chat.id}`}>
-                <Card className="border-none shadow-sm hover:shadow-xl transition-all cursor-pointer group rounded-[1.5rem]">
+                <Card className="border-none shadow-sm hover:shadow-xl transition-all cursor-pointer group rounded-[1.5rem] bg-white">
                   <CardContent className="p-4 flex items-center gap-4">
                     <Avatar className="h-14 w-14 border-2 border-muted group-hover:border-primary transition-colors">
                       <AvatarFallback className="bg-muted/50 font-black text-lg">P</AvatarFallback>
@@ -122,11 +101,11 @@ export default function MessagesPage() {
             );
           })
         ) : (
-          <div className="text-center py-24 bg-muted/20 rounded-[3rem] border-4 border-dashed">
+          <div className="text-center py-24 bg-muted/20 rounded-[3rem] border-4 border-dashed border-muted/20">
             <MessageSquare className="h-16 w-16 mx-auto mb-6 opacity-10" />
             <p className="text-muted-foreground font-black text-xl px-4">No active conversations.</p>
             <p className="text-xs text-muted-foreground/60 mt-2">Find professionals in the network to start connecting.</p>
-            <Button variant="outline" className="mt-6 rounded-full font-black px-8" asChild>
+            <Button variant="outline" className="mt-6 rounded-full font-black px-8 border-2" asChild>
               <Link href="/search">Find Professionals</Link>
             </Button>
           </div>
