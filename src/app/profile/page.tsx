@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -33,7 +34,9 @@ import {
   ClipboardCheck,
   Star,
   Gift,
-  Users
+  Users,
+  Copy,
+  Share2
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -280,6 +283,12 @@ export default function ProfilePage() {
     }
   };
 
+  const copyProfessionalId = () => {
+    if (!username) return;
+    navigator.clipboard.writeText(`@${username}`);
+    toast({ title: "ID Copied", description: "Share this with others to connect." });
+  };
+
   if (!user || isProfileLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -294,10 +303,10 @@ export default function ProfilePage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
-            My Professional Hub
+            Professional Hub
             {isPro && <Crown className="h-5 w-5 text-secondary fill-secondary" />}
           </h1>
-          <p className="text-muted-foreground text-sm">Control your global visibility and evidence-based reputation.</p>
+          <p className="text-muted-foreground text-sm">Control your global visibility and private ID.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild className="rounded-full hidden sm:flex font-bold">
@@ -388,6 +397,32 @@ export default function ProfilePage() {
             </div>
           </Card>
 
+          {/* Secure ID Card */}
+          <Card className="border-none shadow-xl rounded-[2rem] bg-primary text-primary-foreground overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+              <Lock className="h-20 w-20" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                <QrCode className="h-4 w-4" /> My Professional ID
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 relative z-10">
+              <div className="bg-black/20 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                <p className="text-2xl font-black tracking-tight text-secondary leading-none">@{username || "..."}</p>
+                <p className="text-[10px] font-medium opacity-70 mt-2">Give this ID to others to connect securely.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="secondary" size="sm" className="flex-1 rounded-full font-black text-[10px]" onClick={copyProfessionalId}>
+                  <Copy className="mr-2 h-3 w-3" /> Copy ID
+                </Button>
+                <Button variant="secondary" size="sm" className="flex-1 rounded-full font-black text-[10px]">
+                  <Share2 className="mr-2 h-3 w-3" /> Share
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Reward Progress Tracker */}
           <Card className="border-none shadow-xl rounded-[2rem] bg-secondary text-secondary-foreground overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-10">
@@ -414,33 +449,6 @@ export default function ProfilePage() {
               </Button>
             </CardContent>
           </Card>
-
-          <Card className={cn(
-            "border-none shadow-xl rounded-[2rem] overflow-hidden relative group",
-            isPro ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground"
-          )}>
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
-              <Crown className="h-24 w-24" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                {isPro ? <Crown className="h-4 w-4 fill-secondary-foreground" /> : <Zap className="h-4 w-4" />}
-                {isPro ? "VIP Professional" : "Go Pro / VIP"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-xs font-medium leading-relaxed opacity-90">
-                {isPro 
-                  ? "Your VIP status is active. You have full access to HD photos and priority ranking." 
-                  : "Unlock national ranking boost and a professional VIP badge on your public profile."}
-              </p>
-              {!isPro && (
-                <Button variant="secondary" className="w-full rounded-full font-black shadow-lg" asChild>
-                  <Link href="/pricing">Upgrade Now</Link>
-                </Button>
-              )}
-            </CardContent>
-          </Card>
         </div>
 
         <div className="md:col-span-2">
@@ -448,16 +456,16 @@ export default function ProfilePage() {
             <Card className="border-none shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Professional Identity</CardTitle>
-                <CardDescription>Keep your skills and locations updated for clients worldwide.</CardDescription>
+                <CardDescription>Your unique ID is used for secure connections. Browsing is disabled for your security.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="username">Public Global Username</Label>
+                  <Label htmlFor="username">Professional ID / Username</Label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input 
                       id="username" 
-                      placeholder="e.g. john_dev"
+                      placeholder="e.g. john_pro"
                       value={username} 
                       onChange={(e) => {
                         setUsername(e.target.value);
@@ -594,7 +602,7 @@ export default function ProfilePage() {
                   className="w-full rounded-full py-6 text-lg shadow-lg font-black" 
                 >
                   {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                  Save Profile & Go Live
+                  Update Professional Profile
                 </Button>
               </CardFooter>
             </Card>

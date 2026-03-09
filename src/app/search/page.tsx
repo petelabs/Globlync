@@ -1,99 +1,72 @@
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
-  MapPin, 
-  Star, 
-  Filter, 
   ShieldCheck, 
   Loader2, 
-  Sparkles,
-  Clock,
-  Home,
-  Laptop,
-  GraduationCap,
-  Hammer,
   X,
-  Trophy,
-  Medal,
-  ChevronRight,
-  Globe,
   Zap,
-  Briefcase,
+  Globe,
   MessageSquare,
-  Construction,
-  Lock
+  Lock,
+  UserPlus,
+  QrCode
 } from "lucide-react";
 import Link from "next/link";
-import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from "@/firebase";
-import { collection, query, limit, orderBy, doc } from "firebase/firestore";
-import { formatDistanceToNow } from "date-fns";
+import { useFirestore, useUser } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
-import { AdBanner } from "@/components/AdBanner";
 import { useRouter } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-const SKILL_CATEGORIES = [
-  { name: "Tech & Dev", icon: Laptop, skills: ["Developer", "Designer", "IT", "Engineer", "Web", "Mobile"] },
-  { name: "Global Services", icon: Briefcase, skills: ["Accountant", "Sales", "Tutor", "Virtual Assistant", "Writer"] },
-  { name: "Expert Pros", icon: GraduationCap, skills: ["Consultant", "Manager", "Analyst", "Marketing"] },
-  { name: "Specialized", icon: Construction, skills: ["Electrician", "Solar", "Architecture", "Technician", "Mechanic"] },
-];
+import { useToast } from "@/hooks/use-toast";
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [foundWorker, setFoundWorker] = useState<any | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
   
   const { user } = useUser();
   const db = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
 
-  const currentUserRef = useMemoFirebase(() => {
-    if (!db || !user?.uid) return null;
-    return doc(db, "workerProfiles", user.uid);
-  }, [db, user?.uid]);
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!searchTerm.trim() || !db) return;
 
-  const { data: currentUserProfile } = useDoc(currentUserRef);
+    setIsSearching(true);
+    setFoundWorker(null);
 
-  const workersRef = useMemoFirebase(() => {
-    if (!db) return null;
-    return collection(db, "workerProfiles");
-  }, [db]);
+    try {
+      const cleanId = searchTerm.trim().toLowerCase().replace('@', '');
+      const usernameRef = doc(db, "usernames", cleanId);
+      const usernameSnap = await getDoc(usernameRef);
 
-  const discoveryQuery = useMemoFirebase(() => {
-    if (!workersRef) return null;
-    return query(workersRef, orderBy("trustScore", "desc"), limit(100));
-  }, [workersRef]);
+      if (usernameSnap.exists()) {
+        const uid = usernameSnap.data().uid;
+        const profileRef = doc(db, "workerProfiles", uid);
+        const profileSnap = await getDoc(profileRef);
 
-  const { data: allWorkers, isLoading } = useCollection(discoveryQuery);
-
-  const filteredWorkers = useMemo(() => {
-    if (!allWorkers) return [];
-    return allWorkers.filter(w => {
-      const search = searchTerm.toLowerCase();
-      const matchesSearch = search === "" || 
-        (w.name || "").toLowerCase().includes(search) || 
-        (w.tradeSkill || "").toLowerCase().includes(search) ||
-        (w.bio || "").toLowerCase().includes(search);
-      
-      const categorySkills = SKILL_CATEGORIES.find(c => c.name === selectedCategory)?.skills || [];
-      const matchesCategory = !selectedCategory || 
-        categorySkills.some(s => (w.tradeSkill || "").toLowerCase().includes(s.toLowerCase()));
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [allWorkers, searchTerm, selectedCategory]);
+        if (profileSnap.exists()) {
+          setFoundWorker({ ...profileSnap.data(), id: uid });
+        } else {
+          toast({ variant: "destructive", title: "Profile Missing", description: "This ID exists but the profile is not set up." });
+        }
+      } else {
+        toast({ variant: "destructive", title: "ID Not Found", description: "No professional matches this unique ID." });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Search Failed", description: "Ensure you have a stable internet connection." });
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const handleMessageClick = (workerId: string) => {
     if (!user) {
@@ -103,131 +76,115 @@ export default function SearchPage() {
     router.push(`/public/${workerId}`);
   };
 
-  const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
-
   return (
-    <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-3 sm:px-4 overflow-x-hidden w-full">
-      <header className="flex flex-col gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-primary">
-            <Globe className="h-4 w-4" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Discovery Hub</span>
+    <div className="flex flex-col gap-8 py-4 max-w-2xl mx-auto px-4 overflow-x-hidden w-full">
+      <header className="flex flex-col gap-6 text-center">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-1.5 rounded-full text-primary border border-primary/10">
+            <Lock className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Secure Connection Hub</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Discover <span className="text-primary">Top Talent.</span></h1>
-          <p className="text-muted-foreground text-sm font-medium">Connect with verified remote professionals and local experts worldwide.</p>
+          <h1 className="text-4xl font-black tracking-tighter">Private <span className="text-primary">Connect.</span></h1>
+          <p className="text-muted-foreground text-sm font-medium max-w-sm mx-auto">
+            Browse is disabled for professional security. Enter a <b>Professional ID</b> or <b>Username</b> to start a secure conversation.
+          </p>
         </div>
 
-        <div className="relative group">
+        <form onSubmit={handleSearch} className="relative group">
           <Search className="absolute left-6 top-7 h-8 w-8 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input 
-            placeholder="Search by skill, name, or role worldwide..." 
-            className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 focus-visible:ring-primary text-xl font-black" 
+            placeholder="Enter Professional ID (e.g. @john_pro)" 
+            className="pl-16 h-20 rounded-[2rem] shadow-2xl border-2 focus-visible:ring-primary text-xl font-black placeholder:text-muted-foreground/30" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          {searchTerm && (
-            <button onClick={() => setSearchTerm("")} className="absolute right-6 top-7 bg-muted p-1.5 rounded-full">
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-          )}
-        </div>
+          <div className="absolute right-4 top-4">
+            <Button 
+              type="submit" 
+              className="h-12 rounded-2xl px-6 font-black uppercase tracking-tighter shadow-lg"
+              disabled={isSearching || !searchTerm.trim()}
+            >
+              {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify ID"}
+            </Button>
+          </div>
+        </form>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {SKILL_CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = selectedCategory === cat.name;
-            return (
-              <button
-                key={cat.name}
-                onClick={() => setSelectedCategory(isActive ? null : cat.name)}
-                className={cn(
-                  "flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all gap-3 shadow-sm",
-                  isActive 
-                    ? "bg-primary border-primary text-primary-foreground shadow-2xl scale-105" 
-                    : "bg-card border-muted hover:border-primary/30 hover:shadow-md"
-                )}
-              >
-                <Icon className={cn("h-8 w-8", isActive ? "text-primary-foreground" : "text-primary")} />
-                <span className="text-[10px] font-black uppercase tracking-widest">{cat.name}</span>
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap justify-center gap-4 py-4">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground bg-muted/30 px-4 py-2 rounded-full border border-dashed">
+            <QrCode className="h-3 w-3" />
+            Scan QR code
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground bg-muted/30 px-4 py-2 rounded-full border border-dashed">
+            <UserPlus className="h-3 w-3" />
+            Add by Phone
+          </div>
         </div>
       </header>
 
-      <AdBanner id={NATIVE_AD_ID} className="w-full" />
+      <section className="space-y-6 min-h-[300px]">
+        {foundWorker ? (
+          <div className="animate-in fade-in zoom-in-95 duration-500">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-center text-primary mb-6">Professional Located</h2>
+            <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-white group hover:scale-[1.02] transition-transform">
+              <div className="h-32 bg-primary/5 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 opacity-5 group-hover:scale-110 transition-transform duration-1000">
+                  <Globe className="h-64 w-64 -translate-x-1/2 -translate-y-1/2" />
+                </div>
+                <img 
+                  src={foundWorker.profilePictureUrl} 
+                  alt={foundWorker.name} 
+                  className="h-20 w-20 rounded-full border-4 border-white shadow-xl object-cover relative z-10" 
+                />
+              </div>
+              <CardContent className="p-8 text-center">
+                <div className="space-y-1 mb-6">
+                  <h3 className="text-2xl font-black">{foundWorker.name}</h3>
+                  <p className="text-xs text-primary font-bold uppercase tracking-widest">@{foundWorker.username}</p>
+                  <p className="text-sm text-muted-foreground font-medium mt-2">{foundWorker.tradeSkill || "Professional Expert"}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <Button variant="outline" className="rounded-full font-black h-12 border-2" asChild>
+                    <Link href={`/public/${foundWorker.id}`}>View Portfolio</Link>
+                  </Button>
+                  <Button className="rounded-full font-black h-12 shadow-lg" onClick={() => handleMessageClick(foundWorker.id)}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Secure Message
+                  </Button>
+                </div>
 
-      <section className="space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-2xl font-black flex items-center gap-3">
-            {searchTerm || selectedCategory ? "Search Results" : "Verified Pros Everywhere"}
-            {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
-          </h2>
-          <Badge variant="outline" className="font-black text-[10px] uppercase">{filteredWorkers.length} Found</Badge>
-        </div>
+                <div className="mt-8 pt-6 border-t flex items-center justify-center gap-6">
+                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    <span>{foundWorker.trustScore} Trust</span>
+                  </div>
+                  <div className="h-1 w-1 rounded-full bg-muted" />
+                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground">
+                    <Zap className="h-4 w-4 text-secondary" />
+                    <span>{foundWorker.isPro ? "VIP" : "Standard"}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : !isSearching && searchTerm && (
+          <div className="text-center py-20 bg-muted/10 rounded-[2.5rem] border-4 border-dashed flex flex-col items-center gap-4 opacity-50">
+            <Search className="h-16 w-16 text-muted-foreground/20" />
+            <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No professional matches this ID</p>
+          </div>
+        )}
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          {filteredWorkers.length > 0 ? (
-            filteredWorkers.map((worker) => (
-              <Card key={worker.id} className="hover:border-primary/50 transition-all border-none shadow-sm hover:shadow-2xl overflow-hidden rounded-[2.5rem] h-full flex flex-col group">
-                <Link href={`/public/${worker.id}`} className="block h-48 w-full bg-muted relative shrink-0">
-                  <img 
-                    src={worker.profilePictureUrl || `https://picsum.photos/seed/${worker.id}/400/300`} 
-                    alt={worker.name} 
-                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                  />
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    <Badge className="bg-white/95 backdrop-blur text-primary font-black shadow-xl rounded-full border-none">
-                      <ShieldCheck className="h-3.5 w-3.5 mr-1" /> {worker.trustScore}
-                    </Badge>
-                    {worker.isPro && (
-                      <Badge className="bg-secondary text-secondary-foreground font-black shadow-xl rounded-full border-none">
-                        <Zap className="h-3.5 w-3.5 mr-1" /> VIP
-                      </Badge>
-                    )}
-                  </div>
-                </Link>
-                <CardContent className="p-6 flex flex-col flex-1">
-                  <div className="flex-1">
-                    <Link href={`/public/${worker.id}`}>
-                      <h3 className="text-xl font-black group-hover:text-primary transition-colors">{worker.name}</h3>
-                    </Link>
-                    <p className="text-xs text-primary font-bold uppercase tracking-widest mt-1 mb-3">{worker.tradeSkill || "Professional Expert"}</p>
-                    <p className="text-sm text-muted-foreground line-clamp-2 font-medium leading-relaxed">{worker.bio || "No professional summary provided."}</p>
-                  </div>
-                  
-                  <div className="mt-6 flex flex-col gap-3">
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
-                        <Globe className="h-3.5 w-3.5" /> 
-                        {worker.serviceAreas?.[0] || "Remote / Global"}
-                      </div>
-                      <Badge variant="outline" className="text-[8px] font-black uppercase opacity-50">{worker.profileViews || 0} Views</Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" size="sm" asChild className="rounded-full font-black text-[10px] h-9">
-                        <Link href={`/public/${worker.id}`}>View Profile</Link>
-                      </Button>
-                      <Button variant="secondary" size="sm" className="rounded-full font-black text-[10px] h-9" onClick={() => handleMessageClick(worker.id)}>
-                        <MessageSquare className="mr-1.5 h-3.5 w-3.5" /> Message
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : !isLoading && (
-            <div className="col-span-full text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted/20">
-              <Search className="h-20 w-20 text-muted-foreground mx-auto mb-6 opacity-10" />
-              <p className="text-muted-foreground font-bold text-lg">No professionals match your criteria.</p>
-              <Button variant="ghost" className="mt-4 font-black text-primary" onClick={() => {setSearchTerm(""); setSelectedCategory(null);}}>Clear All Filters</Button>
+        {!searchTerm && !isSearching && (
+          <div className="text-center py-20 space-y-6">
+            <div className="bg-primary/5 p-8 rounded-[3rem] border border-primary/10 max-w-sm mx-auto">
+              <Lock className="h-12 w-12 text-primary/20 mx-auto mb-4" />
+              <h4 className="font-black text-sm uppercase tracking-tight mb-2">Privacy Active</h4>
+              <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                Globlync does not expose worker lists to unauthorized users. Ask your professional for their <b>Globlync ID</b> or <b>Username</b> to find them.
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
-
-      <AdBanner id={NATIVE_AD_ID} className="w-full mt-8" />
     </div>
   );
 }

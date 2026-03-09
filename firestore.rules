@@ -11,15 +11,16 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Global System Settings (Daily Tips, etc.)
+    // Global System Settings
     match /system/{document} {
       allow read: if true;
       allow write: if false; 
     }
 
-    // Worker Profiles
+    // Worker Profiles - DISABLE LISTING for privacy
     match /workerProfiles/{workerId} {
-      allow get, list: if true;
+      allow get: if true; // Exact ID lookup allowed
+      allow list: if false; // Browsing all profiles is FORBIDDEN
       allow create: if isOwner(workerId);
       allow update: if (isOwner(workerId))
                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt']));

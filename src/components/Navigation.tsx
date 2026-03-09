@@ -17,7 +17,9 @@ import {
   Gift,
   Sparkles,
   Crown,
-  Users
+  Users,
+  MessageSquare,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -98,8 +100,9 @@ export function Navigation() {
   const navItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
-    { label: "Network", href: "/search", icon: Users },
-    { label: "Evidence", href: "/work-log", icon: ClipboardCheck, authRequired: true },
+    { label: "Connect", href: "/search", icon: Lock },
+    { label: "Messages", href: "/messages", icon: MessageSquare, authRequired: true },
+    { label: "Log", href: "/work-log", icon: ClipboardCheck, authRequired: true },
   ];
 
   return (
