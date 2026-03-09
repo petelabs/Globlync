@@ -30,7 +30,7 @@ import {
   Construction
 } from "lucide-react";
 import Link from "next/link";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, limit, orderBy } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -52,6 +52,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { user } = useUser();
   const db = useFirestore();
 
   const workersRef = useMemoFirebase(() => {
@@ -210,6 +211,20 @@ export default function SearchPage() {
           )}
         </div>
       </section>
+
+      {!user && (
+        <Card className="border-4 border-orange-500 bg-orange-500/5 p-8 rounded-[3rem] text-center space-y-6 animate-in slide-in-from-bottom-10 duration-1000 mt-8">
+          <div className="space-y-2">
+            <h3 className="text-3xl font-black tracking-tighter text-orange-700">Reserve Your @Username Now.</h3>
+            <p className="text-sm font-medium text-orange-800/80 max-w-lg mx-auto">
+              Unique professional usernames are global assets and are being claimed quickly. Secure your stake in the evidence-based economy before someone else takes your name.
+            </p>
+          </div>
+          <Button size="lg" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white font-black px-12 h-16 text-lg shadow-2xl transition-transform hover:scale-105 active:scale-95" asChild>
+            <Link href="/login">Secure My Stake Now</Link>
+          </Button>
+        </Card>
+      )}
 
       <AdBanner id={NATIVE_AD_ID} className="w-full mt-8" />
     </div>
