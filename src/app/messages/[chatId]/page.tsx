@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, addDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, limit, doc, serverTimestamp, where } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 export default function ChatDetailPage() {
   const { chatId } = useParams() as { chatId: string };
@@ -71,17 +72,19 @@ export default function ChatDetailPage() {
     if (!newMessage.trim() || !user || !messagesRef || !chatRef) return;
 
     setIsSending(true);
+    const messageText = newMessage.trim().substring(0, 500);
+    
     try {
-      await addDocumentNonBlocking(messagesRef, {
-        text: newMessage.trim().substring(0, 500),
+      addDocumentNonBlocking(messagesRef, {
+        text: messageText,
         senderId: user.uid,
         createdAt: serverTimestamp(),
       });
       
-      // Update chat meta
-      await addDocumentNonBlocking(collection(db!, "system"), {
-        // This is a placeholder for a proper cloud function update
-        // In a real app, you'd update the chat's updatedAt field here
+      // Update chat meta for the conversation list
+      updateDocumentNonBlocking(chatRef, {
+        lastMessage: messageText,
+        updatedAt: serverTimestamp()
       });
 
       setNewMessage("");
@@ -123,7 +126,7 @@ export default function ChatDetailPage() {
         </Button>
         <div className="flex-1 flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-primary/10">
-            <AvatarFallback className="bg-primary/5 font-black">P</AvatarFallback>
+            <AvatarFallback className="bg-primary/5 font-black text-xs">P</AvatarFallback>
           </Avatar>
           <div>
             <h3 className="font-black text-sm">Professional Conversation</h3>
@@ -159,7 +162,7 @@ export default function ChatDetailPage() {
             <Lock className="h-3 w-3 text-primary/40" />
             <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">End-to-End Professional Encryption</span>
           </div>
-          <p className="text-[9px] text-muted-foreground mt-4 uppercase font-bold tracking-tighter">Only the last 50 messages are stored locally to optimize speed.</p>
+          <p className="text-[9px] text-muted-foreground mt-4 uppercase font-bold tracking-tighter">Only the last 50 messages are stored to optimize speed.</p>
         </div>
 
         {messages?.map((m) => {

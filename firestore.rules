@@ -11,18 +11,20 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Global System Settings
+    // Global System Settings - Publicly readable for Tips and System Info
     match /system/{document} {
       allow read: if true;
       allow write: if false; 
     }
 
-    // Worker Profiles - DISABLE LISTING for privacy
+    // Worker Profiles
     match /workerProfiles/{workerId} {
-      allow get: if true; // Exact ID lookup allowed
-      allow list: if false; // Browsing all profiles is FORBIDDEN
+      allow get: if true; // Publicly viewable for reputation
+      allow list: if false; // Browsing all profiles is forbidden for privacy
       allow create: if isOwner(workerId);
-      allow update: if (isOwner(workerId))
+      
+      // Allow the owner to update everything, or others to increment views/score
+      allow update: if isOwner(workerId)
                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt']));
       
       match /jobs/{jobId} {
@@ -45,13 +47,15 @@ service cloud.firestore {
 
     // Messaging System
     match /chats/{chatId} {
-      allow read: if isSignedIn() && request.auth.uid in resource.data.participants;
+      // Allow listing/reading if the user is a participant
+      allow read: if isSignedIn() && (request.auth.uid in resource.data.participants);
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
 
       match /messages/{messageId} {
-        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        // Access messages if the user is a participant in the parent chat
+        allow read: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
+        allow create: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
       }
     }
 
