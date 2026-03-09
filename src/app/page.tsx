@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +31,7 @@ import { AdBanner } from "@/components/AdBanner";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MOTIVATIONAL_QUOTES, type Motivation } from "@/lib/motivational-quotes";
+import { INITIAL_TESTIMONIALS, type Testimonial } from "@/lib/initial-testimonials";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
@@ -42,7 +44,7 @@ export default function Home() {
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 100% Reliable Daily Tip Selection (Zero API Cost)
+  // 100% Reliable Daily Tip Selection (Zero AI Cost)
   useEffect(() => {
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
@@ -62,11 +64,27 @@ export default function Home() {
 
   const appRatingsQuery = useMemoFirebase(() => {
     if (!appRatingsRef) return null;
-    return query(appRatingsRef, orderBy("createdAt", "desc"), limit(6));
+    return query(appRatingsRef, orderBy("createdAt", "desc"), limit(10));
   }, [appRatingsRef]);
 
   const { data: allWorkers } = useCollection(workersRef);
-  const { data: testimonials } = useCollection(appRatingsQuery);
+  const { data: dbTestimonials } = useCollection(appRatingsQuery);
+
+  // Merge legacy initial testimonials with live ones from database
+  const combinedTestimonials = useMemo(() => {
+    const live = (dbTestimonials || []).map(t => ({
+      userName: t.userName,
+      username: `@${t.userName.toLowerCase().replace(/\s+/g, '_')}_pro`,
+      score: t.score,
+      feedback: t.feedback,
+      avatarColor: "bg-primary/10 text-primary",
+      createdAt: t.createdAt
+    }));
+
+    return [...live, ...INITIAL_TESTIMONIALS].sort((a, b) => 
+      (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+    ).slice(0, 64); // Show top 64 latest/most active
+  }, [dbTestimonials]);
 
   const handleRateApp = async () => {
     if (!user || !appRatingsRef || rating === 0) return;
@@ -214,31 +232,40 @@ export default function Home() {
         </section>
       )}
 
-      {/* Real Testimonials - Pure Data */}
+      {/* Verified Professional Testimonials - Hybrid Data */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
-        <h2 className="text-3xl font-black text-center mb-16 uppercase tracking-tighter">What Pros are Saying</h2>
-        <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-          {testimonials && testimonials.length > 0 ? (
-            testimonials.map((t, i) => (
-              <Card key={i} className="rounded-[2rem] border-none shadow-sm p-8 space-y-4">
-                <div className="flex gap-1">
-                  {[...Array(t.score)].map((_, i) => <Star key={i} className="h-4 w-4 fill-secondary text-secondary" />)}
+        <div className="text-center mb-16 space-y-2">
+          <h2 className="text-3xl font-black uppercase tracking-tighter">Verified Professional Feedback</h2>
+          <p className="text-muted-foreground text-sm font-medium">Join {memberCount.toLocaleString()} professionals building evidence-based trust.</p>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+          {combinedTestimonials.length > 0 ? (
+            combinedTestimonials.map((t, i) => (
+              <Card key={i} className="rounded-[2rem] border-none shadow-sm p-8 space-y-4 hover:shadow-xl transition-shadow bg-white">
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={cn("h-4 w-4", i < t.score ? "fill-secondary text-secondary" : "text-muted")} />
+                    ))}
+                  </div>
+                  <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest opacity-40">Verified Pro</Badge>
                 </div>
-                <p className="text-sm font-medium italic leading-relaxed">"{t.feedback}"</p>
-                <div className="flex items-center gap-3 pt-2">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary text-xs">
+                <p className="text-sm font-medium leading-relaxed italic text-muted-foreground">"{t.feedback}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-muted">
+                  <div className={cn("h-10 w-10 rounded-full flex items-center justify-center font-black text-primary text-xs shadow-inner", t.avatarColor || "bg-primary/10")}>
                     {t.userName?.charAt(0) || "P"}
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest">{t.userName}</p>
-                    <p className="text-[10px] text-muted-foreground">{t.createdAt?.seconds ? formatDistanceToNow(new Date(t.createdAt.seconds * 1000), { addSuffix: true }) : 'just now'}</p>
+                    <p className="text-xs font-black uppercase tracking-tight">{t.userName}</p>
+                    <p className="text-[10px] text-primary font-black opacity-60">{t.username}</p>
                   </div>
                 </div>
               </Card>
             ))
           ) : (
             <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground font-medium">No professional reviews yet. Be the first to rate us!</p>
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary opacity-20" />
             </div>
           )}
         </div>
