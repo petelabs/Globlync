@@ -12,26 +12,18 @@ service cloud.firestore {
     }
 
     // Global System Settings (Daily Tips, etc.)
-    // Explicitly allowed for public read/write to ensure daily sync works for everyone
     match /system/{document} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false; 
     }
 
     // Worker Profiles
     match /workerProfiles/{workerId} {
-      // Publicly readable for discovery and profile visits
       allow get, list: if true;
-      
-      // Only the owner can create their profile
       allow create: if isOwner(workerId);
-      
-      // Update rules:
-      // 1. Owner can update most things
-      // 2. Public can update ONLY specific reputation fields (Views, Trust Score)
       allow update: if (isOwner(workerId))
                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt']));
       
-      // Subcollections
       match /jobs/{jobId} {
         allow read: if true;
         allow create: if isOwner(workerId);
@@ -50,6 +42,18 @@ service cloud.firestore {
       }
     }
 
+    // Messaging System
+    match /chats/{chatId} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && request.auth.uid in resource.data.participants;
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      }
+    }
+
     // Registries
     match /usernames/{username} {
       allow get: if true;
@@ -62,7 +66,6 @@ service cloud.firestore {
       allow create: if isSignedIn();
     }
 
-    // App Global Feedback
     match /appRatings/{ratingId} {
       allow read: if true;
       allow create: if isSignedIn();

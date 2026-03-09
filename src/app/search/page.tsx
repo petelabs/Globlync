@@ -27,14 +27,23 @@ import {
   Zap,
   Briefcase,
   MessageSquare,
-  Construction
+  Construction,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, limit, orderBy } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from "@/firebase";
+import { collection, query, limit, orderBy, doc } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { AdBanner } from "@/components/AdBanner";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const SKILL_CATEGORIES = [
   { name: "Tech & Dev", icon: Laptop, skills: ["Developer", "Designer", "IT", "Engineer", "Web", "Mobile"] },
@@ -52,8 +61,18 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
+  
   const { user } = useUser();
   const db = useFirestore();
+  const router = useRouter();
+
+  const currentUserRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "workerProfiles", user.uid);
+  }, [db, user?.uid]);
+
+  const { data: currentUserProfile } = useDoc(currentUserRef);
 
   const workersRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -83,6 +102,21 @@ export default function SearchPage() {
       return matchesSearch && matchesCategory;
     });
   }, [allWorkers, searchTerm, selectedCategory]);
+
+  const handleMessageClick = (workerId: string) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const referralCount = currentUserProfile?.referralCount || 0;
+    if (referralCount < 1) {
+      setIsLockDialogOpen(true);
+      return;
+    }
+
+    router.push(`/public/${workerId}`);
+  };
 
   const NATIVE_AD_ID = "732a8eb1f93a972b628ecf38814db400";
 
@@ -190,13 +224,9 @@ export default function SearchPage() {
                       <Button variant="outline" size="sm" asChild className="rounded-full font-black text-[10px] h-9">
                         <Link href={`/public/${worker.id}`}>View Profile</Link>
                       </Button>
-                      {worker.whatsappNumber && (
-                        <Button variant="secondary" size="sm" asChild className="rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white border-none font-black text-[10px] h-9">
-                          <a href={`https://wa.me/${worker.whatsappNumber}`} target="_blank">
-                            <WhatsAppIcon className="mr-1.5 h-3.5 w-3.5" /> Connect
-                          </a>
-                        </Button>
-                      )}
+                      <Button variant="secondary" size="sm" className="rounded-full font-black text-[10px] h-9" onClick={() => handleMessageClick(worker.id)}>
+                        <MessageSquare className="mr-1.5 h-3.5 w-3.5" /> Message
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -212,19 +242,28 @@ export default function SearchPage() {
         </div>
       </section>
 
-      {!user && (
-        <Card className="border-4 border-orange-500 bg-orange-500/5 p-8 rounded-[3rem] text-center space-y-6 animate-in slide-in-from-bottom-10 duration-1000 mt-8">
-          <div className="space-y-2">
-            <h3 className="text-3xl font-black tracking-tighter text-orange-700">Reserve Your @Username Now.</h3>
-            <p className="text-sm font-medium text-orange-800/80 max-w-lg mx-auto">
-              Unique professional usernames are global assets and are being claimed quickly. Secure your stake in the evidence-based economy before someone else takes your name.
-            </p>
+      <Dialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
+        <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md">
+          <div className="bg-primary p-10 text-center space-y-6">
+            <div className="bg-white/20 p-6 rounded-[2rem] shadow-2xl backdrop-blur-md w-fit mx-auto">
+              <Lock className="h-12 w-12 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black tracking-tight text-white leading-none">Unlock Networking</h2>
+              <p className="text-white/80 font-medium text-sm">To maintain professional privacy, messaging is only available to active Globlync members.</p>
+            </div>
           </div>
-          <Button size="lg" className="rounded-full bg-orange-600 hover:bg-orange-700 text-white font-black px-12 h-16 text-lg shadow-2xl transition-transform hover:scale-105 active:scale-95" asChild>
-            <Link href="/login">Secure My Stake Now</Link>
-          </Button>
-        </Card>
-      )}
+          <CardContent className="p-10 text-center space-y-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Invite just <b>1 professional</b> to join Globlync. Once they sign up, you unlock direct messaging with the entire global network.
+            </p>
+            <Button size="lg" className="w-full rounded-full h-16 text-lg font-black shadow-xl" asChild>
+              <Link href="/referrals">Invite & Unlock Now <ChevronRight className="ml-2 h-5 w-5" /></Link>
+            </Button>
+            <Button variant="ghost" className="text-xs font-bold text-muted-foreground" onClick={() => setIsLockDialogOpen(false)}>Return to Search</Button>
+          </CardContent>
+        </DialogContent>
+      </Dialog>
 
       <AdBanner id={NATIVE_AD_ID} className="w-full mt-8" />
     </div>

@@ -15,11 +15,9 @@ import {
   Lightbulb, 
   Loader2, 
   ThumbsUp, 
-  Laptop, 
-  Building2, 
-  Construction,
   Users,
-  Timer
+  Timer,
+  ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase, useUser, addDocumentNonBlocking } from "@/firebase";
@@ -43,8 +41,8 @@ export default function Home() {
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
-  // 100% Reliable Daily Tip Selection (Zero AI Cost)
   useEffect(() => {
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
@@ -70,7 +68,6 @@ export default function Home() {
   const { data: allWorkers } = useCollection(workersRef);
   const { data: dbTestimonials } = useCollection(appRatingsQuery);
 
-  // Merge legacy initial testimonials with live ones from database
   const combinedTestimonials = useMemo(() => {
     const live = (dbTestimonials || []).map(t => ({
       userName: t.userName,
@@ -81,10 +78,12 @@ export default function Home() {
       createdAt: t.createdAt
     }));
 
-    return [...live, ...INITIAL_TESTIMONIALS].sort((a, b) => 
+    const sorted = [...live, ...INITIAL_TESTIMONIALS].sort((a, b) => 
       (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-    ).slice(0, 64); // Show top 64 latest/most active
-  }, [dbTestimonials]);
+    );
+
+    return showAllReviews ? sorted : sorted.slice(0, 5);
+  }, [dbTestimonials, showAllReviews]);
 
   const handleRateApp = async () => {
     if (!user || !appRatingsRef || rating === 0) return;
@@ -107,13 +106,11 @@ export default function Home() {
     }
   };
 
-  // Professional Social Proof (Real + Growth Multiplier)
-  const proCount = (allWorkers?.length || 0) + 2140;
   const memberCount = (allWorkers?.length || 0) + 3280;
+  const proCount = (allWorkers?.length || 0) + 2140;
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
-      {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         
@@ -151,7 +148,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Guaranteed Daily Mentor Tip - No AI, No Fail */}
       <section className="max-w-4xl mx-auto w-full px-4">
         <Card className="border-none bg-primary/5 rounded-[2.5rem] overflow-hidden relative group shadow-inner border-2 border-primary/10">
           <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -182,7 +178,6 @@ export default function Home() {
         </Card>
       </section>
 
-      {/* Stats Counter - Real Data + Growth Baseline */}
       <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
         {[
           { label: "Members Registered", value: `${memberCount.toLocaleString()}`, icon: Users },
@@ -200,7 +195,6 @@ export default function Home() {
         ))}
       </section>
 
-      {/* App Rating Form */}
       {user && (
         <section className="max-w-xl mx-auto w-full px-4 text-center space-y-6">
           <h2 className="text-xl font-black uppercase tracking-widest text-primary">Rate your experience</h2>
@@ -232,7 +226,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Verified Professional Testimonials - Hybrid Data */}
       <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
         <div className="text-center mb-16 space-y-2">
           <h2 className="text-3xl font-black uppercase tracking-tighter">Verified Professional Feedback</h2>
@@ -242,7 +235,7 @@ export default function Home() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
           {combinedTestimonials.length > 0 ? (
             combinedTestimonials.map((t, i) => (
-              <Card key={i} className="rounded-[2rem] border-none shadow-sm p-8 space-y-4 hover:shadow-xl transition-shadow bg-white">
+              <Card key={i} className="rounded-[2rem] border-none shadow-sm p-8 space-y-4 hover:shadow-xl transition-shadow bg-white animate-in fade-in duration-500">
                 <div className="flex justify-between items-start">
                   <div className="flex gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -269,6 +262,18 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {!showAllReviews && combinedTestimonials.length >= 5 && (
+          <div className="flex justify-center mt-12">
+            <Button 
+              variant="outline" 
+              className="rounded-full px-12 h-14 border-2 font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg"
+              onClick={() => setShowAllReviews(true)}
+            >
+              View All {INITIAL_TESTIMONIALS.length + (dbTestimonials?.length || 0)} Verified Reviews <ChevronDown className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </section>
 
       <div className="max-w-4xl mx-auto w-full px-4 mb-12">

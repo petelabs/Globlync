@@ -1,29 +1,40 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useDoc, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useCollection } from "@/firebase";
-import { doc, collection, increment, serverTimestamp, query, where, orderBy } from "firebase/firestore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { doc, collection, query, orderBy, limit, increment, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   ShieldCheck, 
   MapPin, 
-  Globe, 
-  Star, 
   CheckCircle2, 
-  ExternalLink, 
-  Loader2, 
+  Star, 
+  Globe, 
   Clock, 
+  MessageSquare, 
+  TrendingUp, 
   Sparkles,
-  Zap,
-  Crown
+  ChevronRight,
+  ExternalLink,
+  Award,
+  Lock
 } from "lucide-react";
+import { useUser } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -33,152 +44,186 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 
 export default function PublicProfilePage() {
   const { workerId } = useParams() as { workerId: string };
+  const { user } = useUser();
   const db = useFirestore();
-  const [hasIncremented, setHasIncremented] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
     return doc(db, "workerProfiles", workerId);
   }, [db, workerId]);
 
+  const currentUserRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "workerProfiles", user.uid);
+  }, [db, user?.uid]);
+
+  const { data: profile } = useDoc(workerRef);
+  const { data: currentUserProfile } = useDoc(currentUserRef);
+
   const jobsRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
     return collection(db, "workerProfiles", workerId, "jobs");
   }, [db, workerId]);
 
-  const verifiedJobsQuery = useMemoFirebase(() => {
+  const jobsQuery = useMemoFirebase(() => {
     if (!jobsRef) return null;
-    return query(jobsRef, where("isVerified", "==", true), orderBy("createdAt", "desc"));
+    return query(jobsRef, orderBy("createdAt", "desc"), limit(10));
   }, [jobsRef]);
+
+  const { data: jobs } = useCollection(jobsQuery);
 
   const ratingsRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
     return collection(db, "workerProfiles", workerId, "ratings");
   }, [db, workerId]);
 
-  const ratingsQuery = useMemoFirebase(() => {
-    if (!ratingsRef) return null;
-    return query(ratingsRef, orderBy("ratedAt", "desc"));
-  }, [ratingsRef]);
+  const { data: ratings } = useCollection(ratingsRef);
 
-  const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
-  const { data: jobs } = useCollection(verifiedJobsQuery);
-  const { data: ratings } = useCollection(ratingsQuery);
-
+  // Auto-Increment Profile Views once per session/mount
   useEffect(() => {
-    if (workerRef && !hasIncremented && !isProfileLoading && profile) {
+    if (workerRef) {
       updateDocumentNonBlocking(workerRef, {
-        profileViews: increment(1),
-        updatedAt: serverTimestamp()
+        profileViews: increment(1)
       });
-      setHasIncremented(true);
     }
-  }, [workerRef, hasIncremented, isProfileLoading, profile]);
+  }, [workerRef]);
 
-  if (isProfileLoading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verifying Professional Record...</p>
-      </div>
-    );
-  }
+  const handleMessage = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
 
-  if (!profile) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center px-6">
-        <h1 className="text-2xl font-black">Profile Not Found</h1>
-        <p className="text-muted-foreground">This professional profile may have been removed or the link is incorrect.</p>
-        <Button asChild className="rounded-full mt-4 border-2"><a href="/">Return Home</a></Button>
-      </div>
-    );
-  }
+    const referralCount = currentUserProfile?.referralCount || 0;
+    if (referralCount < 1) {
+      setIsLockDialogOpen(true);
+      return;
+    }
+
+    // Create or navigate to chat
+    const chatId = [user.uid, workerId].sort().join('_');
+    const chatRef = doc(db!, "chats", chatId);
+    
+    await setDoc(chatRef, {
+      participants: [user.uid, workerId],
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+
+    router.push(`/messages/${chatId}`);
+  };
+
+  if (!profile) return null;
 
   return (
-    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto px-4 overflow-x-hidden">
-      <header className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left bg-white p-10 rounded-[3rem] shadow-sm border border-muted/50">
-        <div className="relative">
-          <Avatar className={cn("h-40 w-40 border-8 shadow-2xl", profile.isPro ? "border-secondary" : "border-primary/10")}>
-            <AvatarImage src={profile.profilePictureUrl} className="object-cover" />
-            <AvatarFallback className="text-4xl font-black">{profile.name?.charAt(0) || 'U'}</AvatarFallback>
-          </Avatar>
-          {profile.isPro && (
-            <div className="absolute -top-2 -right-2 bg-secondary p-2 rounded-full border-4 border-white shadow-xl animate-bounce">
-              <Crown className="h-6 w-6 text-white fill-white" />
-            </div>
-          )}
+    <div className="flex flex-col gap-8 py-6 max-w-5xl mx-auto px-4">
+      <Card className="border-none shadow-2xl overflow-hidden rounded-[3rem] bg-white">
+        <div className="h-48 bg-primary relative">
+          <div className="absolute inset-0 opacity-10 bg-[url('https://picsum.photos/seed/123/1200/400')] bg-cover" />
+          <div className="absolute -bottom-16 left-10">
+            <Avatar className="h-32 w-32 border-8 border-white shadow-2xl">
+              <AvatarImage src={profile.profilePictureUrl} className="object-cover" />
+              <AvatarFallback className="bg-secondary text-secondary-foreground font-black text-2xl">
+                {profile.name?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
-        
-        <div className="flex-1 space-y-4">
-          <div className="space-y-1">
-            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap">
-              <h1 className="text-4xl font-black tracking-tighter">{profile.name}</h1>
-              {profile.isPro && <Badge className="bg-secondary text-secondary-foreground font-black uppercase text-[10px] py-1 px-3">VIP Pro</Badge>}
+        <CardContent className="pt-20 px-10 pb-10">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl font-black tracking-tighter">{profile.name}</h1>
+                {profile.isPro && (
+                  <Badge className="bg-secondary text-secondary-foreground font-black px-3 py-1 rounded-full uppercase text-[10px]">VIP Pro</Badge>
+                )}
+              </div>
+              <p className="text-primary font-bold uppercase tracking-[0.2em] text-sm">{profile.tradeSkill || "Verified Professional"}</p>
+              <div className="flex items-center gap-4 text-muted-foreground text-sm font-medium">
+                <div className="flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {profile.serviceAreas?.[0] || "Remote / Global"}</div>
+                <div className="flex items-center gap-1.5"><Globe className="h-4 w-4" /> Professional Economy</div>
+              </div>
             </div>
-            <p className="text-primary font-bold uppercase tracking-[0.2em] text-sm">{profile.tradeSkill || "Professional Expert"}</p>
-          </div>
-
-          <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium text-muted-foreground">
-            <div className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" /> {profile.serviceAreas?.[0] || "Remote / Global"}</div>
-            <div className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> Trust Score: {profile.trustScore || 0}</div>
-            <div className="flex items-center gap-1.5 text-secondary font-black"><Globe className="h-4 w-4" /> {profile.profileViews || 0} Global Views</div>
-          </div>
-
-          <div className="pt-4 flex flex-col sm:flex-row gap-3">
-            {profile.whatsappNumber && (
-              <Button className="rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white h-14 px-10 font-black shadow-xl" asChild>
-                <a href={`https://wa.me/${profile.whatsappNumber}`} target="_blank">
-                  <WhatsAppIcon className="mr-2 h-6 w-6" /> Connect on WhatsApp
-                </a>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button size="lg" className="rounded-full font-black px-8 h-14 shadow-lg" onClick={handleMessage}>
+                <MessageSquare className="mr-2 h-5 w-5" /> In-App Message
               </Button>
-            )}
-            <Button variant="outline" className="rounded-full h-14 px-10 font-black border-2" asChild>
-              <a href={`mailto:${profile.contactEmail || profile.id + '@globlync.pro'}`}>
-                Contact via Email
-              </a>
-            </Button>
+              {profile.whatsappNumber && (
+                <Button size="lg" variant="secondary" className="rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black px-8 h-14 shadow-lg" asChild>
+                  <a href={`https://wa.me/${profile.whatsappNumber}`} target="_blank">
+                    <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
 
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 pt-8 border-t border-muted">
+            <div className="text-center p-4 bg-muted/20 rounded-3xl">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Trust Score</p>
+              <p className="text-3xl font-black text-primary">{profile.trustScore}</p>
+            </div>
+            <div className="text-center p-4 bg-muted/20 rounded-3xl">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Global Views</p>
+              <p className="text-3xl font-black text-primary">{profile.profileViews || 0}</p>
+            </div>
+            <div className="text-center p-4 bg-muted/20 rounded-3xl">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Verified Jobs</p>
+              <p className="text-3xl font-black text-primary">{jobs?.length || 0}</p>
+            </div>
+            <div className="text-center p-4 bg-muted/20 rounded-3xl">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Client Rating</p>
+              <p className="text-3xl font-black text-primary">
+                {ratings && ratings.length > 0 
+                  ? (ratings.reduce((acc, r) => acc + r.score, 0) / ratings.length).toFixed(1) 
+                  : "5.0"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-8">
           <section className="space-y-4">
-            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
+            <h2 className="text-2xl font-black tracking-tight flex items-center gap-3">
               <Sparkles className="h-6 w-6 text-primary" />
-              Professional Evidence
+              Verified Evidence Log
             </h2>
             <div className="grid gap-4">
               {jobs && jobs.length > 0 ? (
                 jobs.map(job => (
-                  <Card key={job.id} className="overflow-hidden border-none shadow-sm rounded-3xl group hover:shadow-xl transition-all">
+                  <Card key={job.id} className="overflow-hidden border-none shadow-sm rounded-[2rem] group hover:shadow-xl transition-all">
                     <CardContent className="p-0 flex flex-col sm:flex-row">
-                      {job.photoUrl && (
-                        <div className="relative aspect-video w-full sm:w-48 bg-muted shrink-0 overflow-hidden">
-                          <img src={job.photoUrl} alt={job.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          {job.aiVerified && (
-                            <div className="absolute top-2 left-2 bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xl">
-                              <Sparkles className="h-2 w-2" /> AI VERIFIED
-                            </div>
-                          )}
+                      <div className="sm:w-48 aspect-video sm:aspect-square relative overflow-hidden bg-muted">
+                        <img src={job.photoUrl} alt={job.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        {job.aiVerified && (
+                          <div className="absolute top-3 left-3 bg-primary text-white text-[8px] font-black px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                            <ShieldCheck className="h-3 w-3" /> AI VERIFIED
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-black text-xl group-hover:text-primary transition-colors">{job.title}</h3>
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 uppercase text-[8px] font-black">Success</Badge>
                         </div>
-                      )}
-                      <div className="p-6 space-y-2 flex-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-black text-xl text-primary">{job.title}</h3>
-                          <Badge className="bg-green-500/10 text-green-600 border-none"><CheckCircle2 className="h-3 w-3 mr-1" /> VERIFIED</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">{job.description}</p>
-                        <div className="pt-4 flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                          <Clock className="h-3 w-3" /> Completed {formatDistanceToNow(new Date(job.dateCompleted), { addSuffix: true })}
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-4">{job.description}</p>
+                        <div className="mt-auto flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase">
+                          <div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {new Date(job.dateCompleted).toLocaleDateString()}</div>
+                          <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Evidence Verified</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))
               ) : (
-                <div className="text-center py-12 bg-muted/20 rounded-[2rem] border-2 border-dashed">
-                  <p className="text-muted-foreground font-medium">No verified evidence logs yet.</p>
+                <div className="text-center py-20 bg-muted/20 rounded-[3rem] border-4 border-dashed">
+                  <p className="text-muted-foreground font-medium">No verified evidence logs found yet.</p>
                 </div>
               )}
             </div>
@@ -186,50 +231,63 @@ export default function PublicProfilePage() {
         </div>
 
         <div className="space-y-8">
-          <section className="space-y-4">
-            <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
-              <Star className="h-6 w-6 text-secondary fill-secondary" />
-              Client Reviews
-            </h2>
-            <div className="grid gap-4">
-              {ratings && ratings.length > 0 ? (
-                ratings.map(r => (
-                  <Card key={r.id} className="border-none shadow-sm rounded-3xl bg-primary/5">
-                    <CardContent className="p-6 space-y-3">
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={cn("h-4 w-4", i < r.score ? "fill-secondary text-secondary" : "text-muted")} />
-                        ))}
-                      </div>
-                      <p className="text-sm italic leading-relaxed font-medium">"{r.comment || "Excellent professional work!"}"</p>
-                      <div className="text-[10px] font-black uppercase text-primary/60 tracking-widest">
-                        {r.ratedAt?.seconds ? formatDistanceToNow(new Date(r.ratedAt.seconds * 1000), { addSuffix: true }) : 'Recently'}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center py-12 bg-muted/20 rounded-[2rem] border-2 border-dashed">
-                  <p className="text-muted-foreground font-medium">No client ratings yet.</p>
-                </div>
-              )}
-            </div>
-          </section>
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-accent/30">
+            <CardHeader>
+              <CardTitle className="text-lg">Professional Bio</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm leading-relaxed text-muted-foreground italic font-medium">
+                "{profile.bio || "This professional is building their digital reputation evidence log."}"
+              </p>
+            </CardContent>
+          </Card>
 
-          <Card className="border-none bg-primary text-primary-foreground rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Zap className="h-24 w-24" />
-            </div>
-            <h3 className="text-xl font-black leading-tight mb-4">Hire {profile.name} with Confidence.</h3>
-            <p className="text-xs opacity-80 leading-relaxed mb-6">
-              This professional has a verified trust score of {profile.trustScore} and has successfully completed {jobs?.length || 0} evidence-based jobs.
-            </p>
-            <Button variant="secondary" className="w-full rounded-full font-black h-12" asChild>
-              <a href={`https://wa.me/${profile.whatsappNumber}`} target="_blank">Book Now</a>
-            </Button>
+          <Card className="border-none shadow-xl rounded-[2.5rem]">
+            <CardHeader>
+              <CardTitle className="text-lg">Verified Milestones</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              {profile.badgeIds?.map((badge: string) => (
+                <div key={badge} className="flex items-center gap-4 p-4 bg-muted/20 rounded-2xl border border-muted/50">
+                  <div className="bg-primary/10 p-2.5 rounded-xl">
+                    <Award className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-tight">{badge.replace('-', ' ')}</p>
+                    <p className="text-[10px] text-muted-foreground">Evidence-based achievement</p>
+                  </div>
+                </div>
+              ))}
+              {!profile.badgeIds?.length && (
+                <p className="text-xs text-muted-foreground text-center py-4">No public badges unlocked yet.</p>
+              )}
+            </CardContent>
           </Card>
         </div>
       </div>
+
+      <Dialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
+        <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md">
+          <div className="bg-primary p-10 text-center space-y-6">
+            <div className="bg-white/20 p-6 rounded-[2rem] shadow-2xl backdrop-blur-md w-fit mx-auto">
+              <Lock className="h-12 w-12 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black tracking-tight text-white leading-none">Invitation Required</h2>
+              <p className="text-white/80 font-medium text-sm">To protect our members from spam and ensure high-trust networking, you must unlock in-app messaging.</p>
+            </div>
+          </div>
+          <CardContent className="p-10 text-center space-y-6">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Invite just <b>1 professional</b> to join Globlync. Once they sign up, messaging is unlocked for your account forever.
+            </p>
+            <Button size="lg" className="w-full rounded-full h-16 text-lg font-black shadow-xl" asChild>
+              <Link href="/referrals">Invite & Unlock Messaging <ChevronRight className="ml-2 h-5 w-5" /></Link>
+            </Button>
+            <Button variant="ghost" className="text-xs font-bold text-muted-foreground" onClick={() => setIsLockDialogOpen(false)}>Maybe Later</Button>
+          </CardContent>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
