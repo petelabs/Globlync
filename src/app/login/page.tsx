@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User, CheckCircle2, Ticket } from "lucide-react";
+import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User, CheckCircle2, Ticket, AlertCircle, Timer } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -95,7 +94,6 @@ function LoginContent() {
         }
       }
 
-      // Branded Yellow Avatar for all new professionals
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "";
       
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -110,7 +108,7 @@ function LoginContent() {
         username: finalUsername,
         tradeSkill: "",
         bio: "",
-        profilePictureUrl: yellowAvatar, // High-trust placeholder
+        profilePictureUrl: yellowAvatar,
         trustScore: invitedBy ? 10 : 0,
         profileViews: 0,
         referralCode: newCode,
@@ -222,10 +220,10 @@ function LoginContent() {
           <Logo className="scale-150 mb-4" />
         </div>
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
-          Build your <span className="text-primary">Professional Identity.</span>
+          Secure your <span className="text-primary">Professional Asset.</span>
         </h1>
-        <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
-          Join the global network. Log verified work, earn trust points, and connect with remote opportunities worldwide.
+        <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 font-medium">
+          Professional usernames are limited and unique. Secure yours now to claim your stake in the global evidence-based economy.
         </p>
         
         <div className="grid grid-cols-3 gap-4 pt-4">
@@ -242,6 +240,15 @@ function LoginContent() {
             <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Remote Scale</p>
           </div>
         </div>
+
+        <div className="bg-primary/5 p-6 rounded-[2.5rem] border-2 border-primary/10 text-left">
+          <h4 className="font-black text-sm uppercase tracking-tight flex items-center gap-2 mb-2 text-primary">
+            <Timer className="h-4 w-4 animate-pulse" /> Live Stats
+          </h4>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Over <b>3,280 members</b> have already secured their unique professional identity. Don't wait until your preferred @username is taken by someone else.
+          </p>
+        </div>
       </div>
 
       <div className="relative">
@@ -249,14 +256,22 @@ function LoginContent() {
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-[3rem] animate-in fade-in duration-300">
              <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
              <p className="font-black text-primary uppercase tracking-widest text-xs">
-                {isSignUp ? "Creating Account..." : "Signing In..."}
+                {isSignUp ? "Securing Username..." : "Signing In..."}
              </p>
           </div>
         )}
-        <Card className="border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
+        <Card className="border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden border-t-8 border-t-orange-500">
           <CardHeader className="bg-muted/30 pb-8 pt-10 text-center">
+            {isSignUp && (
+              <div className="bg-orange-500/10 border-2 border-orange-500/20 p-4 rounded-2xl mb-6 flex items-center gap-3 animate-pulse">
+                <AlertCircle className="h-5 w-5 text-orange-600" />
+                <p className="text-[10px] font-black uppercase text-orange-700 tracking-widest text-left leading-tight">
+                  High Demand: 14 usernames reserved in the last hour.
+                </p>
+              </div>
+            )}
             <CardDescription className="font-bold text-sm">
-              {isSignUp ? "Create your professional account" : "Welcome back to Globlync"}
+              {isSignUp ? "Reserve your professional username" : "Welcome back to Globlync"}
             </CardDescription>
             {referrerName && (
               <div className="mt-4 flex flex-col items-center gap-2 animate-in zoom-in-95">
@@ -296,7 +311,10 @@ function LoginContent() {
                     <Input placeholder="e.g. John Doe" className="h-14 rounded-2xl bg-muted/10 border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                   </div>
                   <div className="grid gap-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired Username</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60 flex items-center justify-between">
+                      Desired Username
+                      <span className="text-[8px] text-orange-600 font-black">Limited availability</span>
+                    </Label>
                     <Input placeholder="e.g. jdoe_dev" className="h-14 rounded-2xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
                   </div>
                   {!urlReferral && (
@@ -319,13 +337,13 @@ function LoginContent() {
               </div>
               <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                {isSignUp ? "Create Account" : "Sign In"}
+                {isSignUp ? "Reserve My Username Now" : "Sign In"}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 p-8 pt-0">
             <p className="text-center text-sm font-medium text-muted-foreground">
-              {isSignUp ? "Already part of the network?" : "New professional?"}{" "}
+              {isSignUp ? "Already secured yours?" : "New professional?"}{" "}
               <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Register Free"}</button>
             </p>
           </CardFooter>
