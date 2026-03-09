@@ -168,8 +168,6 @@ export default function SettingsPage() {
 
       // 3. Delete from Firestore
       await deleteDoc(doc(db, "workerProfiles", user.uid));
-      // Cleanup Registry
-      const userSnap = await doc(db, "workerProfiles", user.uid); // Reference for any username cleanup
       
       // 4. Final Delete Auth User
       await deleteUser(user);
@@ -339,10 +337,10 @@ export default function SettingsPage() {
                     <AlertTriangle className="h-10 w-10 text-destructive" />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-2xl font-black tracking-tight">Are you sure?</h2>
-                    <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+                    <DialogTitle className="text-2xl font-black tracking-tight">Are you sure?</DialogTitle>
+                    <DialogDescription className="text-muted-foreground text-sm font-medium leading-relaxed">
                       We're sad to see you go. Are you sure you want to start the account deletion process?
-                    </p>
+                    </DialogDescription>
                   </div>
                   <div className="flex flex-col gap-2 pt-4">
                     <Button className="w-full rounded-full h-12 font-black" onClick={() => setDeleteStep(2)}>
@@ -359,14 +357,14 @@ export default function SettingsPage() {
                 <div className="p-10 space-y-6">
                   <div className="bg-primary/10 p-4 rounded-2xl flex items-center gap-4">
                     <ShieldAlert className="h-8 w-8 text-primary shrink-0" />
-                    <h2 className="text-xl font-black tracking-tight">Understand the Impact</h2>
+                    <DialogTitle className="text-xl font-black tracking-tight">Understand the Impact</DialogTitle>
                   </div>
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+                  <DialogDescription className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                     <p>Deleting your account will <span className="text-destructive font-black">permanently remove</span> your profile, trust score, verified jobs, and all professional evidence from our database.</p>
                     <p className="bg-muted/50 p-4 rounded-xl border-l-4 border-primary font-medium text-xs">
                       Note: You can still create another account using the same email at a later time if you change your mind.
                     </p>
-                  </div>
+                  </DialogDescription>
                   <div className="flex flex-col gap-2 pt-4">
                     <Button className="w-full rounded-full h-12 font-black" onClick={() => setDeleteStep(3)}>
                       I Understand, Continue
@@ -478,10 +476,10 @@ export default function SettingsPage() {
                     <Heart className="h-10 w-10 text-primary fill-primary" />
                   </div>
                   <div className="space-y-2">
-                    <h2 className="text-3xl font-black tracking-tight text-primary">We hear you.</h2>
-                    <p className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
+                    <DialogTitle className="text-3xl font-black tracking-tight text-primary">We hear you.</DialogTitle>
+                    <DialogDescription className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
                       We'll try to fix the issues you mentioned. Please, if you find free time, come back to our app. We keep on updating so you have a good experience in our app.
-                    </p>
+                    </DialogDescription>
                   </div>
                   <div className="pt-4 space-y-4">
                     <Loader2 className="h-6 w-6 animate-spin text-primary/30 mx-auto" />

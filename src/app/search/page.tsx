@@ -61,7 +61,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
+  const [isLockDialogOpen] = useState(false);
   
   const { user } = useUser();
   const db = useFirestore();
@@ -103,6 +103,8 @@ export default function SearchPage() {
     });
   }, [allWorkers, searchTerm, selectedCategory]);
 
+  const [localIsLockDialogOpen, setLocalIsLockDialogOpen] = useState(false);
+
   const handleMessageClick = (workerId: string) => {
     if (!user) {
       router.push("/login");
@@ -111,7 +113,7 @@ export default function SearchPage() {
 
     const referralCount = currentUserProfile?.referralCount || 0;
     if (referralCount < 1) {
-      setIsLockDialogOpen(true);
+      setLocalIsLockDialogOpen(true);
       return;
     }
 
@@ -242,15 +244,15 @@ export default function SearchPage() {
         </div>
       </section>
 
-      <Dialog open={isLockDialogOpen} onOpenChange={setIsLockDialogOpen}>
+      <Dialog open={localIsLockDialogOpen} onOpenChange={setLocalIsLockDialogOpen}>
         <DialogContent className="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md">
           <div className="bg-primary p-10 text-center space-y-6">
             <div className="bg-white/20 p-6 rounded-[2rem] shadow-2xl backdrop-blur-md w-fit mx-auto">
               <Lock className="h-12 w-12 text-white" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-3xl font-black tracking-tight text-white leading-none">Unlock Networking</h2>
-              <p className="text-white/80 font-medium text-sm">To maintain professional privacy, messaging is only available to active Globlync members.</p>
+              <DialogTitle className="text-3xl font-black tracking-tight text-white leading-none">Unlock Networking</DialogTitle>
+              <DialogDescription className="text-white/80 font-medium text-sm">To maintain professional privacy, messaging is only available to active Globlync members.</DialogDescription>
             </div>
           </div>
           <CardContent className="p-10 text-center space-y-6">
@@ -260,7 +262,7 @@ export default function SearchPage() {
             <Button size="lg" className="w-full rounded-full h-16 text-lg font-black shadow-xl" asChild>
               <Link href="/referrals">Invite & Unlock Now <ChevronRight className="ml-2 h-5 w-5" /></Link>
             </Button>
-            <Button variant="ghost" className="text-xs font-bold text-muted-foreground" onClick={() => setIsLockDialogOpen(false)}>Return to Search</Button>
+            <Button variant="ghost" className="text-xs font-bold text-muted-foreground" onClick={() => setLocalIsLockDialogOpen(false)}>Return to Search</Button>
           </CardContent>
         </DialogContent>
       </Dialog>
