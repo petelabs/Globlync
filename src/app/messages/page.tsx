@@ -46,13 +46,13 @@ export default function MessagesPage() {
   }, [db, user?.uid]);
 
   const chatsQuery = useMemoFirebase(() => {
-    if (!chatsRef) return null;
+    if (!chatsRef || !user?.uid) return null;
     return query(
       chatsRef, 
-      where("participants", "array-contains", user!.uid),
+      where("participants", "array-contains", user.uid),
       orderBy("updatedAt", "desc")
     );
-  }, [chatsRef]);
+  }, [chatsRef, user?.uid]);
 
   const { data: chats, isLoading } = useCollection(chatsQuery);
 
