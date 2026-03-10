@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +15,6 @@ import {
   FileText, 
   LogOut, 
   Trash2, 
-  Download, 
   ChevronRight, 
   Lock, 
   BellRing,
@@ -32,15 +31,17 @@ import {
   Loader2,
   CheckCircle2,
   Heart,
-  ArrowRight,
+  Star,
+  ThumbsUp,
   ShieldAlert
 } from "lucide-react";
-import { useAuth, useUser, useFirestore, useMemoFirebase } from "@/firebase";
+import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { doc, deleteDoc } from "firebase/firestore";
+import { doc, deleteDoc, collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { 
   Accordion, 
   AccordionContent, 
@@ -56,6 +57,8 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { INITIAL_TESTIMONIALS } from "@/lib/initial-testimonials";
 
 const DELETION_REASONS = [
   "Not finding enough work opportunities",
@@ -79,10 +82,14 @@ export default function SettingsPage() {
 
   const [darkMode, setDarkMode] = useState(false);
   const [animationsDisabled, setAnimationsDisabled] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   
   // Deletion States
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deleteStep, setDeleteStep] = useState(1); // 1: Confirmation, 2: Impact Info, 3: Reason, 4: Auth, 5: Success
+  const [deleteStep, setDeleteStep] = useState(1);
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [otherDescription, setOtherDescription] = useState("");
   const [password, setPassword] = useState("");
@@ -94,6 +101,56 @@ export default function SettingsPage() {
     setDarkMode(isDark);
     setAnimationsDisabled(isNoAnim);
   }, []);
+
+  const appRatingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return collection(db, "appRatings");
+  }, [db]);
+
+  const appRatingsQuery = useMemoFirebase(() => {
+    if (!appRatingsRef) return null;
+    return query(appRatingsRef, orderBy("createdAt", "desc"), limit(10));
+  }, [appRatingsRef]);
+
+  const { data: dbTestimonials } = useCollection(appRatingsQuery);
+
+  const combinedTestimonials = useMemo(() => {
+    const live = (dbTestimonials || []).map(t => ({
+      userName: t.userName,
+      username: `@${t.userName.toLowerCase().replace(/\s+/g, '_')}_pro`,
+      score: t.score,
+      feedback: t.feedback,
+      avatarColor: "bg-primary/10 text-primary",
+      createdAt: t.createdAt
+    }));
+
+    const sorted = [...live, ...INITIAL_TESTIMONIALS].sort((a, b) => 
+      (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+    );
+
+    return showAllReviews ? sorted : sorted.slice(0, 3);
+  }, [dbTestimonials, showAllReviews]);
+
+  const handleRateApp = async () => {
+    if (!user || !appRatingsRef || rating === 0) return;
+    setIsSubmittingFeedback(true);
+    try {
+      await addDocumentNonBlocking(appRatingsRef, {
+        uid: user.uid,
+        userName: user.displayName || "Professional",
+        score: rating,
+        feedback,
+        createdAt: serverTimestamp()
+      });
+      setRating(0);
+      setFeedback("");
+      toast({ title: "Feedback Received", description: "Thanks for helping Globlync grow!" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Submission Failed" });
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
 
   const toggleDarkMode = (enabled: boolean) => {
     setDarkMode(enabled);
@@ -138,7 +195,6 @@ export default function SettingsPage() {
     setIsDeleting(true);
 
     try {
-      // 1. Re-authenticate
       const providerId = user.providerData[0]?.providerId;
       if (providerId === 'password') {
         if (!password) {
@@ -154,7 +210,6 @@ export default function SettingsPage() {
         await reauthenticateWithPopup(user, provider);
       }
 
-      // 2. Submit hidden feedback
       await fetch('/api/account-deletion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -166,10 +221,7 @@ export default function SettingsPage() {
         })
       });
 
-      // 3. Delete from Firestore
       await deleteDoc(doc(db, "workerProfiles", user.uid));
-      
-      // 4. Final Delete Auth User
       await deleteUser(user);
 
       setDeleteStep(5);
@@ -184,11 +236,7 @@ export default function SettingsPage() {
       if (error.code === 'auth/wrong-password') msg = "Incorrect password.";
       if (error.code === 'auth/popup-blocked') msg = "The verification popup was blocked by your browser.";
       
-      toast({ 
-        variant: "destructive", 
-        title: "Deletion Failed", 
-        description: msg
-      });
+      toast({ variant: "destructive", title: "Deletion Failed", description: msg });
     } finally {
       setIsDeleting(false);
     }
@@ -197,7 +245,7 @@ export default function SettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-2">
+    <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-2 pb-24">
       <header>
         <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
           <Settings className="h-8 w-8 text-primary" />
@@ -247,6 +295,62 @@ export default function SettingsPage() {
           <Button variant="ghost" size="sm" className="w-full text-xs font-bold uppercase tracking-widest opacity-60" asChild>
             <Link href="/contact">View All Contact Points</Link>
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* FEEDBACK SECTION MOVED FROM HOME */}
+      <Card className="border-none shadow-sm rounded-[2rem]">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <ThumbsUp className="h-5 w-5 text-primary" />
+            Rate Globlync
+          </CardTitle>
+          <CardDescription>Help us build a better platform for everyone.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex justify-center gap-3">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <button key={s} onClick={() => setRating(s)} className="hover:scale-125 transition-transform">
+                <Star className={cn("h-8 w-8", rating >= s ? "fill-secondary text-secondary" : "text-muted")} />
+              </button>
+            ))}
+          </div>
+          <Textarea 
+            placeholder="How is Globlync helping your career?" 
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            className="rounded-2xl border-2 min-h-[80px] text-sm"
+          />
+          <Button 
+            onClick={handleRateApp} 
+            disabled={isSubmittingFeedback || rating === 0} 
+            className="w-full rounded-full h-12 font-black"
+          >
+            {isSubmittingFeedback ? <Loader2 className="animate-spin mr-2" /> : <Send className="mr-2 h-4 w-4" />}
+            Submit Review
+          </Button>
+
+          <div className="pt-4 border-t space-y-4">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Reviews</p>
+            {combinedTestimonials.map((t, i) => (
+              <div key={i} className="bg-muted/30 p-4 rounded-2xl space-y-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, j) => (
+                      <Star key={j} className={cn("h-3 w-3", j < t.score ? "fill-secondary text-secondary" : "text-muted")} />
+                    ))}
+                  </div>
+                  <span className="text-[8px] font-black uppercase text-primary/60">{t.username}</span>
+                </div>
+                <p className="text-xs font-medium italic opacity-80 leading-relaxed">"{t.feedback}"</p>
+              </div>
+            ))}
+            {!showAllReviews && (
+              <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest" onClick={() => setShowAllReviews(true)}>
+                View More Reviews <ChevronRight className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 

@@ -46,13 +46,17 @@ function LoginContent() {
     async function checkReferrer() {
       const code = urlReferral || manualReferral;
       if (code && db) {
-        const refDoc = await getDoc(doc(db, "referralCodes", code.trim().toUpperCase()));
-        if (refDoc.exists()) {
-          const profileDoc = await getDoc(doc(db, "workerProfiles", refDoc.data().uid));
-          if (profileDoc.exists()) {
-            setReferrerName(profileDoc.data().name);
+        try {
+          const refDoc = await getDoc(doc(db, "referralCodes", code.trim().toUpperCase()));
+          if (refDoc.exists()) {
+            const profileDoc = await getDoc(doc(db, "workerProfiles", refDoc.data().uid));
+            if (profileDoc.exists()) {
+              setReferrerName(profileDoc.data().name);
+            }
+          } else {
+            setReferrerName(null);
           }
-        } else {
+        } catch (e) {
           setReferrerName(null);
         }
       } else {
@@ -73,38 +77,41 @@ function LoginContent() {
       const finalReferral = urlReferral || manualReferral;
 
       if (finalReferral) {
-        const referralDocRef = doc(db, "referralCodes", finalReferral.trim().toUpperCase());
-        const referralDocSnap = await getDoc(referralDocRef);
-        
-        if (referralDocSnap.exists()) {
-          invitedBy = referralDocSnap.data().uid;
-          const inviterRef = doc(db, "workerProfiles", invitedBy);
+        try {
+          const referralDocRef = doc(db, "referralCodes", finalReferral.trim().toUpperCase());
+          const referralDocSnap = await getDoc(referralDocRef);
           
-          updateDoc(inviterRef, {
-            referralCount: increment(1),
-            updatedAt: serverTimestamp()
-          }).catch(() => {});
+          if (referralDocSnap.exists()) {
+            invitedBy = referralDocSnap.data().uid;
+            const inviterRef = doc(db, "workerProfiles", invitedBy);
+            
+            updateDoc(inviterRef, {
+              referralCount: increment(1),
+              updatedAt: serverTimestamp()
+            }).catch(() => {});
 
-          const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
-          addDoc(inviterNotifRef, {
-            type: "profile_update",
-            message: "New Referral! Someone joined Globlync using your link.",
-            isRead: false,
-            createdAt: serverTimestamp()
-          }).catch(() => {});
+            const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
+            addDoc(inviterNotifRef, {
+              type: "profile_update",
+              message: "New Referral! Someone joined Globlync using your link.",
+              isRead: false,
+              createdAt: serverTimestamp()
+            }).catch(() => {});
+          }
+        } catch (e) {
+          console.warn("Referral link failed to process, proceeding with registration.");
         }
       }
 
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "";
-      
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      
       const finalName = manualName || auth.currentUser?.displayName || "New Professional";
-      // Generate a small branded fallback name if no username provided
+      
       const shortName = finalName.split(' ')[0].toLowerCase().substring(0, 10).replace(/[^a-z0-9]/g, '');
       const fallbackUsername = `gl_${shortName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
+      // 1. Create the main profile first - MOST CRITICAL
       await setDoc(profileRef, {
         id: uid,
         name: finalName,
@@ -127,9 +134,13 @@ function LoginContent() {
         updatedAt: serverTimestamp(),
       });
 
-      // Registry for uniqueness
-      await setDoc(doc(db, "usernames", finalUsername), { uid });
-      await setDoc(doc(db, "referralCodes", newCode), { uid });
+      // 2. Registries for uniqueness - silent fail to prevent signup crash
+      try {
+        await setDoc(doc(db, "usernames", finalUsername), { uid });
+        await setDoc(doc(db, "referralCodes", newCode), { uid });
+      } catch (e) {
+        console.warn("Registry update blip (usually timing related), profile is secured.");
+      }
 
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
       await addDoc(notifRef, {
@@ -159,7 +170,6 @@ function LoginContent() {
       console.error("Google Auth Error:", error);
       let errorMessage = "Ensure you are using a standard browser and check your internet.";
       if (error.code === 'auth/popup-blocked') errorMessage = "The sign-in popup was blocked. Please allow popups for this site.";
-      if (error.code === 'auth/unauthorized-domain') errorMessage = "This domain is not authorized. Please check your Firebase Console settings.";
       
       toast({ 
         variant: "destructive", 

@@ -1,47 +1,30 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   ShieldCheck, 
   Sparkles, 
-  Briefcase, 
-  Star, 
   Globe, 
   ArrowRight, 
   Lightbulb, 
-  Loader2, 
-  ThumbsUp, 
   Users,
   Timer,
-  ChevronDown
+  Star
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase, useUser, addDocumentNonBlocking } from "@/firebase";
-import { collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
-import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { MOTIVATIONAL_QUOTES, type Motivation } from "@/lib/motivational-quotes";
-import { INITIAL_TESTIMONIALS, type Testimonial } from "@/lib/initial-testimonials";
-import { cn } from "@/lib/utils";
 
 export default function Home() {
-  const { user } = useUser();
   const db = useFirestore();
-  const { toast } = useToast();
-  
   const [globalTip, setGlobalTip] = useState<Motivation | null>(null);
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -55,56 +38,7 @@ export default function Home() {
     return collection(db, "workerProfiles");
   }, [db]);
 
-  const appRatingsRef = useMemoFirebase(() => {
-    if (!db) return null;
-    return collection(db, "appRatings");
-  }, [db]);
-
-  const appRatingsQuery = useMemoFirebase(() => {
-    if (!appRatingsRef) return null;
-    return query(appRatingsRef, orderBy("createdAt", "desc"), limit(10));
-  }, [appRatingsRef]);
-
   const { data: allWorkers } = useCollection(workersRef);
-  const { data: dbTestimonials } = useCollection(appRatingsQuery);
-
-  const combinedTestimonials = useMemo(() => {
-    const live = (dbTestimonials || []).map(t => ({
-      userName: t.userName,
-      username: `@${t.userName.toLowerCase().replace(/\s+/g, '_')}_pro`,
-      score: t.score,
-      feedback: t.feedback,
-      avatarColor: "bg-primary/10 text-primary",
-      createdAt: t.createdAt
-    }));
-
-    const sorted = [...live, ...INITIAL_TESTIMONIALS].sort((a, b) => 
-      (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-    );
-
-    return showAllReviews ? sorted : sorted.slice(0, 5);
-  }, [dbTestimonials, showAllReviews]);
-
-  const handleRateApp = async () => {
-    if (!user || !appRatingsRef || rating === 0) return;
-    setIsSubmitting(true);
-    try {
-      await addDocumentNonBlocking(appRatingsRef, {
-        uid: user.uid,
-        userName: user.displayName || "Professional",
-        score: rating,
-        feedback,
-        createdAt: serverTimestamp()
-      });
-      setRating(0);
-      setFeedback("");
-      toast({ title: "Feedback Received", description: "Thanks for helping Globlync grow!" });
-    } catch (e) {
-      toast({ variant: "destructive", title: "Submission Failed" });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const memberCount = (allWorkers?.length || 0) + 3280;
   const proCount = (allWorkers?.length || 0) + 2140;
@@ -178,7 +112,7 @@ export default function Home() {
         </Card>
       </section>
 
-      <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
         {[
           { label: "Members Registered", value: `${memberCount.toLocaleString()}`, icon: Users },
           { label: "Verified Pros", value: `${proCount.toLocaleString()}`, icon: ShieldCheck },
@@ -195,88 +129,7 @@ export default function Home() {
         ))}
       </section>
 
-      {user && (
-        <section className="max-w-xl mx-auto w-full px-4 text-center space-y-6">
-          <h2 className="text-xl font-black uppercase tracking-widest text-primary">Rate your experience</h2>
-          <Card className="border-none shadow-xl rounded-[2rem] p-8">
-            <CardContent className="space-y-6 p-0">
-              <div className="flex justify-center gap-3">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <button key={s} onClick={() => setRating(s)} className="hover:scale-125 transition-transform">
-                    <Star className={cn("h-10 w-10", rating >= s ? "fill-secondary text-secondary" : "text-muted")} />
-                  </button>
-                ))}
-              </div>
-              <Textarea 
-                placeholder="How is Globlync helping your career?" 
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                className="rounded-2xl border-2 min-h-[100px]"
-              />
-              <Button 
-                onClick={handleRateApp} 
-                disabled={isSubmitting || rating === 0} 
-                className="w-full rounded-full h-14 font-black"
-              >
-                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <ThumbsUp className="mr-2 h-4 w-4" />}
-                Submit Review
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
-      )}
-
-      <section className="py-12 px-4 bg-muted/20 rounded-[3rem] mx-4 border-2 border-dashed">
-        <div className="text-center mb-16 space-y-2">
-          <h2 className="text-3xl font-black uppercase tracking-tighter">Verified Professional Feedback</h2>
-          <p className="text-muted-foreground text-sm font-medium">Join {memberCount.toLocaleString()} professionals building evidence-based trust.</p>
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
-          {combinedTestimonials.length > 0 ? (
-            combinedTestimonials.map((t, i) => (
-              <Card key={i} className="rounded-[2rem] border-none shadow-sm p-8 space-y-4 hover:shadow-xl transition-shadow bg-white animate-in fade-in duration-500">
-                <div className="flex justify-between items-start">
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={cn("h-4 w-4", i < t.score ? "fill-secondary text-secondary" : "text-muted")} />
-                    ))}
-                  </div>
-                  <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest opacity-40">Verified Pro</Badge>
-                </div>
-                <p className="text-sm font-medium leading-relaxed italic text-muted-foreground">"{t.feedback}"</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-muted">
-                  <div className={cn("h-10 w-10 rounded-full flex items-center justify-center font-black text-primary text-xs shadow-inner", t.avatarColor || "bg-primary/10")}>
-                    {t.userName?.charAt(0) || "P"}
-                  </div>
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-tight">{t.userName}</p>
-                    <p className="text-[10px] text-primary font-black opacity-60">{t.username}</p>
-                  </div>
-                </div>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary opacity-20" />
-            </div>
-          )}
-        </div>
-
-        {!showAllReviews && combinedTestimonials.length >= 5 && (
-          <div className="flex justify-center mt-12">
-            <Button 
-              variant="outline" 
-              className="rounded-full px-12 h-14 border-2 font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg"
-              onClick={() => setShowAllReviews(true)}
-            >
-              View All {INITIAL_TESTIMONIALS.length + (dbTestimonials?.length || 0)} Verified Reviews <ChevronDown className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        )}
-      </section>
-
-      <div className="max-w-4xl mx-auto w-full px-4 mb-12">
+      <div className="max-w-4xl mx-auto w-full px-4 mb-20">
         <AdBanner className="w-full" />
       </div>
     </div>

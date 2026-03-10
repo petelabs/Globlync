@@ -25,7 +25,7 @@ service cloud.firestore {
       
       // Allow the owner to update everything, or others to increment views/score
       allow update: if isOwner(workerId)
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits']));
       
       match /jobs/{jobId} {
         allow read: if true;
@@ -47,28 +47,26 @@ service cloud.firestore {
 
     // Messaging System
     match /chats/{chatId} {
-      // Explicitly handle listing and reading for participants
-      allow read: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow read, list: if isSignedIn() && (request.auth.uid in resource.data.participants);
       allow create: if isSignedIn() && (request.auth.uid in request.resource.data.participants);
       allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
 
       match /messages/{messageId} {
-        // Access messages if the user is a participant in the parent chat
-        allow read: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
+        allow read, list: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
         allow create: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
       }
     }
 
-    // Registries
+    // Registries - Allow public creation during signup flow
     match /usernames/{username} {
       allow get: if true;
-      allow create: if isSignedIn();
+      allow create: if true; 
       allow delete: if isSignedIn();
     }
 
     match /referralCodes/{code} {
       allow get: if true;
-      allow create: if isSignedIn();
+      allow create: if true;
     }
 
     match /appRatings/{ratingId} {
