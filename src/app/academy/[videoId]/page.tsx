@@ -26,20 +26,8 @@ import { COURSES, type Course } from "../page";
 import { cn } from "@/lib/utils";
 
 /**
- * YouTube Player logic for Watch-to-Earn.
+ * Robust YouTube Player logic for Watch-to-Earn.
  */
-
-let apiLoaded = false;
-const loadYoutubeApi = () => {
-  if (apiLoaded || typeof window === 'undefined') return;
-  const tag = document.createElement('script');
-  tag.src = "https://www.youtube.com/iframe_api";
-  const firstScriptTag = document.getElementsByTagName('script')[0];
-  if (firstScriptTag && firstScriptTag.parentNode) {
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    apiLoaded = true;
-  }
-};
 
 export default function CoursePlayerPage() {
   const { videoId } = useParams() as { videoId: string };
@@ -48,6 +36,7 @@ export default function CoursePlayerPage() {
   const router = useRouter();
   const { toast } = useToast();
   const playerRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   const [isCompleted, setIsCompleted] = useState(false);
   const [isProcessingReward, setIsProcessingReward] = useState(false);
@@ -69,41 +58,73 @@ export default function CoursePlayerPage() {
     }
   }, [profile, videoId]);
 
+  // Load YouTube API Script Once
   useEffect(() => {
-    loadYoutubeApi();
-    
-    (window as any).onYouTubeIframeAPIReady = () => {
-      initPlayer();
+    if (typeof window !== 'undefined' && !(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+  }, []);
+
+  // Initialize/Update Player
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const init = () => {
+      if (!course || !document.getElementById('yt-player')) return;
+
+      // If already initialized, just load the new video ID
+      if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
+        playerRef.current.loadVideoById(course.youtubeId);
+        setIsPlayerReady(true);
+        return;
+      }
+
+      // If API is ready but player isn't created
+      if ((window as any).YT && (window as any).YT.Player) {
+        playerRef.current = new (window as any).YT.Player('yt-player', {
+          videoId: course.youtubeId,
+          playerVars: {
+            autoplay: 0,
+            modestbranding: 1,
+            rel: 0,
+            controls: 1,
+            enablejsapi: 1,
+            playsinline: 1
+          },
+          events: {
+            onReady: () => setIsPlayerReady(true),
+            onStateChange: (event: any) => {
+              // YT.PlayerState.ENDED is 0
+              if (event.data === 0) {
+                handleVideoEnd();
+              }
+            },
+            onError: () => {
+              toast({ variant: "destructive", title: "Video Error", description: "This video might be unavailable in your region." });
+            }
+          }
+        });
+      }
     };
 
-    if ((window as any).YT && (window as any).YT.Player) {
-      initPlayer();
-    }
-  }, [course]);
-
-  const initPlayer = () => {
-    if (!course || playerRef.current || !document.getElementById('yt-player')) return;
-    
-    playerRef.current = new (window as any).YT.Player('yt-player', {
-      videoId: course.youtubeId,
-      playerVars: {
-        autoplay: 0,
-        modestbranding: 1,
-        rel: 0,
-        controls: 1,
-        enablejsapi: 1
-      },
-      events: {
-        onReady: () => setIsPlayerReady(true),
-        onStateChange: (event: any) => {
-          // YT.PlayerState.ENDED is 0
-          if (event.data === 0) {
-            handleVideoEnd();
-          }
-        }
+    // Polling until API is available
+    interval = setInterval(() => {
+      if ((window as any).YT && (window as any).YT.Player) {
+        init();
+        clearInterval(interval);
       }
-    });
-  };
+    }, 500);
+
+    return () => {
+      clearInterval(interval);
+      // We don't necessarily want to destroy the player on every re-render, 
+      // but we do want to clear the ready state if the course changes
+      setIsPlayerReady(false);
+    };
+  }, [course, videoId]);
 
   const handleVideoEnd = async () => {
     if (isCompleted || hasEarnedInThisSession || !user || !workerRef || isProcessingReward || !course) return;
@@ -111,6 +132,11 @@ export default function CoursePlayerPage() {
     setIsProcessingReward(true);
     try {
       const existingCompleted = profile?.completedCourses || [];
+      if (existingCompleted.includes(videoId)) {
+        setIsProcessingReward(false);
+        return;
+      }
+
       const updatedCompleted = [...existingCompleted, videoId];
       
       const baseKP = course.reward || 5;
@@ -193,8 +219,9 @@ export default function CoursePlayerPage() {
 
       <div className="relative aspect-video w-full rounded-[2rem] overflow-hidden bg-black shadow-2xl border-4 border-white group">
         {!isPlayerReady && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/20 backdrop-blur-sm z-10">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 backdrop-blur-sm z-10 gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary animate-pulse">Initializing Secure Stream...</p>
           </div>
         )}
         <div id="yt-player" className="w-full h-full" />
