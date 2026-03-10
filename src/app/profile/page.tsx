@@ -38,7 +38,8 @@ import {
   Share2,
   Lock as LockIcon,
   Coins,
-  Timer
+  Timer,
+  GraduationCap
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -172,6 +173,7 @@ export default function ProfilePage() {
       totalVerified: verifiedJobs.length,
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
+      knowledgePoints: profile?.knowledgePoints || 0,
       profileViews: profile?.profileViews || 0,
       referralCount: profile?.referralCount || 0,
       rewardCredits: profile?.rewardCredits || 0
@@ -355,19 +357,19 @@ export default function ProfilePage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Eye className="h-4 w-4" /></div>
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><TrendingUp className="h-4 w-4" /></div>
             <div>
-              <p className="text-[10px] font-black uppercase text-muted-foreground">Global Views</p>
-              <p className="text-xl font-black">{stats.profileViews}</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Trust Score</p>
+              <p className="text-xl font-black">{stats.trustScore}</p>
             </div>
           </div>
         </Card>
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary"><TrendingUp className="h-4 w-4" /></div>
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><GraduationCap className="h-4 w-4" /></div>
             <div>
-              <p className="text-[10px] font-black uppercase text-muted-foreground">Trust Score</p>
-              <p className="text-xl font-black">{stats.trustScore}</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Knowledge</p>
+              <p className="text-xl font-black">{stats.knowledgePoints} KP</p>
             </div>
           </div>
         </Card>

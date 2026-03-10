@@ -7,170 +7,37 @@
       "type": "object",
       "description": "Represents an informal worker's profile, containing personal and professional details, linked to an external authentication system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the WorkerProfile entity."
-        },
-        "username": {
-          "type": "string",
-          "description": "Unique username for the worker."
-        },
-        "lastUsernameUpdate": {
-          "type": "string",
-          "description": "Timestamp of the last username update.",
-          "format": "date-time"
-        },
-        "externalAuthId": {
-          "type": "string",
-          "description": "Reference to the unique identifier from the external authentication system."
-        },
-        "name": {
-          "type": "string",
-          "description": "The full name of the informal worker."
-        },
-        "tradeSkill": {
-          "type": "string",
-          "description": "The primary trade or skill of the worker."
-        },
-        "bio": {
-          "type": "string",
-          "description": "Professional biography."
-        },
-        "profilePictureUrl": {
-          "type": "string",
-          "description": "URL to the worker's profile picture.",
-          "format": "uri"
-        },
-        "trustScore": {
-          "type": "number",
-          "description": "A real-time calculated score reflecting reputation."
-        },
-        "profileViews": {
-          "type": "number",
-          "description": "Number of times the profile has been viewed."
-        },
-        "isAvailable": {
-          "type": "boolean",
-          "description": "Whether the worker is currently available for hire."
-        },
-        "isPro": {
-          "type": "boolean",
-          "description": "Whether the worker has an active Pro subscription."
-        },
-        "whatsappNumber": {
-          "type": "string",
-          "description": "WhatsApp contact number."
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "Direct phone call number."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "Professional contact email.",
-          "format": "email"
-        },
-        "serviceAreas": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "List of districts/towns in Malawi where the worker operates."
-        },
-        "referralCode": {
-          "type": "string",
-          "description": "Unique code for inviting others."
-        },
-        "invitedBy": {
-          "type": "string",
-          "description": "UID of the user who referred this worker."
-        },
-        "referralCount": {
-          "type": "number",
-          "description": "Number of active users referred."
-        },
-        "activeBenefits": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "type": { "type": "string" },
-              "expiresAt": { "type": "string", "format": "date-time" }
-            }
-          }
-        },
-        "onboardingCompleted": {
-          "type": "boolean"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Creation timestamp.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Last update timestamp.",
-          "format": "date-time"
-        },
-        "badgeIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "name": { "type": "string" },
+        "tradeSkill": { "type": "string" },
+        "bio": { "type": "string" },
+        "profilePictureUrl": { "type": "string", "format": "uri" },
+        "trustScore": { "type": "number" },
+        "knowledgePoints": { "type": "number", "description": "Earned through Academy courses." },
+        "profileViews": { "type": "number" },
+        "isAvailable": { "type": "boolean" },
+        "isPro": { "type": "boolean" },
+        "whatsappNumber": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "serviceAreas": { "type": "array", "items": { "type": "string" } },
+        "referralCode": { "type": "string" },
+        "invitedBy": { "type": "string" },
+        "referralCount": { "type": "number" },
+        "completedCourses": { "type": "array", "items": { "type": "string" }, "description": "IDs of completed Academy videos." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "username",
-        "name",
-        "tradeSkill",
-        "trustScore",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "Username": {
-      "type": "object",
-      "properties": {
-        "uid": { "type": "string" }
-      }
-    },
-    "ReferralCode": {
-      "type": "object",
-      "properties": {
-        "uid": { "type": "string" }
-      }
+      "required": ["id", "username", "name", "tradeSkill", "trustScore", "createdAt", "updatedAt"]
     }
-  },
-  "auth": {
-    "providers": [
-      "password",
-      "email_link",
-      "google.com"
-    ]
   },
   "firestore": {
     "structure": [
       {
         "path": "/workerProfiles/{workerId}",
         "definition": {
-          "entityName": "WorkerProfile",
-          "schema": { "$ref": "#/backend/entities/WorkerProfile" },
-          "description": "Worker profiles."
-        }
-      },
-      {
-        "path": "/usernames/{username}",
-        "definition": {
-          "entityName": "Username",
-          "schema": { "$ref": "#/backend/entities/Username" },
-          "description": "Registry of unique usernames mapped to UIDs."
-        }
-      },
-      {
-        "path": "/referralCodes/{code}",
-        "definition": {
-          "entityName": "ReferralCode",
-          "schema": { "$ref": "#/backend/entities/ReferralCode" },
-          "description": "Registry of unique referral codes mapped to UIDs."
+          "entityName": "WorkerProfile"
         }
       }
     ]

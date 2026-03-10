@@ -11,24 +11,19 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Global System Settings - Publicly readable for Tips and System Info
     match /system/{document} {
       allow read: if true;
       allow write: if false; 
     }
 
-    // Worker Profiles
     match /workerProfiles/{workerId} {
-      allow get: if true; // Publicly viewable for reputation
-      allow list: if false; // Browsing all profiles is forbidden for privacy
+      allow get: if true;
+      allow list: if false;
       allow create: if isOwner(workerId);
-      
-      // Allow deletion of own profile and its subcollections
       allow delete: if isOwner(workerId);
       
-      // Allow the owner to update everything, or others to increment views/score/referrals
       allow update: if isOwner(workerId)
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'knowledgePoints', 'completedCourses', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount']));
       
       match /jobs/{jobId} {
         allow read: if true;
@@ -49,7 +44,6 @@ service cloud.firestore {
       }
     }
 
-    // Messaging System
     match /chats/{chatId} {
       allow read, list: if isSignedIn() && (request.auth.uid in resource.data.participants);
       allow create: if isSignedIn() && (request.auth.uid in request.resource.data.participants);
@@ -61,7 +55,6 @@ service cloud.firestore {
       }
     }
 
-    // Registries - Allow public creation during signup flow
     match /usernames/{username} {
       allow get: if true;
       allow create: if true; 
@@ -70,7 +63,7 @@ service cloud.firestore {
 
     match /referralCodes/{code} {
       allow get: if true;
-      allow create: if true;
+      allow create: if true; 
       allow delete: if isSignedIn();
     }
 

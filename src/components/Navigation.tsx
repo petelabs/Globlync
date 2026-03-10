@@ -20,7 +20,8 @@ import {
   Users,
   MessageSquare,
   Lock,
-  MoveRight
+  MoveRight,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -84,7 +85,7 @@ export function Navigation() {
   const { data: unreadNotifications } = useCollection(unreadQuery);
   const unreadCount = unreadNotifications?.length || 0;
   
-  const isPro = profile?.activeBenefits?.some(b => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+  const isPro = profile?.activeBenefits?.some((b: any) => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
   
   const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
 
@@ -100,9 +101,9 @@ export function Navigation() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
+    { label: "Academy", href: "/academy", icon: GraduationCap },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
     { label: "Connect", href: "/search", icon: Lock },
-    { label: "Messages", href: "/messages", icon: MessageSquare, authRequired: true },
     { label: "Log", href: "/work-log", icon: ClipboardCheck, authRequired: true },
   ];
 
