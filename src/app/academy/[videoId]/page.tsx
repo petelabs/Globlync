@@ -7,6 +7,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocki
 import { doc, serverTimestamp, collection, increment } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, 
   Loader2, 
@@ -16,7 +17,8 @@ import {
   Share2, 
   Zap,
   TrendingUp,
-  GraduationCap
+  GraduationCap,
+  Crown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { COURSES, type Course } from "../page";
@@ -93,30 +95,60 @@ export default function CoursePlayerPage() {
   };
 
   const handleVideoEnd = async () => {
-    if (isCompleted || hasEarnedInThisSession || !user || !workerRef || isProcessingReward) return;
+    if (isCompleted || hasEarnedInThisSession || !user || !workerRef || isProcessingReward || !course) return;
 
     setIsProcessingReward(true);
     try {
       const existingCompleted = profile?.completedCourses || [];
+      const updatedCompleted = [...existingCompleted, videoId];
       
-      updateDocumentNonBlocking(workerRef, {
-        knowledgePoints: increment(course?.reward || 5),
-        trustScore: increment(2),
-        completedCourses: [...existingCompleted, videoId],
+      // Calculate reward: VIPs get 2x Knowledge Points
+      const baseKP = course.reward || 5;
+      const finalKP = profile?.isPro ? (baseKP * 2) : baseKP;
+      const trustBoost = 2;
+
+      const profileUpdate: any = {
+        knowledgePoints: increment(finalKP),
+        trustScore: increment(trustBoost),
+        completedCourses: updatedCompleted,
         updatedAt: serverTimestamp()
-      });
+      };
+
+      // Check for Category Path Completion (Badge Logic)
+      const coursesInCategory = COURSES.filter(c => c.category === course.category);
+      const completedInCategory = updatedCompleted.filter(id => 
+        coursesInCategory.some(c => c.id === id)
+      );
+
+      let earnedBadgeName = null;
+      if (completedInCategory.length === coursesInCategory.length) {
+        const badgeSlug = `specialist-${course.category.toLowerCase().replace(/\s+/g, '-')}`;
+        const existingBadges = profile?.badgeIds || [];
+        
+        if (!existingBadges.includes(badgeSlug)) {
+          profileUpdate.badgeIds = [...existingBadges, badgeSlug];
+          earnedBadgeName = `${course.category} Specialist`;
+        }
+      }
+
+      updateDocumentNonBlocking(workerRef, profileUpdate);
 
       const notifRef = collection(db!, "workerProfiles", user.uid, "notifications");
       addDocumentNonBlocking(notifRef, {
         type: "badge_earned",
-        message: `Course Completed! You earned +${course?.reward} Knowledge Points and +2 Trust Score for finishing "${course?.title}".`,
+        message: earnedBadgeName 
+          ? `Path Mastery Unlocked! You earned the "${earnedBadgeName}" badge and +${finalKP} KP.`
+          : `Masterclass Finished! You earned +${finalKP} Knowledge Points and +${trustBoost} Trust Score for "${course.title}".`,
         isRead: false,
         createdAt: serverTimestamp()
       });
 
       setIsCompleted(true);
       setHasEarnedInThisSession(true);
-      toast({ title: "Skill Certified!", description: "Knowledge Points and Trust Score awarded." });
+      toast({ 
+        title: earnedBadgeName ? "Path Mastery!" : "Skill Certified!", 
+        description: `${finalKP} KP awarded. ${profile?.isPro ? 'Pro 2x Bonus Applied!' : ''}` 
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -139,8 +171,9 @@ export default function CoursePlayerPage() {
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Badge className="bg-primary/10 text-primary font-black text-[8px] uppercase">{course.category}</Badge>
-            {isCompleted && <Badge className="bg-green-500 text-white font-black text-[8px] uppercase">Completed</Badge>}
+            <Badge className="bg-primary/10 text-primary font-black text-[8px] uppercase tracking-widest">{course.category}</Badge>
+            {isCompleted && <Badge className="bg-green-500 text-white font-black text-[8px] uppercase tracking-widest">Completed</Badge>}
+            {profile?.isPro && <Badge className="bg-secondary text-secondary-foreground font-black text-[8px] uppercase tracking-widest flex items-center gap-1"><Crown className="h-2 w-2" /> 2x Reward</Badge>}
           </div>
           <h1 className="text-xl font-black tracking-tight mt-1">{course.title}</h1>
         </div>
@@ -156,15 +189,15 @@ export default function CoursePlayerPage() {
             <CardContent className="p-8 space-y-4">
               <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
                 <GraduationCap className="h-5 w-5 text-primary" />
-                Course Insights
+                Professional Insights
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-                {course.description} This course is designed to help professionals in Malawi scale their skills for the global market. Watching to the end is required to earn certification.
+                {course.description} Mastering this module is essential for building a verifiable professional reputation. Watch to the end to earn your certification points.
               </p>
               <div className="pt-4 border-t flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  <span>+{course.reward} KP Reward</span>
+                  <span>+{profile?.isPro ? (course.reward * 2) : course.reward} KP Reward</span>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground">
                   <TrendingUp className="h-4 w-4 text-primary" />
@@ -183,12 +216,12 @@ export default function CoursePlayerPage() {
                 <div className="space-y-2">
                   <h2 className="text-3xl font-black tracking-tighter">Skill Verified!</h2>
                   <p className="text-sm font-medium opacity-90 leading-relaxed max-w-xs">
-                    You've successfully mastered this module. Your professional profile has been updated with {course.reward} Knowledge Points.
+                    Module mastered. Your profile has been updated with {profile?.isPro ? (course.reward * 2) : course.reward} Knowledge Points.
                   </p>
                 </div>
                 <div className="flex gap-3 w-full">
                   <Button variant="secondary" className="flex-1 rounded-full font-black bg-white text-green-600 hover:bg-white/90" onClick={() => router.push('/academy')}>
-                    Browse More
+                    Browse Academy
                   </Button>
                   <Button variant="outline" className="flex-1 rounded-full font-black border-white text-white hover:bg-white/10">
                     <Share2 className="mr-2 h-4 w-4" /> Share Proof
@@ -200,33 +233,46 @@ export default function CoursePlayerPage() {
         </div>
 
         <div className="md:col-span-1 space-y-6">
-          <Card className="border-none bg-secondary/10 p-6 rounded-[2rem] border-2 border-secondary/20">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <Zap className="h-4 w-4 text-secondary" /> VIP Learning
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 space-y-4">
-              <p className="text-[10px] font-medium leading-relaxed text-muted-foreground">
-                Pro VIP members earn <b>Double Knowledge Points</b> for every masterclass completed.
-              </p>
-              {!profile?.isPro && (
+          {!profile?.isPro ? (
+            <Card className="border-none bg-secondary/10 p-6 rounded-[2rem] border-2 border-secondary/20">
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-secondary-foreground">
+                  <Zap className="h-4 w-4 text-secondary fill-secondary" /> VIP Learning
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 space-y-4">
+                <p className="text-[10px] font-medium leading-relaxed text-muted-foreground">
+                  Pro VIP members earn <b>Double Knowledge Points</b> for every module completed in the Academy.
+                </p>
                 <Button className="w-full rounded-full font-black text-[10px] bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={() => router.push('/pricing')}>
                   Upgrade to Earn 2x
                 </Button>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-none bg-primary/10 p-6 rounded-[2rem] border-2 border-primary/20">
+              <CardHeader className="p-0 mb-4">
+                <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-primary">
+                  <Crown className="h-4 w-4 fill-primary" /> VIP Advantage
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <p className="text-[10px] font-bold leading-relaxed text-primary">
+                  VIP 2x Points Multiplier is ACTIVE. You are building your reputation twice as fast!
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="border-none shadow-sm p-6 rounded-[2rem] bg-muted/30">
-            <h4 className="text-[10px] font-black uppercase tracking-widest mb-4 opacity-60">Learning Progress</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-widest mb-4 opacity-60">Mastery Progress</h4>
             <div className="space-y-2">
               <div className="flex justify-between text-[10px] font-black">
                 <span>Certification</span>
                 <span>{isCompleted ? '100%' : 'In Progress'}</span>
               </div>
               <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div className={cn("h-full bg-primary transition-all duration-1000", isCompleted ? "w-full" : "w-[10%] animate-pulse")} />
+                <div className={cn("h-full bg-primary transition-all duration-1000", isCompleted ? "w-full" : "w-[15%] animate-pulse")} />
               </div>
             </div>
           </Card>

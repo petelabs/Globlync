@@ -18,7 +18,9 @@ import {
   BookOpen,
   Layout,
   Briefcase,
-  Target
+  Target,
+  Hammer,
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -76,6 +78,26 @@ export const COURSES: Course[] = [
     duration: "6 mins",
     reward: 5,
     icon: BookOpen
+  },
+  {
+    id: "trade-101",
+    title: "Modern Technical Standards",
+    description: "Global quality benchmarks for skilled manual trades and construction.",
+    youtubeId: "ScMzIvxBSi4",
+    category: "Trade Mastery",
+    duration: "15 mins",
+    reward: 5,
+    icon: Hammer
+  },
+  {
+    id: "rem-102",
+    title: "Scaling Your Rate",
+    description: "How to move from local pricing to global USD benchmarks as a freelancer.",
+    youtubeId: "dQw4w9WgXcQ",
+    category: "Remote Pro",
+    duration: "9 mins",
+    reward: 5,
+    icon: ShieldCheck
   }
 ];
 
@@ -97,6 +119,16 @@ export default function AcademyPage() {
   const filteredCourses = useMemo(() => {
     return filter ? COURSES.filter(c => c.category === filter) : COURSES;
   }, [filter]);
+
+  const pathProgress = useMemo(() => {
+    const stats: Record<string, { total: number; done: number }> = {};
+    categories.forEach(cat => {
+      const total = COURSES.filter(c => c.category === cat).length;
+      const done = COURSES.filter(c => c.category === cat && completedIds.includes(c.id)).length;
+      stats[cat] = { total, done };
+    });
+    return stats;
+  }, [completedIds]);
 
   return (
     <div className="flex flex-col gap-8 py-4 max-w-5xl mx-auto px-4">
@@ -128,17 +160,25 @@ export default function AcademyPage() {
         >
           All Path
         </Button>
-        {categories.map(cat => (
-          <Button 
-            key={cat}
-            variant={filter === cat ? "default" : "outline"} 
-            size="sm" 
-            className="rounded-full font-bold h-9"
-            onClick={() => setCategoryFilter(cat)}
-          >
-            {cat}
-          </Button>
-        ))}
+        {categories.map(cat => {
+          const stats = pathProgress[cat];
+          const isFinished = stats.total > 0 && stats.total === stats.done;
+          return (
+            <Button 
+              key={cat}
+              variant={filter === cat ? "default" : "outline"} 
+              size="sm" 
+              className={cn(
+                "rounded-full font-bold h-9 gap-2",
+                isFinished && "border-green-500 text-green-600 hover:bg-green-50"
+              )}
+              onClick={() => setCategoryFilter(cat)}
+            >
+              {cat}
+              {isFinished && <CheckCircle2 className="h-3 w-3" />}
+            </Button>
+          );
+        })}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
@@ -161,7 +201,7 @@ export default function AcademyPage() {
                       {course.category}
                     </Badge>
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary">
-                      <Sparkles className="h-3 w-3" /> +{course.reward} KP
+                      <Sparkles className="h-3 w-3" /> +{course.reward} KP {profile?.isPro && "(VIP 2x Active)"}
                     </div>
                   </div>
                 </div>
@@ -176,7 +216,7 @@ export default function AcademyPage() {
                 <div className="flex items-center gap-4 text-xs font-bold text-muted-foreground">
                   <div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {course.duration}</div>
                   <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                  <div className="flex items-center gap-1.5 text-secondary"><Star className="h-3.5 w-3.5 fill-secondary" /> Expert Tier</div>
+                  <div className="flex items-center gap-1.5 text-secondary"><Star className="h-3.5 w-3.5 fill-secondary" /> Professional Tier</div>
                 </div>
               </CardContent>
               <CardFooter className="bg-muted/30 p-6 flex justify-between items-center">
@@ -205,14 +245,14 @@ export default function AcademyPage() {
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-2 text-center md:text-left">
             <Badge className="bg-white/20 text-white font-black mb-2 uppercase text-[10px]">Continuous Learning</Badge>
-            <h3 className="text-3xl font-black tracking-tight">Become a Top 1% Pro</h3>
+            <h3 className="text-3xl font-black tracking-tight">Master a Path. Unlock a Badge.</h3>
             <p className="text-sm opacity-80 max-w-md font-medium leading-relaxed">
-              Professionals with high Knowledge Points appear first in client search results. Build your brain to build your wallet.
+              Complete all masterclasses in any category to earn a <b>Specialist Badge</b> on your profile. High Knowledge Points prove you are ready for global remote work.
             </p>
           </div>
-          <div className="bg-white/10 p-6 rounded-[2rem] border border-white/20 backdrop-blur-md flex flex-col items-center gap-2">
-             <Layout className="h-8 w-8 text-secondary" />
-             <p className="text-[10px] font-black uppercase">Malawi Hub</p>
+          <div className="bg-white/10 p-6 rounded-[2rem] border border-white/20 backdrop-blur-md flex flex-col items-center gap-2 shrink-0">
+             <Star className="h-8 w-8 text-secondary fill-secondary animate-pulse" />
+             <p className="text-[10px] font-black uppercase">Verified Expert</p>
           </div>
         </div>
       </Card>
