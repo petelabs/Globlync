@@ -18,7 +18,11 @@ import {
   BookOpen,
   Target,
   Hammer,
-  ShieldCheck
+  ShieldCheck,
+  Mail,
+  TrendingUp,
+  Layout,
+  Calculator
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -30,7 +34,7 @@ export interface Course {
   title: string;
   description: string;
   youtubeId: string;
-  category: "Remote Mastery";
+  category: "Remote Mastery" | "Digital Skills" | "Business Finance";
   duration: string;
   reward: number;
   icon: any;
@@ -38,18 +42,58 @@ export interface Course {
 
 /**
  * UNRESTRICTED PROFESSIONAL CONTENT
- * Simplified to high-stability, globally available content.
+ * Curated from Website Learners, Khan Academy, and Google Career Certificates.
  */
 export const COURSES: Course[] = [
   {
     id: "rem-101",
-    title: "Remote Work for Beginners",
-    description: "Master the essential skills needed to transition into the global remote workforce. Learn about tools, communication, and high-demand roles.",
+    title: "Lead Generation Mastery",
+    description: "Learn how to build a B2B lead generation engine to find high-paying global clients.",
     youtubeId: "jBrCyXnjjGI",
-    category: "Remote Mastery",
+    category: "Digital Skills",
     duration: "15 mins",
     reward: 10,
-    icon: Globe
+    icon: Target
+  },
+  {
+    id: "rem-102",
+    title: "Professional Email Setup",
+    description: "Build trust with clients by setting up a professional business email address for your brand.",
+    youtubeId: "Nu_lj_6XEqY",
+    category: "Remote Mastery",
+    duration: "12 mins",
+    reward: 8,
+    icon: Mail
+  },
+  {
+    id: "dig-101",
+    title: "Build a Professional Portfolio",
+    description: "Step-by-step guide to creating a professional website to showcase your evidence-based reputation.",
+    youtubeId: "_pT799_SdfM",
+    category: "Digital Skills",
+    duration: "20 mins",
+    reward: 15,
+    icon: Layout
+  },
+  {
+    id: "fin-101",
+    title: "Accounting Foundations",
+    description: "Master the basics of financial statements and business money management from Khan Academy experts.",
+    youtubeId: "0niRlgidov8",
+    category: "Business Finance",
+    duration: "18 mins",
+    reward: 12,
+    icon: Calculator
+  },
+  {
+    id: "rem-103",
+    title: "Mastering Time Management",
+    description: "Productivity hacks for remote professionals to handle global workloads across time zones.",
+    youtubeId: "nu5p9ZUXpfU",
+    category: "Remote Mastery",
+    duration: "10 mins",
+    reward: 8,
+    icon: Clock
   }
 ];
 
@@ -66,7 +110,7 @@ export default function AcademyPage() {
   const { data: profile } = useDoc(workerRef);
   const completedIds = profile?.completedCourses || [];
 
-  const categories = ["Remote Mastery"] as const;
+  const categories = ["Remote Mastery", "Digital Skills", "Business Finance"] as const;
 
   const filteredCourses = useMemo(() => {
     return filter ? COURSES.filter(c => c.category === filter) : COURSES;
