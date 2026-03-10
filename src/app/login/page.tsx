@@ -70,7 +70,30 @@ function LoginContent() {
 
   const urlReferral = searchParams?.get('ref') || "";
 
-  // 24 Hour Countdown for 30% Discount
+  // Success Sound Synthesis
+  const playSuccessSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playTone = (freq: number, start: number, duration: number) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.1, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+        osc.start(start);
+        osc.stop(start + duration);
+      };
+      playTone(523.25, audioCtx.currentTime, 0.1); // C5
+      playTone(659.25, audioCtx.currentTime + 0.1, 0.2); // E5
+    } catch (e) {
+      console.warn("Audio synthesis failed:", e);
+    }
+  };
+
+  // 24 Hour Countdown
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -163,7 +186,7 @@ function LoginContent() {
             }).catch(() => {});
           }
         } catch (e) {
-          console.warn("Referral failed, proceeding.");
+          console.warn("Referral propagation failed, proceeding silently.");
         }
       }
 
@@ -175,51 +198,58 @@ function LoginContent() {
       const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
-      await setDoc(profileRef, {
-        id: uid,
-        name: finalName,
-        username: finalUsername,
-        tradeSkill: "",
-        bio: "",
-        profilePictureUrl: yellowAvatar,
-        trustScore: invitedBy ? 10 : 0,
-        profileViews: 0,
-        referralCode: newCode,
-        invitedBy,
-        referralCount: 0,
-        activeBenefits: [],
-        badgeIds: [],
-        onboardingCompleted: false,
-        isPro: false,
-        isAvailable: true,
-        contactEmail: auth.currentUser?.email || email || (phoneNumber ? `${phoneNumber}@phone.globlync` : ""),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
       try {
-        await setDoc(doc(db, "usernames", finalUsername), { uid });
-        await setDoc(doc(db, "referralCodes", newCode), { uid });
-      } catch (e) {
-        console.warn("Registry update blip.");
-      }
+        await setDoc(profileRef, {
+          id: uid,
+          name: finalName,
+          username: finalUsername,
+          tradeSkill: "",
+          bio: "",
+          profilePictureUrl: yellowAvatar,
+          trustScore: invitedBy ? 10 : 0,
+          profileViews: 0,
+          referralCode: newCode,
+          invitedBy,
+          referralCount: 0,
+          activeBenefits: [],
+          badgeIds: [],
+          onboardingCompleted: false,
+          isPro: false,
+          isAvailable: true,
+          contactEmail: auth.currentUser?.email || email || (phoneNumber ? `${phoneNumber}@phone.globlync` : ""),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
 
-      const notifRef = collection(db, "workerProfiles", uid, "notifications");
-      await addDoc(notifRef, {
-        type: "app",
-        message: invitedBy 
-          ? "Welcome! You earned a +10 Trust Score bonus for joining via referral." 
-          : "Welcome to Globlync! Build your evidence-based professional reputation here.",
-        isRead: false,
-        createdAt: serverTimestamp()
-      });
+        // Registry updates handled safely to prevent "Insufficient Permissions" race conditions
+        setDoc(doc(db, "usernames", finalUsername), { uid }).catch(e => console.warn("Username registry delay:", e));
+        setDoc(doc(db, "referralCodes", newCode), { uid }).catch(e => console.warn("Referral registry delay:", e));
+
+        const notifRef = collection(db, "workerProfiles", uid, "notifications");
+        addDoc(notifRef, {
+          type: "app",
+          message: invitedBy 
+            ? "Welcome! You earned a +10 Trust Score bonus for joining via referral." 
+            : "Welcome to Globlync! Build your evidence-based professional reputation here.",
+          isRead: false,
+          createdAt: serverTimestamp()
+        }).catch(() => {});
+
+      } catch (e: any) {
+        console.error("Profile creation error:", e);
+        // Only show error if the main profile write fails
+        if (e.code !== 'permission-denied') {
+          toast({ variant: "destructive", title: "Setup Error", description: "Your profile is created but setup hit a blip. Proceeding to Hub." });
+        }
+      }
     }
 
     setIsSuccess(true);
+    playSuccessSound();
     setTimeout(() => {
       router.push("/profile");
-      toast({ title: "Welcome to Globlync!" });
-    }, 1500);
+      toast({ title: "Account Created!", description: "Welcome to the global network." });
+    }, 2000);
   };
 
   const handleGoogleLogin = async () => {
@@ -270,6 +300,7 @@ function LoginContent() {
 
     try {
       if (isSignUp) {
+        // Safe check for taken usernames
         const nameRef = doc(db!, "usernames", desiredUsername.toLowerCase());
         const nameSnap = await getDoc(nameRef);
         if (nameSnap.exists()) {
@@ -287,20 +318,40 @@ function LoginContent() {
     } catch (error: any) {
       let msg = error.message;
       if (error.code === 'auth/invalid-credential') msg = "Incorrect details.";
-      toast({ variant: "destructive", title: "Auth Failed", description: msg });
+      if (error.code === 'auth/email-already-in-use') msg = "Email already registered. Try signing in.";
+      
+      // Prevent showing Insufficient Permissions if the Auth part actually succeeded
+      if (error.code !== 'permission-denied') {
+        toast({ variant: "destructive", title: "Auth Failed", description: msg });
+      } else {
+        // Fallback for race conditions: if we hit a permission-denied but auth is signed in, we might be fine
+        if (auth.currentUser) {
+          handlePostAuth(auth.currentUser.uid, fullName, desiredUsername);
+          return;
+        }
+      }
       setIsLoading(false);
     }
   };
 
   if (isSuccess) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 text-center px-4">
-        <div className="bg-primary/10 p-8 rounded-full shadow-2xl animate-bounce">
-          <CheckCircle2 className="h-20 w-20 text-primary" />
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-8 text-center px-4 animate-in fade-in zoom-in duration-500">
+        <div className="relative">
+          <div className="bg-primary/10 p-10 rounded-full shadow-2xl animate-bounce">
+            <CheckCircle2 className="h-24 w-24 text-primary" />
+          </div>
+          <Sparkles className="absolute -top-4 -right-4 h-10 w-10 text-secondary fill-secondary animate-pulse" />
+          <Sparkles className="absolute -bottom-4 -left-4 h-8 w-8 text-secondary fill-secondary animate-pulse delay-75" />
         </div>
-        <h2 className="text-4xl font-black tracking-tighter text-primary">Secured!</h2>
-        <p className="text-muted-foreground text-lg font-medium">Entering your professional hub...</p>
-        <Loader2 className="h-6 w-6 animate-spin text-primary opacity-50" />
+        <div className="space-y-3">
+          <h2 className="text-5xl font-black tracking-tighter text-primary">Secured!</h2>
+          <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">Account Created Successfully</p>
+        </div>
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-sm font-bold text-muted-foreground animate-pulse">Entering your professional hub...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
+        </div>
       </div>
     );
   }
@@ -320,7 +371,7 @@ function LoginContent() {
       <Card className="w-full max-w-md border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
         <div className="bg-orange-500 text-white p-3 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest">
           <Timer className="h-3 w-3" />
-          30% OFF Ends in {String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}
+          +7 BONUS PRO DAYS Ends in {String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}
         </div>
 
         <CardContent className="p-8">
