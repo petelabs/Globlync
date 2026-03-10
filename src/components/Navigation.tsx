@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -9,19 +8,15 @@ import {
   Briefcase, 
   User, 
   Bell, 
-  Search, 
   Settings as SettingsIcon,
   LogOut,
   ClipboardCheck,
   ChevronDown,
   Gift,
-  Sparkles,
   Crown,
   Users,
-  MessageSquare,
   Lock,
-  MoveRight,
-  GraduationCap
+  MoveRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -101,7 +96,6 @@ export function Navigation() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Academy", href: "/academy", icon: GraduationCap },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
     { label: "Connect", href: "/search", icon: Lock },
     { label: "Log", href: "/work-log", icon: ClipboardCheck, authRequired: true },
