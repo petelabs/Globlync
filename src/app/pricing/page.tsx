@@ -39,7 +39,7 @@ const TIERS = [
   {
     id: "bronze",
     name: "Bronze Pro",
-    price: 0.63, 
+    price: 0.9, 
     days: 30,
     link: "https://pay.paychangu.com/SC-oz0qsN",
     icon: Medal,
@@ -51,7 +51,7 @@ const TIERS = [
   {
     id: "silver",
     name: "Silver Pro",
-    price: 1.33, 
+    price: 1.9, 
     days: 30,
     link: "https://pay.paychangu.com/SC-0siw5Z",
     icon: Star,
@@ -63,7 +63,7 @@ const TIERS = [
   {
     id: "gold",
     name: "Gold Pro",
-    price: 2.03, 
+    price: 2.9, 
     days: 30,
     link: "https://pay.paychangu.com/SC-PuzKtb",
     icon: Trophy,

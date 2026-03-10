@@ -100,10 +100,10 @@ export async function POST(req: Request) {
         tierName = "Pro Max (MWK)";
         days = 35; 
       } else {
-        // Handle Global USD amounts (rough checks for fixed links)
-        if (amount >= 2.0) tierName = "Gold Pro";
-        else if (amount >= 1.3) tierName = "Silver Pro";
-        else if (amount >= 0.6) tierName = "Bronze Pro";
+        // Handle Global USD amounts ($0.9, $1.9, $2.9)
+        if (amount >= 2.5) tierName = "Gold Pro";
+        else if (amount >= 1.5) tierName = "Silver Pro";
+        else if (amount >= 0.5) tierName = "Bronze Pro";
         days = 30;
       }
 
