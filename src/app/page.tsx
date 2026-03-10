@@ -17,27 +17,52 @@ import {
   Gift
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
 import { MOTIVATIONAL_QUOTES, type Motivation } from "@/lib/motivational-quotes";
 
 export default function Home() {
+  const { user } = useUser();
   const db = useFirestore();
   const [globalTip, setGlobalTip] = useState<Motivation | null>(null);
-  const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number}>({ h: 23, m: 59, s: 59 });
+  const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
+
+  const workerRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "workerProfiles", user.uid);
+  }, [db, user?.uid]);
+
+  const { data: profile } = useDoc(workerRef);
 
   useEffect(() => {
-    // 24 Hour Countdown Logic
     const timer = setInterval(() => {
       const now = new Date();
-      // Simple daily reset for the demo, or use localStorage for per-user 24h
-      const h = 23 - now.getHours();
-      const m = 59 - now.getMinutes();
-      const s = 59 - now.getSeconds();
-      setTimeLeft({ h, m, s });
+      let h = 0, m = 0, s = 0;
+
+      if (profile?.createdAt) {
+        // PERSONALIZED TIMER: 24h from signup
+        const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
+        const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
+        const diff = expiryDate.getTime() - now.getTime();
+
+        if (diff > 0) {
+          h = Math.floor(diff / (1000 * 60 * 60));
+          m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          s = Math.floor((diff % (1000 * 60)) / 1000);
+          setTimeLeft({ h, m, s });
+        } else {
+          setTimeLeft(null); // Bonus expired
+        }
+      } else if (!user) {
+        // VISITOR TIMER: Simple daily reset for demo
+        h = 23 - now.getHours();
+        m = 59 - now.getMinutes();
+        s = 59 - now.getSeconds();
+        setTimeLeft({ h, m, s });
+      }
     }, 1000);
 
     const now = new Date();
@@ -46,7 +71,7 @@ export default function Home() {
     setGlobalTip(MOTIVATIONAL_QUOTES[tipIndex]);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [profile, user]);
 
   const workersRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -60,28 +85,30 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
-      {/* 30% DISCOUNT BANNER */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-secondary text-secondary-foreground py-2 px-4 shadow-lg animate-in slide-in-from-top duration-500">
-        <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="bg-white/20 p-1.5 rounded-lg">
-              <Zap className="h-4 w-4 fill-current" />
+      {/* 30% DISCOUNT BANNER (Visual cue for the +7 Day Bonus) */}
+      {timeLeft && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-secondary text-secondary-foreground py-2 px-4 shadow-lg animate-in slide-in-from-top duration-500">
+          <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-white/20 p-1.5 rounded-lg">
+                <Zap className="h-4 w-4 fill-current" />
+              </div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
+                {user ? 'My Signup Bonus:' : 'New User Bonus:'} <span className="underline">+7 FREE PRO DAYS</span>
+              </p>
             </div>
-            <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
-              First User Bonus: <span className="underline">30% OFF PRO VIP</span>
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 font-mono text-[10px] sm:text-xs font-black bg-black/10 px-2 py-1 rounded">
-              <Timer className="h-3 w-3" />
-              <span>{String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 font-mono text-[10px] sm:text-xs font-black bg-black/10 px-2 py-1 rounded">
+                <Timer className="h-3 w-3" />
+                <span>{String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}</span>
+              </div>
+              <Button size="sm" variant="secondary" className="h-7 rounded-full text-[9px] font-black uppercase bg-white text-secondary hover:bg-white/90" asChild>
+                <Link href={user ? "/pricing" : "/login"}>{user ? "Claim Bonus" : "Join Now"}</Link>
+              </Button>
             </div>
-            <Button size="sm" variant="secondary" className="h-7 rounded-full text-[9px] font-black uppercase bg-white text-secondary hover:bg-white/90" asChild>
-              <Link href="/login">Claim Now</Link>
-            </Button>
           </div>
         </div>
-      </div>
+      )}
 
       <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden mt-8">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
@@ -112,12 +139,14 @@ export default function Home() {
           </Button>
         </div>
 
-        <div className="mt-6 flex items-center gap-4 bg-orange-500/10 px-6 py-3 rounded-2xl border-2 border-orange-500/20">
-          <Gift className="h-4 w-4 text-orange-600 animate-bounce" />
-          <p className="text-[10px] font-black uppercase text-orange-700 tracking-widest">
-            Special: 30% OFF PRO VIP for new members. Expires soon.
-          </p>
-        </div>
+        {timeLeft && (
+          <div className="mt-6 flex items-center gap-4 bg-orange-500/10 px-6 py-3 rounded-2xl border-2 border-orange-500/20">
+            <Gift className="h-4 w-4 text-orange-600 animate-bounce" />
+            <p className="text-[10px] font-black uppercase text-orange-700 tracking-widest">
+              Special: Upgrade in your first 24h to get <b>+7 EXTRA DAYS</b> of Pro VIP.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="max-w-4xl mx-auto w-full px-4">

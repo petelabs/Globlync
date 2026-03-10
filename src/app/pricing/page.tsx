@@ -40,7 +40,6 @@ const TIERS = [
     id: "bronze",
     name: "Bronze Pro",
     price: 0.63, 
-    originalPrice: 0.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-oz0qsN",
     icon: Medal,
@@ -53,7 +52,6 @@ const TIERS = [
     id: "silver",
     name: "Silver Pro",
     price: 1.33, 
-    originalPrice: 1.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-0siw5Z",
     icon: Star,
@@ -66,7 +64,6 @@ const TIERS = [
     id: "gold",
     name: "Gold Pro",
     price: 2.03, 
-    originalPrice: 2.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-PuzKtb",
     icon: Trophy,
@@ -113,19 +110,7 @@ const MALAWI_LOCAL_TIERS = [
 export default function PricingPage() {
   const { user } = useUser();
   const db = useFirestore();
-  const [timeLeft, setTimeLeft] = useState({h: 23, m: 59, s: 59});
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setTimeLeft({
-        h: 23 - now.getHours(),
-        m: 59 - now.getMinutes(),
-        s: 59 - now.getSeconds()
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -133,20 +118,61 @@ export default function PricingPage() {
   }, [db, user?.uid]);
 
   const { data: profile } = useDoc(workerRef);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      if (profile?.createdAt) {
+        const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
+        const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
+        const diff = expiryDate.getTime() - now.getTime();
+
+        if (diff > 0) {
+          const h = Math.floor(diff / (1000 * 60 * 60));
+          const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const s = Math.floor((diff % (1000 * 60)) / 1000);
+          setTimeLeft({ h, m, s });
+        } else {
+          setTimeLeft(null);
+        }
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [profile]);
   
   const activeBenefit = profile?.activeBenefits?.find((b: any) => new Date(b.expiresAt) > new Date());
 
   return (
     <div className="flex flex-col gap-12 py-8 max-w-6xl mx-auto px-4">
       <header className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary animate-pulse border border-secondary/20">
-          <Timer className="h-3 w-3" /> Early Bird: 30% OFF Ends in {timeLeft.h}h {timeLeft.m}m
-        </div>
+        {timeLeft ? (
+          <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-600 animate-pulse border border-orange-500/20">
+            <Timer className="h-3 w-3" /> Early Bird Bonus: +7 FREE DAYS Ends in {timeLeft.h}h {timeLeft.m}m
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
+            <Sparkles className="h-3 w-3" /> Build Your Reputation Today
+          </div>
+        )}
         <h1 className="text-4xl font-black tracking-tighter sm:text-7xl">Go Pro <span className="text-primary">VIP.</span></h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg font-medium">
           Building your professional identity is <b>Free for Life</b>. Upgrade to a Pro tier to unlock advanced tools and global ranking.
         </p>
       </header>
+
+      {timeLeft && (
+        <Alert className="bg-orange-500/5 border-2 border-orange-500/20 rounded-[3rem] p-8 max-w-2xl mx-auto flex flex-row items-center gap-6 animate-in zoom-in-95">
+          <div className="bg-orange-500 p-4 rounded-3xl shadow-lg shadow-orange-500/20 text-white shrink-0">
+            <Gift className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <AlertTitle className="text-xl font-black text-orange-700 uppercase tracking-tight leading-none mb-2">New User Bonus Active!</AlertTitle>
+            <AlertDescription className="text-sm font-medium text-orange-600/80 leading-relaxed">
+              Upgrade within your first 24 hours and we'll automatically add <b>+7 EXTRA BONUS DAYS</b> to your membership at no extra cost.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       {activeBenefit && (
         <Card className="bg-secondary/10 border-4 border-secondary/30 rounded-[3rem] p-8 text-center animate-in zoom-in-95 max-w-2xl mx-auto w-full">
@@ -168,8 +194,8 @@ export default function PricingPage() {
           {TIERS.map((tier) => (
             <Card key={tier.id} className={cn(
               "border-2 rounded-[3rem] p-8 flex flex-col relative overflow-hidden transition-all hover:scale-[1.02] shadow-sm hover:shadow-xl",
-              tier.borderColor,
-              tier.bgColor
+              tier.borderColor || "border-border",
+              tier.bgColor || "bg-card"
             )}>
               <div className="absolute top-6 right-6">
                 <tier.icon className={cn("h-8 w-8", tier.color)} />
@@ -177,14 +203,13 @@ export default function PricingPage() {
               <CardHeader className="p-0 mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <CardTitle className="text-2xl font-black">{tier.name}</CardTitle>
-                  <Badge className="bg-secondary text-secondary-foreground text-[8px] font-black uppercase">-30%</Badge>
+                  {timeLeft && <Badge className="bg-orange-500 text-white text-[8px] font-black uppercase">+7 BONUS DAYS</Badge>}
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-baseline gap-1 mt-4">
                     <span className="text-5xl font-black tracking-tight">${tier.price}</span>
-                    <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
+                    <span className="text-sm text-muted-foreground font-bold">/ {timeLeft ? '37' : '30'} Days</span>
                   </div>
-                  <span className="text-xs text-muted-foreground line-through font-bold opacity-50 ml-1">Reg. ${tier.originalPrice}</span>
                 </div>
               </CardHeader>
               <CardContent className="p-0 flex-1">
@@ -233,7 +258,7 @@ export default function PricingPage() {
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black tracking-tight text-primary">{tier.priceLabel}</span>
-                  <span className="text-sm font-bold text-muted-foreground">/ {tier.days} Days</span>
+                  <span className="text-sm font-bold text-muted-foreground">/ {timeLeft ? (tier.days + 7) : tier.days} Days</span>
                 </div>
                 <ul className="space-y-2 mt-4">
                   {tier.features.map((f) => (

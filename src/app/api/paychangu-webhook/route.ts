@@ -98,13 +98,24 @@ export async function POST(req: Request) {
         days = 30;
       } else if (amount === 1000) {
         tierName = "Pro Max (MWK)";
-        days = 35; // 30 + 5 bonus
+        days = 35; 
       } else {
-        // Handle Global USD amounts
+        // Handle Global USD amounts (rough checks for fixed links)
         if (amount >= 2.0) tierName = "Gold Pro";
         else if (amount >= 1.3) tierName = "Silver Pro";
         else if (amount >= 0.6) tierName = "Bronze Pro";
         days = 30;
+      }
+
+      // Check for 24h Launch Bonus (+7 Days)
+      const signupDate = userData.createdAt?.toDate() || new Date(userData.createdAt);
+      const now = new Date();
+      const diffMs = now.getTime() - signupDate.getTime();
+      const isWithin24h = diffMs < (24 * 60 * 60 * 1000);
+
+      if (isWithin24h) {
+        days += 7;
+        tierName += " (+7 Bonus Days)";
       }
 
       const expiryDate = new Date();
@@ -115,7 +126,8 @@ export async function POST(req: Request) {
         expiresAt: expiryDate.toISOString(),
         amountPaid: amount,
         paidAt: new Date().toISOString(),
-        txRef: txRef
+        txRef: txRef,
+        isBonusApplied: isWithin24h
       };
 
       const existingBenefits = userData.activeBenefits || [];
@@ -128,7 +140,7 @@ export async function POST(req: Request) {
       const notifRef = userDoc.ref.collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `${tierName} Activated! You now have ${days} days of VIP access. Expiry: ${expiryDate.toLocaleDateString()}.`,
+        message: `${tierName} Activated! ${isWithin24h ? 'Early Bird Bonus Applied! ' : ''}You have ${days} days of VIP access. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

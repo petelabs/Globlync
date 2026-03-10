@@ -37,7 +37,8 @@ import {
   Copy,
   Share2,
   Lock as LockIcon,
-  Coins
+  Coins,
+  Timer
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -104,6 +105,7 @@ export default function ProfilePage() {
   const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [bioCooldownText, setBioCooldownText] = useState<string | null>(null);
+  const [bonusTimeLeft, setBonusTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -129,6 +131,27 @@ export default function ProfilePage() {
           setBioCooldownText(null);
         }
       }
+
+      // Bonus Timer Logic
+      const timer = setInterval(() => {
+        const now = new Date();
+        if (profile.createdAt) {
+          const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
+          const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
+          const diff = expiryDate.getTime() - now.getTime();
+
+          if (diff > 0) {
+            setBonusTimeLeft({
+              h: Math.floor(diff / (1000 * 60 * 60)),
+              m: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+              s: Math.floor((diff % (1000 * 60)) / 1000)
+            });
+          } else {
+            setBonusTimeLeft(null);
+          }
+        }
+      }, 1000);
+      return () => clearInterval(timer);
     }
   }, [profile, user?.email]);
 
@@ -367,6 +390,28 @@ export default function ProfilePage() {
           </div>
         </Card>
       </div>
+
+      {bonusTimeLeft && (
+        <Card className="border-none bg-orange-500 text-white p-6 rounded-[2.5rem] shadow-xl animate-in slide-in-from-top-2">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="bg-white/20 p-3 rounded-2xl animate-bounce">
+                <Zap className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-lg uppercase tracking-tight leading-none">New User Bonus Active!</h3>
+                <p className="text-xs font-bold opacity-80 mt-1">Upgrade now to get <b>+7 EXTRA DAYS</b> of Pro VIP access.</p>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="bg-black/10 px-4 py-2 rounded-xl flex items-center gap-2 font-mono text-xl font-black">
+                <Timer className="h-4 w-4" />
+                {String(bonusTimeLeft.h).padStart(2, '0')}:{String(bonusTimeLeft.m).padStart(2, '0')}:{String(bonusTimeLeft.s).padStart(2, '0')}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-1 space-y-6">
