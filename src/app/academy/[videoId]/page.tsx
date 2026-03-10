@@ -292,8 +292,7 @@ export default function CoursePlayerPage() {
                   Upgrade to Earn 2x
                 </Button>
               </CardContent>
-            </Card>
-          ) : (
+            ) : (
             <Card className="border-none bg-primary/10 p-6 rounded-[2rem] border-2 border-primary/20">
               <CardHeader className="p-0 mb-4">
                 <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-primary">

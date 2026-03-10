@@ -38,6 +38,7 @@ export interface Course {
 
 /**
  * VERIFIED PROFESSIONAL CONTENT (11-Char IDs)
+ * These IDs are from stable, globally-unrestricted channels (e.g. Google Career Certificates)
  * - 20HeVmvS0sc: The Reputation Economy
  * - nu5p9ZUXpfU: Remote Work Basics
  * - ZIm_v9_ljRA: Business Finance
