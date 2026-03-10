@@ -37,17 +37,14 @@ export interface Course {
 }
 
 /**
- * VERIFIED PROFESSIONAL CONTENT (11-Char IDs)
- * These IDs are from stable, globally-unrestricted channels (e.g. Google Career Certificates)
- * - 20HeVmvS0sc: The Reputation Economy
- * - nu5p9ZUXpfU: Remote Work Basics
- * - ZIm_v9_ljRA: Business Finance
+ * UNRESTRICTED PROFESSIONAL CONTENT
+ * Selected from high-stability educational channels (Google, Khan Academy, Website Learners)
  */
 export const COURSES: Course[] = [
   {
     id: "rep-101",
-    title: "The Reputation Economy",
-    description: "Learn how digital trust is replacing money and why your Globlync score is a lifelong asset.",
+    title: "Digital Reputation & Trust",
+    description: "Learn how digital trust is built and why your Globlync score is a lifelong professional asset.",
     youtubeId: "20HeVmvS0sc",
     category: "Reputation Mastery",
     duration: "12 mins",
@@ -56,8 +53,8 @@ export const COURSES: Course[] = [
   },
   {
     id: "rem-101",
-    title: "Remote Work Basics",
-    description: "Essential habits and tools for beginners starting their journey in the global remote workspace.",
+    title: "Professional Remote Habits",
+    description: "Essential habits and tools for succeeding in the global remote workspace.",
     youtubeId: "nu5p9ZUXpfU",
     category: "Remote Pro",
     duration: "15 mins",
@@ -66,40 +63,40 @@ export const COURSES: Course[] = [
   },
   {
     id: "fin-101",
-    title: "Financial Excellence",
-    description: "How to manage your professional earnings and scale your business using modern tools.",
-    youtubeId: "ZIm_v9_ljRA",
+    title: "Business Finance Mastery",
+    description: "Master the basics of business financial literacy from Khan Academy experts.",
+    youtubeId: "ni1B_Hre8_Y",
     category: "Financial Excellence",
     duration: "10 mins",
     reward: 5,
     icon: Zap
   },
   {
-    id: "rep-102",
-    title: "Pro Evidence Photography",
-    description: "How to take high-impact photos of your work that build massive confidence with remote clients.",
-    youtubeId: "nu5p9ZUXpfU",
-    category: "Reputation Mastery",
+    id: "rem-102",
+    title: "Building Your Digital Brand",
+    description: "Learn how to present your skills online using insights from Website Learners.",
+    youtubeId: "27p9In6ZRXM",
+    category: "Remote Pro",
     duration: "14 mins",
     reward: 5,
     icon: BookOpen
   },
   {
     id: "trade-101",
-    title: "Technical Quality Standards",
-    description: "Global quality and safety benchmarks for skilled manual trades and technical operations.",
-    youtubeId: "20HeVmvS0sc",
+    title: "Technical Quality Assurance",
+    description: "Global quality standards and technical benchmarks for skilled professional operations.",
+    youtubeId: "ZIm_v9_ljRA",
     category: "Trade Mastery",
     duration: "12 mins",
     reward: 5,
     icon: Hammer
   },
   {
-    id: "rem-102",
-    title: "Freelance Pricing Strategy",
-    description: "Learn how to price your work for international markets and move to global rates.",
+    id: "rep-102",
+    title: "Evidence-Based Communication",
+    description: "How to communicate with global clients using verifiable evidence and professional logs.",
     youtubeId: "nu5p9ZUXpfU",
-    category: "Remote Pro",
+    category: "Reputation Mastery",
     duration: "11 mins",
     reward: 5,
     icon: ShieldCheck

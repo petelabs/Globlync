@@ -36,7 +36,6 @@ export default function CoursePlayerPage() {
   const router = useRouter();
   const { toast } = useToast();
   const playerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   
   const [isCompleted, setIsCompleted] = useState(false);
   const [isProcessingReward, setIsProcessingReward] = useState(false);
@@ -120,8 +119,6 @@ export default function CoursePlayerPage() {
 
     return () => {
       clearInterval(interval);
-      // We don't necessarily want to destroy the player on every re-render, 
-      // but we do want to clear the ready state if the course changes
       setIsPlayerReady(false);
     };
   }, [course, videoId]);
