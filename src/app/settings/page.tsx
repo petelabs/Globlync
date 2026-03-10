@@ -37,7 +37,9 @@ import {
   Search,
   Info,
   AlertTriangle,
-  Heart
+  Heart,
+  Fingerprint,
+  Smartphone
 } from "lucide-react";
 import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
@@ -99,6 +101,7 @@ export default function SettingsPage() {
   const [password, setPassword] = useState("");
   const [confirmDeleteWord, setConfirmDeleteWord] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletionError, setDeletionError] = useState<string | null>(null);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -195,7 +198,23 @@ export default function SettingsPage() {
     );
   };
 
-  const handleDeleteAccount = async () => {
+  const scrubFirestoreData = async () => {
+    if (!user || !db) return;
+    const profileRef = doc(db, "workerProfiles", user.uid);
+    const profileSnap = await getDoc(profileRef);
+    if (profileSnap.exists()) {
+      const data = profileSnap.data();
+      if (data.username) {
+        await deleteDoc(doc(db, "usernames", data.username.toLowerCase()));
+      }
+      if (data.referralCode) {
+        await deleteDoc(doc(db, "referralCodes", data.referralCode.toUpperCase()));
+      }
+    }
+    await deleteDoc(profileRef);
+  };
+
+  const handleDeleteAccount = async (useFallback: boolean = false) => {
     if (!user || !db) return;
     
     if (confirmDeleteWord.toLowerCase() !== "delete") {
@@ -204,25 +223,28 @@ export default function SettingsPage() {
     }
 
     setIsDeleting(true);
+    setDeletionError(null);
 
     try {
-      // 1. Re-authenticate
-      const providerId = user.providerData[0]?.providerId;
-      if (providerId === 'password') {
-        if (!password) {
-          toast({ variant: "destructive", title: "Password Required" });
-          setIsDeleting(false);
-          return;
+      if (!useFallback) {
+        // Option 1: Full Auth Delete (Requires re-auth)
+        const providerId = user.providerData[0]?.providerId;
+        if (providerId === 'password') {
+          if (!password) {
+            toast({ variant: "destructive", title: "Password Required" });
+            setIsDeleting(false);
+            return;
+          }
+          const credential = EmailAuthProvider.credential(user.email!, password);
+          await reauthenticateWithCredential(user, credential);
+        } else if (providerId === 'google.com') {
+          const provider = new GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+          await reauthenticateWithPopup(user, provider);
         }
-        const credential = EmailAuthProvider.credential(user.email!, password);
-        await reauthenticateWithCredential(user, credential);
-      } else if (providerId === 'google.com') {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        await reauthenticateWithPopup(user, provider);
       }
 
-      // 2. Submit Feedback
+      // Step 2: Submit Deletion Feedback via API
       await fetch('/api/account-deletion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -234,22 +256,13 @@ export default function SettingsPage() {
         })
       });
 
-      // 3. Cleanup Registry
-      const profileRef = doc(db, "workerProfiles", user.uid);
-      const profileSnap = await getDoc(profileRef);
-      if (profileSnap.exists()) {
-        const data = profileSnap.data();
-        if (data.username) {
-          await deleteDoc(doc(db, "usernames", data.username.toLowerCase()));
-        }
-        if (data.referralCode) {
-          await deleteDoc(doc(db, "referralCodes", data.referralCode.toUpperCase()));
-        }
-      }
+      // Step 3: Scrub Firestore Data
+      await scrubFirestoreData();
 
-      // 4. Delete Profile and Auth
-      await deleteDoc(profileRef);
-      await deleteUser(user);
+      // Step 4: Delete Auth User (if re-auth path was used)
+      if (!useFallback) {
+        await deleteUser(user);
+      }
 
       setDeleteStep(5);
       setTimeout(() => {
@@ -259,11 +272,12 @@ export default function SettingsPage() {
 
     } catch (error: any) {
       console.error(error);
-      let msg = "Security verification failed. Please try logging in again first.";
-      if (error.code === 'auth/wrong-password') msg = "Incorrect password.";
-      if (error.code === 'auth/popup-blocked') msg = "The verification popup was blocked by your browser.";
-      
-      toast({ variant: "destructive", title: "Deletion Failed", description: msg });
+      if (error.code === 'auth/requires-recent-login' || error.code === 'auth/wrong-password') {
+        setDeletionError("Security session expired or incorrect details. Try the fallback option below.");
+      } else {
+        setDeletionError("Something went wrong. You can still use the fallback option to remove your professional data.");
+      }
+      toast({ variant: "destructive", title: "Deletion Encountered a Problem" });
     } finally {
       setIsDeleting(false);
     }
@@ -521,6 +535,7 @@ export default function SettingsPage() {
               setSelectedReasons([]);
               setOtherDescription("");
               setConfirmDeleteWord("");
+              setDeletionError(null);
             }
           }}>
             <DialogTrigger asChild>
@@ -622,51 +637,83 @@ export default function SettingsPage() {
               {deleteStep === 4 && (
                 <>
                   <DialogHeader className="p-8 pb-4 bg-destructive/5">
-                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Final Security Verification</DialogTitle>
+                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Identity Verification</DialogTitle>
                     <DialogDescription className="font-medium text-sm pt-2 leading-relaxed">
-                      To protect your professional data, please confirm your credentials and type the verification word.
+                      Choose your preferred method to confirm deletion.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="p-8 space-y-6">
-                    {user.providerData[0]?.providerId === 'password' ? (
-                      <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Enter Your Password</Label>
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          className="h-12 rounded-xl"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                        />
-                      </div>
-                    ) : (
-                      <div className="bg-muted/30 p-6 rounded-2xl text-center border-2 border-dashed">
-                        <p className="text-xs font-bold mb-4">You will need to verify your Google identity when you tap delete.</p>
+                    {deletionError && (
+                      <div className="bg-destructive/10 p-4 rounded-xl border border-destructive/20 text-destructive text-[10px] font-bold leading-tight">
+                        {deletionError}
                       </div>
                     )}
 
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-destructive">Type "DELETE" below to enable button</Label>
-                      <Input 
-                        placeholder="Type DELETE" 
-                        className="h-14 rounded-xl border-2 border-destructive/20 focus:border-destructive text-center font-black uppercase"
-                        value={confirmDeleteWord}
-                        onChange={(e) => setConfirmDeleteWord(e.target.value)}
-                      />
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Option 1: Re-authenticate (Recommended)</p>
+                      {user.providerData[0]?.providerId === 'password' ? (
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Enter Password</Label>
+                          <Input 
+                            type="password" 
+                            placeholder="••••••••" 
+                            className="h-12 rounded-xl bg-muted/10 border-2"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          className="w-full h-14 rounded-xl border-2 font-bold" 
+                          onClick={() => handleDeleteAccount(false)}
+                          disabled={isDeleting}
+                        >
+                          <Globe className="mr-2 h-4 w-4" /> Confirm via Google Sign-in
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="relative flex items-center justify-center py-2">
+                      <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
+                      <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Or fallback method</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Option 2: Security Word Fallback</p>
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-destructive">Type "DELETE" below to enable buttons</Label>
+                        <Input 
+                          placeholder="Type DELETE" 
+                          className="h-14 rounded-xl border-2 border-destructive/20 focus:border-destructive text-center font-black uppercase"
+                          value={confirmDeleteWord}
+                          onChange={(e) => setConfirmDeleteWord(e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
                   <DialogFooter className="p-8 pt-0 flex-col sm:flex-col gap-2">
                     <Button 
                       variant="destructive"
                       className="w-full rounded-full h-16 font-black text-lg shadow-xl" 
-                      disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting || (user.providerData[0]?.providerId === 'password' && !password)}
-                      onClick={handleDeleteAccount}
+                      disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting}
+                      onClick={() => handleDeleteAccount(false)}
                     >
-                      {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Trash2 className="mr-2 h-5 w-5" />}
-                      Permanently Remove My Profile
+                      {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Shield className="mr-2 h-5 w-5" />}
+                      Full Account & Auth Delete
                     </Button>
-                    <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setDeleteStep(3)} disabled={isDeleting}>
-                      Back to Feedback
+                    
+                    <Button 
+                      variant="ghost"
+                      className="w-full text-xs font-black uppercase text-muted-foreground hover:text-destructive" 
+                      disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting}
+                      onClick={() => handleDeleteAccount(true)}
+                    >
+                      Scrub My Data Only (Fallback)
+                    </Button>
+                    
+                    <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>
+                      Cancel Deletion
                     </Button>
                   </DialogFooter>
                 </>
@@ -680,12 +727,12 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <DialogTitle className="text-3xl font-black tracking-tight text-primary">We hear you.</DialogTitle>
                     <DialogDescription className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
-                      We'll try to fix the issues you mentioned. Please, if you find free time, come back to our app. We keep on updating so you have a good experience.
+                      Your professional footprint has been scrubbed from Globlync. We'll try to fix the issues you mentioned. Please come back whenever you're ready to grow again.
                     </DialogDescription>
                   </div>
                   <div className="pt-4 space-y-4">
                     <Loader2 className="h-6 w-6 animate-spin text-primary/30 mx-auto" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Clearing your professional footprint...</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Session Closing...</p>
                   </div>
                 </div>
               )}
