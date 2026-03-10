@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -36,7 +35,9 @@ import {
   Gift,
   Users,
   Copy,
-  Share2
+  Share2,
+  Lock as LockIcon,
+  Coins
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -150,7 +151,8 @@ export default function ProfilePage() {
       averageRating: avgRating.toFixed(1),
       trustScore: profile?.trustScore || 0,
       profileViews: profile?.profileViews || 0,
-      referralCount: profile?.referralCount || 0
+      referralCount: profile?.referralCount || 0,
+      rewardCredits: profile?.rewardCredits || 0
     };
   }, [allJobs, ratings, profile]);
 
@@ -344,10 +346,10 @@ export default function ProfilePage() {
         </Card>
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary"><ClipboardCheck className="h-4 w-4" /></div>
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Coins className="h-4 w-4" /></div>
             <div>
-              <p className="text-[10px] font-black uppercase text-muted-foreground">Verified Jobs</p>
-              <p className="text-xl font-black">{stats.totalVerified}</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Rewards</p>
+              <p className="text-xl font-black">{stats.rewardCredits} Cr</p>
             </div>
           </div>
         </Card>
@@ -400,7 +402,7 @@ export default function ProfilePage() {
           {/* Secure ID Card */}
           <Card className="border-none shadow-xl rounded-[2rem] bg-primary text-primary-foreground overflow-hidden relative group">
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
-              <Lock className="h-20 w-20" />
+              <LockIcon className="h-20 w-20" />
             </div>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">

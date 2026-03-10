@@ -1,16 +1,25 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award } from "lucide-react";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export default function RewardsPage() {
   const { user } = useUser();
+  const db = useFirestore();
+
+  const workerRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, "workerProfiles", user.uid);
+  }, [db, user?.uid]);
+
+  const { data: profile } = useDoc(workerRef);
   
   // NOTE: Replace 'YOUR_MONLIX_APP_ID' with your actual ID from Monlix Dashboard
-  // Monlix typically uses a URL format like: https://monlix.com/wall/[APP_ID]/[USER_ID]
   const MONLIX_URL = user ? `https://monlix.com/wall/YOUR_MONLIX_APP_ID/${user.uid}` : null;
 
   return (
@@ -21,57 +30,92 @@ export default function RewardsPage() {
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Earn Pro <span className="text-primary">Status.</span></h1>
         <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed font-medium">
-          Support the platform that grows your reputation. Complete quick tasks from our partner <b>Monlix</b> to unlock VIP benefits instantly without paying cash.
+          Support the platform that grows your reputation. Complete quick professional tasks to unlock VIP benefits instantly without paying cash.
         </p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="bg-primary/5 p-6 rounded-[2rem] text-center space-y-2 border border-primary/10">
-          <div className="bg-primary/10 w-10 h-10 rounded-xl flex items-center justify-center mx-auto text-primary">
-            <Zap className="h-5 w-5" />
+      {/* Reward Balance UI - CRITICAL FOR MONLIX APPROVAL */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card className="border-none bg-primary text-primary-foreground rounded-[2rem] overflow-hidden shadow-xl relative group">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+            <Coins className="h-20 w-20" />
           </div>
-          <h4 className="font-black text-[10px] uppercase tracking-widest">1. Select</h4>
-          <p className="text-[10px] text-muted-foreground font-medium">Pick a survey or task below.</p>
-        </div>
-        <div className="bg-primary/5 p-6 rounded-[2rem] text-center space-y-2 border border-primary/10">
-          <div className="bg-primary/10 w-10 h-10 rounded-xl flex items-center justify-center mx-auto text-primary">
-            <Award className="h-5 w-5" />
+          <CardContent className="p-8">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">Current Reward Balance</p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <span className="text-5xl font-black tracking-tighter">{profile?.rewardCredits || 0}</span>
+              <span className="text-sm font-bold opacity-80 uppercase tracking-widest">Credits</span>
+            </div>
+            <p className="text-[10px] font-medium mt-4 opacity-60">100 Credits = 7 Days Pro VIP</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none bg-secondary/10 rounded-[2rem] p-8 flex flex-col justify-center gap-2 border-2 border-secondary/20">
+          <div className="flex items-center gap-2 text-secondary font-black uppercase text-[10px] tracking-widest">
+            <Zap className="h-4 w-4" /> VIP Unlock Goal
           </div>
-          <h4 className="font-black text-[10px] uppercase tracking-widest">2. Finish</h4>
-          <p className="text-[10px] text-muted-foreground font-medium">Complete the simple steps.</p>
-        </div>
-        <div className="bg-primary/5 p-6 rounded-[2rem] text-center space-y-2 border border-primary/10">
-          <div className="bg-primary/10 w-10 h-10 rounded-xl flex items-center justify-center mx-auto text-primary">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="space-y-2">
+            <div className="flex justify-between items-end">
+              <p className="text-2xl font-black leading-none">Pro Starter</p>
+              <p className="text-xs font-bold opacity-60">{profile?.rewardCredits || 0} / 100</p>
+            </div>
+            <div className="h-3 w-full bg-secondary/20 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-secondary transition-all duration-1000" 
+                style={{ width: `${Math.min(100, (profile?.rewardCredits || 0))}%` }} 
+              />
+            </div>
           </div>
-          <h4 className="font-black text-[10px] uppercase tracking-widest">3. Unlock</h4>
-          <p className="text-[10px] text-muted-foreground font-medium">Get VIP status automatically.</p>
-        </div>
+        </Card>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white min-h-[700px]">
+      {/* How it Works - MONLIX AUDIT REQUIREMENT */}
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
+          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+            <Zap className="h-5 w-5" />
+          </div>
+          <h4 className="font-black text-sm uppercase tracking-tight">1. Select Task</h4>
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Choose a survey, app trial, or quick video from the list below.</p>
+        </div>
+        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
+          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+            <Award className="h-5 w-5" />
+          </div>
+          <h4 className="font-black text-sm uppercase tracking-tight">2. Earn Credits</h4>
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Credits are added to your account instantly after successful completion.</p>
+        </div>
+        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
+          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <h4 className="font-black text-sm uppercase tracking-tight">3. Go Pro</h4>
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Spend your credits to unlock HD photos and global ranking for your profile.</p>
+        </div>
+      </section>
+
+      <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white min-h-[700px] border-t-8 border-t-secondary">
         <CardHeader className="bg-muted/30 p-8 border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-black flex items-center gap-2">
               <Gift className="h-6 w-6 text-secondary" /> Monlix Offer Wall
             </CardTitle>
-            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-white">Official Partner</Badge>
+            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-white border-2">Verified Partner</Badge>
           </div>
           <CardDescription className="text-xs font-bold mt-1 text-muted-foreground">
-            Tasks refresh daily. Please allow up to 24 hours for credits to appear on your profile.
+            Complete high-value tasks from our global partner to fund your professional growth.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 relative h-full">
-          {/* Monlix Iframe Overlay (Shows until URL is provided and user is logged in) */}
           {(!MONLIX_URL || MONLIX_URL.includes("YOUR_MONLIX_APP_ID")) ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/5 p-12 text-center gap-4">
-               <div className="p-8 bg-white rounded-full shadow-inner animate-pulse">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/5 p-12 text-center gap-6">
+               <div className="p-10 bg-white rounded-[2.5rem] shadow-xl animate-pulse border-2 border-dashed">
                   <Loader2 className="h-12 w-12 text-primary/30 animate-spin" />
                </div>
-               <div className="space-y-1">
-                  <p className="font-black text-lg text-primary">Connecting to Monlix Network...</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground max-w-xs">
-                    {user ? "System is verifying your account for secure rewards." : "Please sign in to access professional rewards."}
+               <div className="space-y-2">
+                  <p className="font-black text-xl text-primary">Connecting to Secure Network...</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground max-w-xs leading-relaxed">
+                    {user ? "Authenticating your Professional ID for reward synchronization." : "Please sign in to access the Reward Center."}
                   </p>
                </div>
             </div>
@@ -86,15 +130,29 @@ export default function RewardsPage() {
         </CardContent>
       </Card>
 
-      <footer className="bg-primary/5 p-8 rounded-[2rem] flex items-start gap-4 border border-primary/10">
-        <div className="bg-white p-2 rounded-xl text-primary shadow-sm">
-          <Info className="h-6 w-6" />
+      {/* Compliance Footer - CRITICAL FOR APPROVAL */}
+      <footer className="grid gap-4 sm:grid-cols-2">
+        <div className="bg-destructive/5 p-8 rounded-[2rem] flex items-start gap-4 border-2 border-destructive/10">
+          <div className="bg-white p-2 rounded-xl text-destructive shadow-sm">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-black text-[10px] uppercase tracking-widest text-destructive">Fraud Prevention</h4>
+            <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">
+              Using VPNs, proxy servers, or multiple accounts to farm rewards will result in an immediate and permanent ban.
+            </p>
+          </div>
         </div>
-        <div className="space-y-1">
-          <h4 className="font-black text-[10px] uppercase tracking-widest">Partner Compliance</h4>
-          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-            Globlync partners with <b>Monlix</b> to provide professional incentives. Using VPNs or proxy services to complete tasks will result in an immediate reward ban.
-          </p>
+        <div className="bg-primary/5 p-8 rounded-[2rem] flex items-start gap-4 border-2 border-primary/10">
+          <div className="bg-white p-2 rounded-xl text-primary shadow-sm">
+            <Info className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-black text-[10px] uppercase tracking-widest text-primary">Task Support</h4>
+            <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">
+              Offers are tracked by Monlix. If you don't receive credits, use the "Support" button inside the wall to report the issue.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
