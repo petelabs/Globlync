@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useUser } from "@/firebase";
 
 export default function RewardsPage() {
-  // NOTE: Replace 'YOUR_WALL_ID' and 'YOUR_USER_ID' with your Adscend Media credentials
-  const ADSCEND_URL = "https://adscendmedia.com/adwall/v2/YOUR_WALL_ID/YOUR_USER_ID";
+  const { user } = useUser();
+  
+  // NOTE: Replace 'YOUR_MONLIX_APP_ID' with your actual ID from Monlix Dashboard
+  // Monlix typically uses a URL format like: https://monlix.com/wall/[APP_ID]/[USER_ID]
+  const MONLIX_URL = user ? `https://monlix.com/wall/YOUR_MONLIX_APP_ID/${user.uid}` : null;
 
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-4">
@@ -17,7 +21,7 @@ export default function RewardsPage() {
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter">Earn Pro <span className="text-primary">Status.</span></h1>
         <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed font-medium">
-          Support the platform that grows your reputation. Complete quick tasks from our global partners to unlock VIP benefits instantly without paying cash.
+          Support the platform that grows your reputation. Complete quick tasks from our partner <b>Monlix</b> to unlock VIP benefits instantly without paying cash.
         </p>
       </header>
 
@@ -49,28 +53,36 @@ export default function RewardsPage() {
         <CardHeader className="bg-muted/30 p-8 border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-black flex items-center gap-2">
-              <Gift className="h-6 w-6 text-secondary" /> Global Offer Wall
+              <Gift className="h-6 w-6 text-secondary" /> Monlix Offer Wall
             </CardTitle>
-            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-white">Verified Platform</Badge>
+            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-white">Official Partner</Badge>
           </div>
           <CardDescription className="text-xs font-bold mt-1 text-muted-foreground">
             Tasks refresh daily. Please allow up to 24 hours for credits to appear on your profile.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 relative h-full">
-          {/* Adscend Media Iframe Overlay (Shows until URL is provided) */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/5 p-12 text-center gap-4">
-             <div className="p-8 bg-white rounded-full shadow-inner animate-pulse">
-                <Loader2 className="h-12 w-12 text-primary/30 animate-spin" />
-             </div>
-             <div className="space-y-1">
-                <p className="font-black text-lg">Connecting to Reward Network...</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ensure ad-blockers are disabled to receive credit.</p>
-             </div>
-          </div>
-          
-          {/* IFRAME: Uncomment this line and use your actual ID once verified */}
-          {/* <iframe src={ADSCEND_URL} className="w-full h-[800px] border-none" title="Offer Wall" /> */}
+          {/* Monlix Iframe Overlay (Shows until URL is provided and user is logged in) */}
+          {(!MONLIX_URL || MONLIX_URL.includes("YOUR_MONLIX_APP_ID")) ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/5 p-12 text-center gap-4">
+               <div className="p-8 bg-white rounded-full shadow-inner animate-pulse">
+                  <Loader2 className="h-12 w-12 text-primary/30 animate-spin" />
+               </div>
+               <div className="space-y-1">
+                  <p className="font-black text-lg text-primary">Connecting to Monlix Network...</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground max-w-xs">
+                    {user ? "System is verifying your account for secure rewards." : "Please sign in to access professional rewards."}
+                  </p>
+               </div>
+            </div>
+          ) : (
+            <iframe 
+              src={MONLIX_URL} 
+              className="w-full h-[800px] border-none" 
+              title="Monlix Offer Wall" 
+              allow="camera; microphone"
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -79,9 +91,9 @@ export default function RewardsPage() {
           <Info className="h-6 w-6" />
         </div>
         <div className="space-y-1">
-          <h4 className="font-black text-[10px] uppercase tracking-widest">Integrity Notice</h4>
+          <h4 className="font-black text-[10px] uppercase tracking-widest">Partner Compliance</h4>
           <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-            Completing tasks legitimately supports the platform's infrastructure costs and keeps Globlync free for thousands of Malawian professionals.
+            Globlync partners with <b>Monlix</b> to provide professional incentives. Using VPNs or proxy services to complete tasks will result in an immediate reward ban.
           </p>
         </div>
       </footer>

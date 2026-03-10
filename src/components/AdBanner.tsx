@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,8 +11,8 @@ interface AdBannerProps {
 }
 
 /**
- * Replaced Adsterra Banner with internal Reward Center promotion.
- * This drives traffic to the Adscend Media offer wall.
+ * Enhanced Reward Center Promotion.
+ * Optimized to drive traffic to the Monlix Offer Wall.
  */
 export function AdBanner({ className }: AdBannerProps) {
   return (
@@ -25,12 +24,12 @@ export function AdBanner({ className }: AdBannerProps) {
               <Gift className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-black text-lg leading-tight uppercase tracking-tight">Unlock VIP for Free!</h3>
-              <p className="text-xs opacity-80 font-medium">Complete one quick offer to get 2 days of Pro features.</p>
+              <h3 className="font-black text-lg leading-tight uppercase tracking-tight">Free VIP via Monlix</h3>
+              <p className="text-xs opacity-80 font-medium">Complete one quick professional survey to unlock Pro features.</p>
             </div>
           </div>
           <Button variant="outline" className="rounded-full bg-white text-secondary font-black border-none px-8 hover:bg-white/90" asChild>
-            <Link href="/rewards">Start Earning</Link>
+            <Link href="/rewards">Open Offer Wall</Link>
           </Button>
         </CardContent>
       </Card>

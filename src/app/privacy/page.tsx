@@ -27,21 +27,26 @@ export default function PrivacyPolicyPage() {
         <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed p-8">
           <section>
             <h3 className="text-lg font-black mb-2 text-primary">1. Information Collection</h3>
-            <p>Globlync collects minimal data to build your professional reputation. This includes your name, email, and trade skills. For Reward Center users, we may share non-sensitive demographic data with partners like Adscend Media to provide relevant tasks.</p>
+            <p>Globlync collects minimal data to build your professional reputation. This includes your name, professional ID, and trade skills. This data is used strictly to enhance your global evidence-based footprint.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-black mb-2 text-primary">2. Reward Center Usage</h3>
-            <p>When you participate in our Reward Center to earn "VIP Status," third-party networks may collect data such as IP addresses or device IDs to verify task completion. This is governed by their respective privacy policies.</p>
+            <h3 className="text-lg font-black mb-2 text-primary">2. Reward Center (Monlix)</h3>
+            <p>We partner with <b>Monlix</b> to provide a "Reward Center" where users can earn VIP status. When you interact with the Monlix offer wall, they may collect device identifiers and IP addresses to verify task completion. This interaction is governed by the <b>Monlix Privacy Policy</b>. Globlync does not sell your private profile data to these networks.</p>
           </section>
 
           <section>
             <h3 className="text-lg font-black mb-2 text-primary">3. Professional Verification</h3>
-            <p>Photos uploaded for job logs are used strictly for AI-based skill verification and are displayed on your public profile to build trust with clients.</p>
+            <p>Photos uploaded for job logs are used strictly for AI-based skill verification and are displayed on your public profile to build trust with clients. We ensure all evidence is stored securely in our cloud database.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-black mb-2 text-primary">4. Data Rights</h3>
+            <h3 className="text-lg font-black mb-2 text-primary">4. Cookies and Tracking</h3>
+            <p>We use essential cookies to maintain your professional session and security. Third-party partners like Monlix may use cookies within their integrated frames to track reward eligibility.</p>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-black mb-2 text-primary">5. Data Rights</h3>
             <p>You have the absolute right to delete your profile and all associated logs at any time via the Settings page. This permanently removes your data from our active databases.</p>
           </section>
         </CardContent>

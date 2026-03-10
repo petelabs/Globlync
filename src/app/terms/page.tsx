@@ -27,22 +27,27 @@ export default function TermsOfServicePage() {
         <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed p-8">
           <section>
             <h3 className="text-lg font-black mb-2 text-primary">1. Service Description</h3>
-            <p>Globlync provides a digital reputation platform. Users may access standard features for free, or upgrade to VIP status via direct payment (PayChangu) or by completing sponsored tasks in the Reward Center.</p>
+            <p>Globlync provides a digital, evidence-based reputation platform. Users may access standard features for free, or upgrade to VIP status via direct payment (PayChangu) or by completing sponsored tasks in our integrated <b>Monlix Reward Center</b>.</p>
           </section>
 
           <section>
             <h3 className="text-lg font-black mb-2 text-primary">2. Reward Center Integrity</h3>
-            <p>Users attempting to "game" or use fraudulent methods to complete Reward Center tasks will face immediate permanent account termination. This ensures the integrity of our partnership with offer wall networks.</p>
+            <p>Users attempting to "game" or use fraudulent methods (including VPNs, proxies, or multiple accounts) to complete Monlix tasks will face immediate permanent account termination. We maintain a zero-tolerance policy toward reward fraud to protect our partnership with <b>Monlix</b> and the integrity of our platform.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-black mb-2 text-primary">3. VIP Status</h3>
-            <p>VIP status earned via the Reward Center provides identical benefits to paid VIP status, including enhanced search visibility and high-resolution photo uploads.</p>
+            <h3 className="text-lg font-black mb-2 text-primary">3. VIP Status & Credits</h3>
+            <p>VIP status earned via Monlix provides identical benefits to paid VIP status. Globlync is not responsible for task tracking delays; however, most credits appear on your profile within 24 hours of successful completion.</p>
           </section>
 
           <section>
-            <h3 className="text-lg font-black mb-2 text-primary">4. Liability</h3>
-            <p>Globlync is not responsible for any disputes between workers and clients. We provide the tools for reputation measurement, but do not guarantee employment or specific earnings.</p>
+            <h3 className="text-lg font-black mb-2 text-primary">4. Professional Ethics</h3>
+            <p>By using Globlync, you agree to log only genuine, original work. Submission of stock photos or work belonging to others will result in a Trust Score penalty or account suspension.</p>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-black mb-2 text-primary">5. Liability</h3>
+            <p>Globlync provides tools for reputation measurement but does not guarantee employment. We are not responsible for disputes between users and their respective clients.</p>
           </section>
         </CardContent>
       </Card>
