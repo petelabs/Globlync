@@ -205,10 +205,10 @@ export default function SettingsPage() {
     if (profileSnap.exists()) {
       const data = profileSnap.data();
       if (data.username) {
-        await deleteDoc(doc(db, "usernames", data.username.toLowerCase()));
+        await deleteDoc(doc(db, "usernames", data.username.toLowerCase())).catch(() => {});
       }
       if (data.referralCode) {
-        await deleteDoc(doc(db, "referralCodes", data.referralCode.toUpperCase()));
+        await deleteDoc(doc(db, "referralCodes", data.referralCode.toUpperCase())).catch(() => {});
       }
     }
     await deleteDoc(profileRef);
@@ -244,8 +244,8 @@ export default function SettingsPage() {
         }
       }
 
-      // Step 2: Submit Deletion Feedback via API
-      await fetch('/api/account-deletion', {
+      // Step 2: Submit Deletion Feedback via API (Fire and forget)
+      fetch('/api/account-deletion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -254,14 +254,18 @@ export default function SettingsPage() {
           reasons: selectedReasons,
           description: otherDescription
         })
-      });
+      }).catch(() => {});
 
-      // Step 3: Scrub Firestore Data
+      // Step 3: Scrub Firestore Data (Primary Goal)
       await scrubFirestoreData();
 
-      // Step 4: Delete Auth User (if re-auth path was used)
+      // Step 4: Finalize
       if (!useFallback) {
+        // Try to delete the actual Auth record if possible
         await deleteUser(user);
+      } else {
+        // If fallback, just sign out since we can't delete Auth without re-auth
+        await signOut(auth);
       }
 
       setDeleteStep(5);
@@ -273,11 +277,11 @@ export default function SettingsPage() {
     } catch (error: any) {
       console.error(error);
       if (error.code === 'auth/requires-recent-login' || error.code === 'auth/wrong-password') {
-        setDeletionError("Security session expired or incorrect details. Try the fallback option below.");
+        setDeletionError("Security session expired or incorrect details. Use the 'Scrub My Data' option below to exit instantly.");
       } else {
-        setDeletionError("Something went wrong. You can still use the fallback option to remove your professional data.");
+        setDeletionError("Something went wrong with Auth. You can still use the 'Scrub My Data' option to remove your professional presence.");
       }
-      toast({ variant: "destructive", title: "Deletion Encountered a Problem" });
+      toast({ variant: "destructive", title: "Auth Failed", description: "Check details or use fallback." });
     } finally {
       setIsDeleting(false);
     }
@@ -639,7 +643,7 @@ export default function SettingsPage() {
                   <DialogHeader className="p-8 pb-4 bg-destructive/5">
                     <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Identity Verification</DialogTitle>
                     <DialogDescription className="font-medium text-sm pt-2 leading-relaxed">
-                      Choose your preferred method to confirm deletion.
+                      Choose your method to confirm deletion.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="p-8 space-y-6">
@@ -650,7 +654,7 @@ export default function SettingsPage() {
                     )}
 
                     <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Option 1: Re-authenticate (Recommended)</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Option 1: Re-authenticate & Full Delete</p>
                       {user.providerData[0]?.providerId === 'password' ? (
                         <div className="space-y-2">
                           <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Enter Password</Label>
@@ -661,6 +665,14 @@ export default function SettingsPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                           />
+                          <Button 
+                            variant="destructive"
+                            className="w-full h-14 rounded-full font-black text-sm shadow-xl" 
+                            disabled={!password || isDeleting}
+                            onClick={() => handleDeleteAccount(false)}
+                          >
+                            Delete Auth & Data
+                          </Button>
                         </div>
                       ) : (
                         <Button 
@@ -669,7 +681,7 @@ export default function SettingsPage() {
                           onClick={() => handleDeleteAccount(false)}
                           disabled={isDeleting}
                         >
-                          <Globe className="mr-2 h-4 w-4" /> Confirm via Google Sign-in
+                          <Globe className="mr-2 h-4 w-4" /> Delete via Google Confirmation
                         </Button>
                       )}
                     </div>
@@ -680,38 +692,28 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Option 2: Security Word Fallback</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Option 2: Scrub My Data Only (Zero Auth)</p>
                       <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-destructive">Type "DELETE" below to enable buttons</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-destructive">Type "DELETE" to permanently wipe your profile</Label>
                         <Input 
                           placeholder="Type DELETE" 
                           className="h-14 rounded-xl border-2 border-destructive/20 focus:border-destructive text-center font-black uppercase"
                           value={confirmDeleteWord}
                           onChange={(e) => setConfirmDeleteWord(e.target.value)}
                         />
+                        <Button 
+                          variant="ghost"
+                          className="w-full h-14 rounded-full font-black uppercase text-xs text-destructive bg-destructive/5 hover:bg-destructive/10" 
+                          disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting}
+                          onClick={() => handleDeleteAccount(true)}
+                        >
+                          {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                          Permanently Wipe My Profile Now
+                        </Button>
                       </div>
                     </div>
                   </div>
                   <DialogFooter className="p-8 pt-0 flex-col sm:flex-col gap-2">
-                    <Button 
-                      variant="destructive"
-                      className="w-full rounded-full h-16 font-black text-lg shadow-xl" 
-                      disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting}
-                      onClick={() => handleDeleteAccount(false)}
-                    >
-                      {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Shield className="mr-2 h-5 w-5" />}
-                      Full Account & Auth Delete
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost"
-                      className="w-full text-xs font-black uppercase text-muted-foreground hover:text-destructive" 
-                      disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting}
-                      onClick={() => handleDeleteAccount(true)}
-                    >
-                      Scrub My Data Only (Fallback)
-                    </Button>
-                    
                     <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>
                       Cancel Deletion
                     </Button>
