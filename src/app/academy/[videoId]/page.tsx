@@ -18,21 +18,31 @@ import {
   Zap,
   TrendingUp,
   GraduationCap,
-  Crown
+  Crown,
+  PlayCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { COURSES, type Course } from "../page";
 import { cn } from "@/lib/utils";
 
-// YouTube IFrame API Script Loader
+/**
+ * YouTube Player logic for Watch-to-Earn.
+ * Step 1: Load API Script.
+ * Step 2: Initialize Player on target div.
+ * Step 3: Listen for 'Ended' state (0).
+ * Step 4: Fire Firestore reward logic.
+ */
+
 let apiLoaded = false;
 const loadYoutubeApi = () => {
-  if (apiLoaded) return;
+  if (apiLoaded || typeof window === 'undefined') return;
   const tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   const firstScriptTag = document.getElementsByTagName('script')[0];
-  firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-  apiLoaded = true;
+  if (firstScriptTag && firstScriptTag.parentNode) {
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    apiLoaded = true;
+  }
 };
 
 export default function CoursePlayerPage() {
@@ -46,6 +56,7 @@ export default function CoursePlayerPage() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isProcessingReward, setIsProcessingReward] = useState(false);
   const [hasEarnedInThisSession, setHasEarnedInThisSession] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   const course = COURSES.find(c => c.id === videoId);
 
@@ -64,16 +75,20 @@ export default function CoursePlayerPage() {
 
   useEffect(() => {
     loadYoutubeApi();
+    
+    // Define the global callback YouTube expects
     (window as any).onYouTubeIframeAPIReady = () => {
       initPlayer();
     };
+
+    // If API already loaded, just init
     if ((window as any).YT && (window as any).YT.Player) {
       initPlayer();
     }
   }, [course]);
 
   const initPlayer = () => {
-    if (!course || playerRef.current) return;
+    if (!course || playerRef.current || !document.getElementById('yt-player')) return;
     
     playerRef.current = new (window as any).YT.Player('yt-player', {
       videoId: course.youtubeId,
@@ -82,10 +97,12 @@ export default function CoursePlayerPage() {
         modestbranding: 1,
         rel: 0,
         controls: 1,
+        origin: window.location.origin
       },
       events: {
+        onReady: () => setIsPlayerReady(true),
         onStateChange: (event: any) => {
-          // 0 is the code for 'ended'
+          // YT.PlayerState.ENDED is 0
           if (event.data === 0) {
             handleVideoEnd();
           }
@@ -102,7 +119,6 @@ export default function CoursePlayerPage() {
       const existingCompleted = profile?.completedCourses || [];
       const updatedCompleted = [...existingCompleted, videoId];
       
-      // Calculate reward: VIPs get 2x Knowledge Points
       const baseKP = course.reward || 5;
       const finalKP = profile?.isPro ? (baseKP * 2) : baseKP;
       const trustBoost = 2;
@@ -114,7 +130,6 @@ export default function CoursePlayerPage() {
         updatedAt: serverTimestamp()
       };
 
-      // Check for Category Path Completion (Badge Logic)
       const coursesInCategory = COURSES.filter(c => c.category === course.category);
       const completedInCategory = updatedCompleted.filter(id => 
         coursesInCategory.some(c => c.id === id)
@@ -133,15 +148,17 @@ export default function CoursePlayerPage() {
 
       updateDocumentNonBlocking(workerRef, profileUpdate);
 
-      const notifRef = collection(db!, "workerProfiles", user.uid, "notifications");
-      addDocumentNonBlocking(notifRef, {
-        type: "badge_earned",
-        message: earnedBadgeName 
-          ? `Path Mastery Unlocked! You earned the "${earnedBadgeName}" badge and +${finalKP} KP.`
-          : `Masterclass Finished! You earned +${finalKP} Knowledge Points and +${trustBoost} Trust Score for "${course.title}".`,
-        isRead: false,
-        createdAt: serverTimestamp()
-      });
+      if (db) {
+        const notifRef = collection(db, "workerProfiles", user.uid, "notifications");
+        addDocumentNonBlocking(notifRef, {
+          type: "badge_earned",
+          message: earnedBadgeName 
+            ? `Path Mastery Unlocked! You earned the "${earnedBadgeName}" badge and +${finalKP} KP.`
+            : `Masterclass Finished! You earned +${finalKP} Knowledge Points and +${trustBoost} Trust Score for "${course.title}".`,
+          isRead: false,
+          createdAt: serverTimestamp()
+        });
+      }
 
       setIsCompleted(true);
       setHasEarnedInThisSession(true);
@@ -164,7 +181,7 @@ export default function CoursePlayerPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-4 pb-24 overflow-visible">
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-4 pb-24">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
@@ -179,7 +196,12 @@ export default function CoursePlayerPage() {
         </div>
       </header>
 
-      <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-black shadow-2xl border-4 border-white">
+      <div className="relative aspect-video w-full rounded-[2rem] overflow-hidden bg-black shadow-2xl border-4 border-white group">
+        {!isPlayerReady && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/20 backdrop-blur-sm z-10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
         <div id="yt-player" className="w-full h-full" />
       </div>
 
