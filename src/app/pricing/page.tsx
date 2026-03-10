@@ -39,7 +39,7 @@ const TIERS = [
   {
     id: "bronze",
     name: "Bronze Pro",
-    price: 0.63, // 30% off 0.9
+    price: 0.63, 
     originalPrice: 0.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-oz0qsN",
@@ -52,7 +52,7 @@ const TIERS = [
   {
     id: "silver",
     name: "Silver Pro",
-    price: 1.33, // 30% off 1.9
+    price: 1.33, 
     originalPrice: 1.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-0siw5Z",
@@ -65,7 +65,7 @@ const TIERS = [
   {
     id: "gold",
     name: "Gold Pro",
-    price: 2.03, // 30% off 2.9
+    price: 2.03, 
     originalPrice: 2.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-PuzKtb",
@@ -81,7 +81,7 @@ const MALAWI_LOCAL_TIERS = [
   {
     id: "mw-trial",
     name: "Malawi Trial",
-    priceLabel: "K10",
+    priceLabel: "K100",
     days: 2,
     link: "https://pay.paychangu.com/SC-k9FBo5",
     icon: Zap,
@@ -97,6 +97,16 @@ const MALAWI_LOCAL_TIERS = [
     icon: Crown,
     color: "text-secondary",
     features: ["30 Days Pro Access", "All Premium Tools", "Airtel/Mpamba Ready"]
+  },
+  {
+    id: "mw-bonus",
+    name: "Malawi Pro Max",
+    priceLabel: "K1000",
+    days: 35,
+    link: "https://pay.paychangu.com/SC-WfbMb9",
+    icon: Trophy,
+    color: "text-orange-600",
+    features: ["35 Days (30+5 Bonus)", "Priority Rank Boost", "Ultimate VIP Support"]
   }
 ];
 
@@ -209,9 +219,9 @@ export default function PricingPage() {
           <Badge className="bg-primary text-primary-foreground font-black py-1 px-4 text-[10px] uppercase">Malawi Only 🇲🇼</Badge>
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-3">
           {MALAWI_LOCAL_TIERS.map((tier) => (
-            <Card key={tier.id} className="border-4 border-secondary/20 rounded-[3rem] p-8 flex flex-col sm:flex-row gap-8 bg-white relative overflow-hidden group">
+            <Card key={tier.id} className="border-4 border-secondary/20 rounded-[3rem] p-8 flex flex-col gap-6 bg-white relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
                 <tier.icon className="h-32 w-32" />
               </div>
@@ -234,10 +244,10 @@ export default function PricingPage() {
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col justify-end gap-4 min-w-[200px]">
+              <div className="flex flex-col justify-end gap-4">
                 <Button className="w-full rounded-full h-16 text-lg font-black bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-xl" asChild>
                   <a href={tier.link} target="_blank">
-                    <Wallet className="mr-3 h-5 w-5" /> Pay with Mobile Money
+                    <Wallet className="mr-3 h-5 w-5" /> Pay Now
                   </a>
                 </Button>
                 <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">

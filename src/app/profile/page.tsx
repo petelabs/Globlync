@@ -31,7 +31,6 @@ import {
   Clock,
   Eye,
   TrendingUp,
-  ClipboardCheck,
   Star,
   Gift,
   Users,
@@ -117,7 +116,6 @@ export default function ProfilePage() {
       setContactEmail(profile.contactEmail || user?.email || "");
       setServiceAreas(profile.serviceAreas || []);
       
-      // Calculate Bio Cooldown
       if (profile.lastBioPolishAt && !profile.isPro) {
         const lastUsed = new Date(profile.lastBioPolishAt);
         const cooldownDays = 14;
@@ -295,7 +293,7 @@ export default function ProfilePage() {
   if (!user || isProfileLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Syncing Profile Hub...</p>
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Syncing My Hub...</p>
     </div>
   );
 
@@ -306,12 +304,17 @@ export default function ProfilePage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
-            Professional Hub
+            My Hub
             {isPro && <Crown className="h-5 w-5 text-secondary fill-secondary" />}
           </h1>
           <p className="text-muted-foreground text-sm">Control your global visibility and private ID.</p>
         </div>
         <div className="flex gap-2">
+          {!isPro && (
+            <Button variant="secondary" size="sm" asChild className="rounded-full font-black animate-pulse shadow-md">
+              <Link href="/pricing">Upgrade to VIP</Link>
+            </Button>
+          )}
           <Button variant="outline" size="sm" asChild className="rounded-full hidden sm:flex font-bold">
             <Link href={`/public/${user?.uid}`}>
               <ExternalLink className="mr-2 h-4 w-4" /> View Public

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     let isVerified = false;
 
-    // 1. Try Signature Verification (Requires PAYCHANGU_WEBHOOK_SECRET)
+    // 1. Try Signature Verification
     const webhookSecret = process.env.PAYCHANGU_WEBHOOK_SECRET;
     const signature = headersList.get('x-paychangu-signature');
 
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Fallback: API Verification (Requires PAYCHANGU_SECRET_KEY)
+    // 2. Fallback: API Verification
     const secretKey = process.env.PAYCHANGU_SECRET_KEY;
     if (!isVerified && secretKey && txRef) {
       console.log('[PayChangu Webhook] Signature missing/failed. Attempting API Verification fallback...');
@@ -62,8 +62,6 @@ export async function POST(req: Request) {
         if (verifyData.status === 'success' && (verifyData.data?.status === 'success' || verifyData.data?.status === 'completed')) {
           console.log('[PayChangu Webhook] API Verification successful.');
           isVerified = true;
-        } else {
-          console.error('[PayChangu Webhook] API Verification failed:', verifyData);
         }
       } catch (err) {
         console.error('[PayChangu Webhook] API verification error:', err);
@@ -75,7 +73,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Verification failed' }, { status: 401 });
     }
 
-    // 3. Activate Pro VIP with localized logic
+    // 3. Activate Pro VIP
     if (customerEmail) {
       const usersRef = db.collection('workerProfiles');
       const q = await usersRef.where('contactEmail', '==', customerEmail).limit(1).get();
@@ -92,14 +90,17 @@ export async function POST(req: Request) {
       let days = 30;
 
       // Handle Malawian Kwacha specific amounts
-      if (amount === 10) {
+      if (amount === 100) {
         tierName = "Trial Pro (MWK)";
         days = 2;
       } else if (amount === 500) {
         tierName = "Pro Member (MWK)";
         days = 30;
+      } else if (amount === 1000) {
+        tierName = "Pro Max (MWK)";
+        days = 35; // 30 + 5 bonus
       } else {
-        // Handle Global USD amounts (as defined in pricing page)
+        // Handle Global USD amounts
         if (amount >= 2.0) tierName = "Gold Pro";
         else if (amount >= 1.3) tierName = "Silver Pro";
         else if (amount >= 0.6) tierName = "Bronze Pro";
@@ -124,7 +125,6 @@ export async function POST(req: Request) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Send In-App Notification
       const notifRef = userDoc.ref.collection('notifications');
       await notifRef.add({
         type: 'app',

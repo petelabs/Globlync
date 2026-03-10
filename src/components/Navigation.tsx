@@ -19,7 +19,8 @@ import {
   Crown,
   Users,
   MessageSquare,
-  Lock
+  Lock,
+  MoveRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -118,6 +119,9 @@ export function Navigation() {
           <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             {user ? (
               <>
+                <div className="hidden sm:flex items-center gap-2 mr-2">
+                  <MoveRight className="h-5 w-5 text-secondary animate-link-right" />
+                </div>
                 {!isPro && (
                   <Button variant="ghost" size="sm" asChild className="hidden lg:flex text-secondary font-black hover:text-secondary hover:bg-secondary/10 rounded-full">
                     <Link href="/rewards">
@@ -172,8 +176,13 @@ export function Navigation() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="mx-[-8px] my-1" />
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
-                      <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />My Professional Hub</Link>
+                      <Link href="/profile"><User className="mr-3 h-5 w-5 text-primary" />My Hub</Link>
                     </DropdownMenuItem>
+                    {!isPro && (
+                      <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary animate-pulse">
+                        <Link href="/pricing"><Crown className="mr-3 h-5 w-5 text-secondary fill-secondary" />Join Pro VIP</Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
                       <Link href="/referrals"><Users className="mr-3 h-5 w-5 text-secondary" />Invite & Earn</Link>
                     </DropdownMenuItem>
