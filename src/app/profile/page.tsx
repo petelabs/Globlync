@@ -302,7 +302,7 @@ export default function ProfilePage() {
   const displayPhoto = newProfilePic || profile?.profilePictureUrl || user?.photoURL || "";
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2 pb-20 overflow-visible">
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2 pb-32 overflow-visible">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
@@ -412,7 +412,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
               <div className="bg-black/20 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-                <p className="text-2xl font-black tracking-tight text-secondary leading-none">@{username || "..."}</p>
+                <p className="text-xl font-black tracking-tight text-secondary leading-none break-all">@{username || "..."}</p>
                 <p className="text-[10px] font-medium opacity-70 mt-2">Give this ID to others to connect securely.</p>
               </div>
               <div className="flex gap-2">

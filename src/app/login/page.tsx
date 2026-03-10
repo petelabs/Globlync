@@ -107,8 +107,8 @@ function LoginContent() {
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const finalName = manualName || auth.currentUser?.displayName || "New Professional";
       
-      const shortName = finalName.split(' ')[0].toLowerCase().substring(0, 10).replace(/[^a-z0-9]/g, '');
-      const fallbackUsername = `gl_${shortName}_${uid.substring(0, 4)}`;
+      const firstName = finalName.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+      const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
       // 1. Create the main profile first - MOST CRITICAL

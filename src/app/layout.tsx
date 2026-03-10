@@ -69,10 +69,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background text-foreground overflow-x-hidden w-full flex flex-col min-h-screen">
+      <body className="font-body antialiased bg-background text-foreground w-full flex flex-col min-h-screen">
         <FirebaseClientProvider>
           <Navigation />
-          <main className="mx-auto flex-1 max-w-screen-xl px-0 sm:px-4 pb-28 pt-20 md:pb-12 md:pt-28 w-full box-border">
+          <main className="mx-auto flex-1 max-w-screen-xl px-0 sm:px-4 pb-40 pt-20 md:pb-12 md:pt-28 w-full box-border">
             {children}
           </main>
           <Footer />
