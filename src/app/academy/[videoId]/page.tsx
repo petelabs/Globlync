@@ -130,6 +130,7 @@ export default function CoursePlayerPage() {
         updatedAt: serverTimestamp()
       };
 
+      // Path Mastery Logic: Check if entire category is finished
       const coursesInCategory = COURSES.filter(c => c.category === course.category);
       const completedInCategory = updatedCompleted.filter(id => 
         coursesInCategory.some(c => c.id === id)

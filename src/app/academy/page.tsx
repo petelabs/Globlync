@@ -16,8 +16,6 @@ import {
   Star,
   Award,
   BookOpen,
-  Layout,
-  Briefcase,
   Target,
   Hammer,
   ShieldCheck
@@ -114,7 +112,7 @@ export default function AcademyPage() {
   const { data: profile } = useDoc(workerRef);
   const completedIds = profile?.completedCourses || [];
 
-  const categories = ["Remote Pro", "Financial Excellence", "Reputation Mastery", "Trade Mastery"];
+  const categories = ["Remote Pro", "Financial Excellence", "Reputation Mastery", "Trade Mastery"] as const;
 
   const filteredCourses = useMemo(() => {
     return filter ? COURSES.filter(c => c.category === filter) : COURSES;
@@ -131,7 +129,7 @@ export default function AcademyPage() {
   }, [completedIds]);
 
   return (
-    <div className="flex flex-col gap-8 py-4 max-w-5xl mx-auto px-4">
+    <div className="flex flex-col gap-8 py-4 max-w-5xl mx-auto px-4 pb-24">
       <header className="space-y-4 text-center sm:text-left">
         <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
           <GraduationCap className="h-3.5 w-3.5" /> Globlync Professional Academy
@@ -181,7 +179,7 @@ export default function AcademyPage() {
         })}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {filteredCourses.map((course) => {
           const isDone = completedIds.includes(course.id);
           const Icon = course.icon;
