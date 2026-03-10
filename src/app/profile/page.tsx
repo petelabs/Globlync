@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -301,7 +302,7 @@ export default function ProfilePage() {
   const displayPhoto = newProfilePic || profile?.profilePictureUrl || user?.photoURL || "";
 
   return (
-    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2">
+    <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2 pb-20 overflow-visible">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">

@@ -100,8 +100,10 @@ function LoginContent() {
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
       const finalName = manualName || auth.currentUser?.displayName || "New Professional";
-      const fallbackUsername = `globlync_${finalName.toLowerCase().replace(/\s+/g, '_')}_${uid.substring(0, 4)}`;
-      const finalUsername = manualUsername?.toLowerCase() || fallbackUsername;
+      // Generate a small branded fallback name if no username provided
+      const shortName = finalName.split(' ')[0].toLowerCase().substring(0, 10).replace(/[^a-z0-9]/g, '');
+      const fallbackUsername = `gl_${shortName}_${uid.substring(0, 4)}`;
+      const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
       await setDoc(profileRef, {
         id: uid,
@@ -125,6 +127,7 @@ function LoginContent() {
         updatedAt: serverTimestamp(),
       });
 
+      // Registry for uniqueness
       await setDoc(doc(db, "usernames", finalUsername), { uid });
       await setDoc(doc(db, "referralCodes", newCode), { uid });
 
