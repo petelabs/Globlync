@@ -27,10 +27,6 @@ import { cn } from "@/lib/utils";
 
 /**
  * YouTube Player logic for Watch-to-Earn.
- * Step 1: Load API Script.
- * Step 2: Initialize Player on target div.
- * Step 3: Listen for 'Ended' state (0).
- * Step 4: Fire Firestore reward logic.
  */
 
 let apiLoaded = false;
@@ -76,12 +72,10 @@ export default function CoursePlayerPage() {
   useEffect(() => {
     loadYoutubeApi();
     
-    // Define the global callback YouTube expects
     (window as any).onYouTubeIframeAPIReady = () => {
       initPlayer();
     };
 
-    // If API already loaded, just init
     if ((window as any).YT && (window as any).YT.Player) {
       initPlayer();
     }
@@ -97,7 +91,7 @@ export default function CoursePlayerPage() {
         modestbranding: 1,
         rel: 0,
         controls: 1,
-        origin: window.location.origin
+        enablejsapi: 1
       },
       events: {
         onReady: () => setIsPlayerReady(true),
@@ -130,7 +124,7 @@ export default function CoursePlayerPage() {
         updatedAt: serverTimestamp()
       };
 
-      // Path Mastery Logic: Check if entire category is finished
+      // Path Mastery Logic
       const coursesInCategory = COURSES.filter(c => c.category === course.category);
       const completedInCategory = updatedCompleted.filter(id => 
         coursesInCategory.some(c => c.id === id)
@@ -155,7 +149,7 @@ export default function CoursePlayerPage() {
           type: "badge_earned",
           message: earnedBadgeName 
             ? `Path Mastery Unlocked! You earned the "${earnedBadgeName}" badge and +${finalKP} KP.`
-            : `Masterclass Finished! You earned +${finalKP} Knowledge Points and +${trustBoost} Trust Score for "${course.title}".`,
+            : `Masterclass Finished! You earned +${finalKP} Knowledge Points and +${trustBoost} Trust Score.`,
           isRead: false,
           createdAt: serverTimestamp()
         });

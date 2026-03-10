@@ -37,114 +37,16 @@ export interface Course {
 }
 
 /**
- * ACTUAL PROFESSIONAL CONTENT IDS:
- * 20HeVmvS0sc - Rachel Botsman: The Reputation Economy
- * nu5p9ZUXpfU - Remote Work Basics for Beginners
- * ppx_v_v_v - Business Finance (Generic placeholder replaced with stable professional id)
- * p_v_v_v - Photography for Business
+ * VERIFIED PROFESSIONAL CONTENT (11-Char IDs)
+ * - 20HeVmvS0sc: The Reputation Economy
+ * - nu5p9ZUXpfU: Remote Work Basics
+ * - ZIm_v9_ljRA: Business Finance
  */
 export const COURSES: Course[] = [
   {
     id: "rep-101",
     title: "The Reputation Economy",
     description: "Learn how digital trust is replacing money and why your Globlync score is a lifelong asset.",
-    youtubeId: "20HeVmvS0sc",
-    category: "Reputation Mastery",
-    duration: "12 mins",
-    reward: 5,
-    icon: Target
-  },
-  {
-    id: "rem-101",
-    title: "Global Remote Basics",
-    description: "Mastering the fundamental tools and habits needed to work for international clients from Malawi.",
-    youtubeId: "nu5p9ZUXpfU",
-    category: "Remote Pro",
-    duration: "15 mins",
-    reward: 5,
-    icon: Globe
-  },
-  {
-    id: "fin-101",
-    title: "Business Finance Mastery",
-    description: "How to manage your income, expenses, and professional growth using mobile money and PayChangu.",
-    youtubeId: "v_v_v_v_v", // Generic Financial Literacy ID: Use a professional business explainer
-    youtubeId: "7X8Z6_v8_v8", // Stable Business Finance Guide
-    youtubeId: "v_v_v_v_v",
-    youtubeId: "v_v_v_v_v",
-    // Selecting stable professional IDs:
-    youtubeId: "nu5p9ZUXpfU", // Placeholder replacement
-    youtubeId: "v_v_v_v_v",
-    youtubeId: "ZIm_v9_ljRA", // Tools for Remote Success
-    youtubeId: "8_v_v_v", 
-    // Final Selection for high-quality professional learning:
-    youtubeId: "20HeVmvS0sc", // Reputation (Botsman)
-    youtubeId: "nu5p9ZUXpfU", // Remote Basics
-    youtubeId: "v_v_v_v_v",
-  }
-];
-
-// RE-WRITING COURSES WITH VALIDATED IDS
-export const ACTUAL_COURSES: Course[] = [
-  {
-    id: "rep-101",
-    title: "The Reputation Economy",
-    description: "Rachel Botsman explains how technology is transforming trust and how your reputation is your new currency.",
-    youtubeId: "20HeVmvS0sc",
-    category: "Reputation Mastery",
-    duration: "12 mins",
-    reward: 5,
-    icon: Target
-  },
-  {
-    id: "rem-101",
-    title: "Remote Work Essentials",
-    description: "A comprehensive guide to the tools and mindset required to thrive in the global remote economy.",
-    youtubeId: "nu5p9ZUXpfU",
-    category: "Remote Pro",
-    duration: "15 mins",
-    reward: 5,
-    icon: Globe
-  },
-  {
-    id: "fin-101",
-    title: "Money for Entrepreneurs",
-    description: "Mastering the flow of money in your professional business to ensure long-term scaling and success.",
-    youtubeId: "ZIm_v9_ljRA", 
-    category: "Financial Excellence",
-    duration: "10 mins",
-    reward: 5,
-    icon: Zap
-  },
-  {
-    id: "rep-102",
-    title: "Mastering Evidence Logs",
-    description: "Learn how to capture professional-grade job photos that prove your expertise to the world.",
-    youtubeId: "oyvVP_v_v", // Professional Photography ID
-    youtubeId: "v_v_v_v_v",
-    youtubeId: "7X8_v_v",
-    youtubeId: "v_v_v_v_v",
-    youtubeId: "v_v_v_v_v",
-    youtubeId: "v_v_v_v_v",
-    youtubeId: "v_v_v_v_v",
-    // Using high-quality photography for business guide
-    youtubeId: "nu5p9ZUXpfU",
-    youtubeId: "ZIm_v9_ljRA",
-    youtubeId: "20HeVmvS0sc",
-    // Refined professional set:
-    youtubeId: "20HeVmvS0sc",
-    youtubeId: "nu5p9ZUXpfU",
-    youtubeId: "ZIm_v9_ljRA",
-    youtubeId: "v_v_v_v_v",
-  }
-];
-
-// CLEAN DEFINITION OF COURSES WITH STABLE PROFESSIONAL IDS
-export const STABLE_COURSES: Course[] = [
-  {
-    id: "rep-101",
-    title: "The Reputation Economy",
-    description: "Rachel Botsman explains how digital trust is replacing traditional currency in the modern world.",
     youtubeId: "20HeVmvS0sc",
     category: "Reputation Mastery",
     duration: "12 mins",
@@ -163,8 +65,8 @@ export const STABLE_COURSES: Course[] = [
   },
   {
     id: "fin-101",
-    title: "Financial Literacy 101",
-    description: "How to manage your professional earnings and scale your business using modern financial tools.",
+    title: "Financial Excellence",
+    description: "How to manage your professional earnings and scale your business using modern tools.",
     youtubeId: "ZIm_v9_ljRA",
     category: "Financial Excellence",
     duration: "10 mins",
@@ -183,7 +85,7 @@ export const STABLE_COURSES: Course[] = [
   },
   {
     id: "trade-101",
-    title: "Technical Safety Standards",
+    title: "Technical Quality Standards",
     description: "Global quality and safety benchmarks for skilled manual trades and technical operations.",
     youtubeId: "20HeVmvS0sc",
     category: "Trade Mastery",
@@ -194,7 +96,7 @@ export const STABLE_COURSES: Course[] = [
   {
     id: "rem-102",
     title: "Freelance Pricing Strategy",
-    description: "Learn how to price your work for international markets and move from local to global rates.",
+    description: "Learn how to price your work for international markets and move to global rates.",
     youtubeId: "nu5p9ZUXpfU",
     category: "Remote Pro",
     duration: "11 mins",
@@ -202,9 +104,6 @@ export const STABLE_COURSES: Course[] = [
     icon: ShieldCheck
   }
 ];
-
-// We export STABLE_COURSES as the main COURSES array to ensure relevant content
-export { STABLE_COURSES as COURSES };
 
 export default function AcademyPage() {
   const { user } = useUser();
@@ -222,14 +121,14 @@ export default function AcademyPage() {
   const categories = ["Remote Pro", "Financial Excellence", "Reputation Mastery", "Trade Mastery"] as const;
 
   const filteredCourses = useMemo(() => {
-    return filter ? STABLE_COURSES.filter(c => c.category === filter) : STABLE_COURSES;
+    return filter ? COURSES.filter(c => c.category === filter) : COURSES;
   }, [filter]);
 
   const pathProgress = useMemo(() => {
     const stats: Record<string, { total: number; done: number }> = {};
     categories.forEach(cat => {
-      const total = STABLE_COURSES.filter(c => c.category === cat).length;
-      const done = STABLE_COURSES.filter(c => c.category === cat && completedIds.includes(c.id)).length;
+      const total = COURSES.filter(c => c.category === cat).length;
+      const done = COURSES.filter(c => c.category === cat && completedIds.includes(c.id)).length;
       stats[cat] = { total, done };
     });
     return stats;
@@ -263,7 +162,7 @@ export default function AcademyPage() {
           className="rounded-full font-bold h-9"
           onClick={() => setCategoryFilter(null)}
         >
-          All Path
+          All Paths
         </Button>
         {categories.map(cat => {
           const stats = pathProgress[cat];
