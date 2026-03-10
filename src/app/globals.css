@@ -61,7 +61,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground font-body transition-colors duration-300 antialiased;
+    @apply bg-background text-foreground font-body transition-colors duration-300 antialiased overflow-x-hidden;
     text-rendering: optimizeLegibility;
   }
 }

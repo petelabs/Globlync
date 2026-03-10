@@ -16,9 +16,8 @@ import {
   LogOut, 
   Trash2, 
   ChevronRight, 
-  Lock, 
+  Lock as LockIcon, 
   BellRing,
-  ExternalLink,
   Moon,
   Sun,
   Zap,
@@ -26,11 +25,7 @@ import {
   Crown,
   CreditCard,
   Mail,
-  LifeBuoy,
-  AlertTriangle,
   Loader2,
-  CheckCircle2,
-  Heart,
   Star,
   ThumbsUp,
   ShieldAlert,
@@ -40,13 +35,15 @@ import {
   Globe,
   Briefcase,
   Search,
-  Info
+  Info,
+  AlertTriangle,
+  Heart
 } from "lucide-react";
 import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { doc, deleteDoc, collection, query, orderBy, limit, serverTimestamp } from "firebase/firestore";
+import { doc, deleteDoc, collection, query, orderBy, limit, serverTimestamp, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { 
@@ -64,7 +61,6 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { INITIAL_TESTIMONIALS } from "@/lib/initial-testimonials";
 import { Logo } from "@/components/Navigation";
 
@@ -101,6 +97,7 @@ export default function SettingsPage() {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [otherDescription, setOtherDescription] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmDeleteWord, setConfirmDeleteWord] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -200,9 +197,16 @@ export default function SettingsPage() {
 
   const handleDeleteAccount = async () => {
     if (!user || !db) return;
+    
+    if (confirmDeleteWord.toLowerCase() !== "delete") {
+      toast({ variant: "destructive", title: "Verification Failed", description: "Please type the word DELETE correctly." });
+      return;
+    }
+
     setIsDeleting(true);
 
     try {
+      // 1. Re-authenticate
       const providerId = user.providerData[0]?.providerId;
       if (providerId === 'password') {
         if (!password) {
@@ -218,6 +222,7 @@ export default function SettingsPage() {
         await reauthenticateWithPopup(user, provider);
       }
 
+      // 2. Submit Feedback
       await fetch('/api/account-deletion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -229,7 +234,21 @@ export default function SettingsPage() {
         })
       });
 
-      await deleteDoc(doc(db, "workerProfiles", user.uid));
+      // 3. Cleanup Registry
+      const profileRef = doc(db, "workerProfiles", user.uid);
+      const profileSnap = await getDoc(profileRef);
+      if (profileSnap.exists()) {
+        const data = profileSnap.data();
+        if (data.username) {
+          await deleteDoc(doc(db, "usernames", data.username.toLowerCase()));
+        }
+        if (data.referralCode) {
+          await deleteDoc(doc(db, "referralCodes", data.referralCode.toUpperCase()));
+        }
+      }
+
+      // 4. Delete Profile and Auth
+      await deleteDoc(profileRef);
       await deleteUser(user);
 
       setDeleteStep(5);
@@ -320,7 +339,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* FEEDBACK SECTION */}
       <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -376,7 +394,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* PLATFORM INFO & LEGAL - RELOCATED FROM FOOTER */}
       <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden">
         <CardHeader className="bg-muted/30">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -472,7 +489,7 @@ export default function SettingsPage() {
         <CardContent className="grid gap-2">
           <div className="flex items-center justify-between p-4 rounded-2xl border bg-muted/30">
             <div className="flex items-center gap-3">
-              <Lock className="h-5 w-5 text-primary" />
+              <LockIcon className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-bold">Password & Auth</p>
                 <p className="text-xs text-muted-foreground">Managed via {user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Email'}</p>
@@ -503,6 +520,7 @@ export default function SettingsPage() {
               setPassword("");
               setSelectedReasons([]);
               setOtherDescription("");
+              setConfirmDeleteWord("");
             }
           }}>
             <DialogTrigger asChild>
@@ -592,7 +610,7 @@ export default function SettingsPage() {
                       disabled={selectedReasons.length === 0}
                       onClick={() => setDeleteStep(4)}
                     >
-                      Continue to Auth Verification
+                      Continue to Final Gate
                     </Button>
                     <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setIsDeleteDialogOpen(false)}>
                       Stay with Globlync
@@ -604,9 +622,9 @@ export default function SettingsPage() {
               {deleteStep === 4 && (
                 <>
                   <DialogHeader className="p-8 pb-4 bg-destructive/5">
-                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Final Verification</DialogTitle>
+                    <DialogTitle className="text-2xl font-black tracking-tight text-destructive">Final Security Verification</DialogTitle>
                     <DialogDescription className="font-medium text-sm pt-2 leading-relaxed">
-                      To protect your professional data, please confirm your credentials one last time.
+                      To protect your professional data, please confirm your credentials and type the verification word.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="p-8 space-y-6">
@@ -623,26 +641,30 @@ export default function SettingsPage() {
                       </div>
                     ) : (
                       <div className="bg-muted/30 p-6 rounded-2xl text-center border-2 border-dashed">
-                        <p className="text-xs font-bold mb-4">Confirm your identity via Google.</p>
-                        <Button variant="outline" className="rounded-full bg-white font-black" onClick={handleDeleteAccount} disabled={isDeleting}>
-                          {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                          Verify Google Account
-                        </Button>
+                        <p className="text-xs font-bold mb-4">You will need to verify your Google identity when you tap delete.</p>
                       </div>
                     )}
+
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase tracking-widest ml-1 text-destructive">Type "DELETE" below to enable button</Label>
+                      <Input 
+                        placeholder="Type DELETE" 
+                        className="h-14 rounded-xl border-2 border-destructive/20 focus:border-destructive text-center font-black uppercase"
+                        value={confirmDeleteWord}
+                        onChange={(e) => setConfirmDeleteWord(e.target.value)}
+                      />
+                    </div>
                   </div>
                   <DialogFooter className="p-8 pt-0 flex-col sm:flex-col gap-2">
-                    {user.providerData[0]?.providerId === 'password' && (
-                      <Button 
-                        variant="destructive"
-                        className="w-full rounded-full h-14 font-black text-lg shadow-xl" 
-                        disabled={!password || isDeleting}
-                        onClick={handleDeleteAccount}
-                      >
-                        {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Trash2 className="mr-2 h-5 w-5" />}
-                        Delete Forever
-                      </Button>
-                    )}
+                    <Button 
+                      variant="destructive"
+                      className="w-full rounded-full h-16 font-black text-lg shadow-xl" 
+                      disabled={confirmDeleteWord.toLowerCase() !== 'delete' || isDeleting || (user.providerData[0]?.providerId === 'password' && !password)}
+                      onClick={handleDeleteAccount}
+                    >
+                      {isDeleting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Trash2 className="mr-2 h-5 w-5" />}
+                      Permanently Remove My Profile
+                    </Button>
                     <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => setDeleteStep(3)} disabled={isDeleting}>
                       Back to Feedback
                     </Button>
@@ -658,7 +680,7 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <DialogTitle className="text-3xl font-black tracking-tight text-primary">We hear you.</DialogTitle>
                     <DialogDescription className="text-muted-foreground text-sm font-medium leading-relaxed px-4">
-                      We'll try to fix the issues you mentioned. Please, if you find free time, come back to our app. We keep on updating so you have a good experience in our app.
+                      We'll try to fix the issues you mentioned. Please, if you find free time, come back to our app. We keep on updating so you have a good experience.
                     </DialogDescription>
                   </div>
                   <div className="pt-4 space-y-4">

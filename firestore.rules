@@ -23,6 +23,9 @@ service cloud.firestore {
       allow list: if false; // Browsing all profiles is forbidden for privacy
       allow create: if isOwner(workerId);
       
+      // Allow deletion of own profile and its subcollections
+      allow delete: if isOwner(workerId);
+      
       // Allow the owner to update everything, or others to increment views/score/referrals
       allow update: if isOwner(workerId)
                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount']));
@@ -31,6 +34,7 @@ service cloud.firestore {
         allow read: if true;
         allow create: if isOwner(workerId);
         allow update: if isOwner(workerId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isVerified', 'updatedAt']);
+        allow delete: if isOwner(workerId);
       }
       
       match /ratings/{ratingId} {
@@ -67,6 +71,7 @@ service cloud.firestore {
     match /referralCodes/{code} {
       allow get: if true;
       allow create: if true;
+      allow delete: if isSignedIn();
     }
 
     match /appRatings/{ratingId} {

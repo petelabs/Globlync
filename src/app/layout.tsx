@@ -51,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="h-full">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -69,10 +69,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background text-foreground w-full flex flex-col min-h-screen">
+      <body className="font-body antialiased bg-background text-foreground w-full flex flex-col min-h-full">
         <FirebaseClientProvider>
           <Navigation />
-          <main className="mx-auto flex-1 max-w-screen-xl px-0 sm:px-4 pb-40 pt-20 md:pb-12 md:pt-28 w-full box-border">
+          <main className="flex-1 w-full max-w-screen-xl mx-auto px-0 sm:px-4 pt-20 pb-40 md:pt-28 md:pb-24">
             {children}
           </main>
           <Footer />
