@@ -47,7 +47,6 @@ export async function POST(req: Request) {
     }
 
     // 2. Fallback: API Verification (Requires PAYCHANGU_SECRET_KEY)
-    // This is used if Webhook Secret is missing or signature fails.
     const secretKey = process.env.PAYCHANGU_SECRET_KEY;
     if (!isVerified && secretKey && txRef) {
       console.log('[PayChangu Webhook] Signature missing/failed. Attempting API Verification fallback...');
@@ -60,7 +59,6 @@ export async function POST(req: Request) {
         });
         const verifyData = await verifyRes.json();
         
-        // Success check per PayChangu API docs
         if (verifyData.status === 'success' && (verifyData.data?.status === 'success' || verifyData.data?.status === 'completed')) {
           console.log('[PayChangu Webhook] API Verification successful.');
           isVerified = true;
@@ -77,7 +75,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Verification failed' }, { status: 401 });
     }
 
-    // 3. Activate Pro VIP
+    // 3. Activate Pro VIP with localized logic
     if (customerEmail) {
       const usersRef = db.collection('workerProfiles');
       const q = await usersRef.where('contactEmail', '==', customerEmail).limit(1).get();
@@ -90,13 +88,24 @@ export async function POST(req: Request) {
       const userDoc = q.docs[0];
       const userData = userDoc.data();
 
-      // All global tiers grant 30 days
       let tierName = "Pro Member";
-      if (amount >= 2.9) tierName = "Gold Pro";
-      else if (amount >= 1.9) tierName = "Silver Pro";
-      else if (amount >= 0.9) tierName = "Bronze Pro";
+      let days = 30;
 
-      const days = 30;
+      // Handle Malawian Kwacha specific amounts
+      if (amount === 10) {
+        tierName = "Trial Pro (MWK)";
+        days = 2;
+      } else if (amount === 500) {
+        tierName = "Pro Member (MWK)";
+        days = 30;
+      } else {
+        // Handle Global USD amounts (as defined in pricing page)
+        if (amount >= 2.0) tierName = "Gold Pro";
+        else if (amount >= 1.3) tierName = "Silver Pro";
+        else if (amount >= 0.6) tierName = "Bronze Pro";
+        days = 30;
+      }
+
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + days);
 
@@ -119,12 +128,12 @@ export async function POST(req: Request) {
       const notifRef = userDoc.ref.collection('notifications');
       await notifRef.add({
         type: 'app',
-        message: `${tierName} Activated! You now have 30 days of VIP access. Expiry: ${expiryDate.toLocaleDateString()}.`,
+        message: `${tierName} Activated! You now have ${days} days of VIP access. Expiry: ${expiryDate.toLocaleDateString()}.`,
         isRead: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log(`[PayChangu Webhook] Pro VIP activated for ${customerEmail} until ${expiryDate.toISOString()}`);
+      console.log(`[PayChangu Webhook] ${tierName} activated for ${customerEmail} until ${expiryDate.toISOString()}`);
       return NextResponse.json({ status: 'success' });
     }
 

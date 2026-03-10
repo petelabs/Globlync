@@ -26,7 +26,8 @@ import {
   Wallet,
   Building2,
   Lock,
-  Timer
+  Timer,
+  Smartphone
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -76,6 +77,29 @@ const TIERS = [
   }
 ];
 
+const MALAWI_LOCAL_TIERS = [
+  {
+    id: "mw-trial",
+    name: "Malawi Trial",
+    priceLabel: "K10",
+    days: 2,
+    link: "https://pay.paychangu.com/SC-k9FBo5",
+    icon: Zap,
+    color: "text-primary",
+    features: ["2 Days Pro Access", "Try Verified Badges", "Mobile Money Supported"]
+  },
+  {
+    id: "mw-full",
+    name: "Malawi Monthly",
+    priceLabel: "K500",
+    days: 30,
+    link: "https://pay.paychangu.com/SC-c9Mara",
+    icon: Crown,
+    color: "text-secondary",
+    features: ["30 Days Pro Access", "All Premium Tools", "Airtel/Mpamba Ready"]
+  }
+];
+
 export default function PricingPage() {
   const { user } = useUser();
   const db = useFirestore();
@@ -110,7 +134,7 @@ export default function PricingPage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter sm:text-7xl">Go Pro <span className="text-primary">VIP.</span></h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg font-medium">
-          Building your professional identity is <b>Free for Life</b>. Upgrade to a Pro tier to unlock advanced tools and global ranking for 30 days.
+          Building your professional identity is <b>Free for Life</b>. Upgrade to a Pro tier to unlock advanced tools and global ranking.
         </p>
       </header>
 
@@ -125,52 +149,105 @@ export default function PricingPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {TIERS.map((tier) => (
-          <Card key={tier.id} className={cn(
-            "border-2 rounded-[3rem] p-8 flex flex-col relative overflow-hidden transition-all hover:scale-[1.02] shadow-sm hover:shadow-xl",
-            tier.borderColor,
-            tier.bgColor
-          )}>
-            <div className="absolute top-6 right-6">
-              <tier.icon className={cn("h-8 w-8", tier.color)} />
-            </div>
-            <CardHeader className="p-0 mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <CardTitle className="text-2xl font-black">{tier.name}</CardTitle>
-                <Badge className="bg-secondary text-secondary-foreground text-[8px] font-black uppercase">-30%</Badge>
+      <section className="space-y-8">
+        <div className="flex items-center gap-3 px-2">
+          <div className="bg-primary/10 p-2 rounded-xl text-primary"><Globe className="h-5 w-5" /></div>
+          <h2 className="text-xl font-black uppercase tracking-widest">Global Professionals (USD)</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {TIERS.map((tier) => (
+            <Card key={tier.id} className={cn(
+              "border-2 rounded-[3rem] p-8 flex flex-col relative overflow-hidden transition-all hover:scale-[1.02] shadow-sm hover:shadow-xl",
+              tier.borderColor,
+              tier.bgColor
+            )}>
+              <div className="absolute top-6 right-6">
+                <tier.icon className={cn("h-8 w-8", tier.color)} />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-baseline gap-1 mt-4">
-                  <span className="text-5xl font-black tracking-tight">${tier.price}</span>
-                  <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
+              <CardHeader className="p-0 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <CardTitle className="text-2xl font-black">{tier.name}</CardTitle>
+                  <Badge className="bg-secondary text-secondary-foreground text-[8px] font-black uppercase">-30%</Badge>
                 </div>
-                <span className="text-xs text-muted-foreground line-through font-bold opacity-50 ml-1">Reg. ${tier.originalPrice}</span>
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-5xl font-black tracking-tight">${tier.price}</span>
+                    <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground line-through font-bold opacity-50 ml-1">Reg. ${tier.originalPrice}</span>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 flex-1">
+                <ul className="space-y-4">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-sm font-medium">
+                      <CheckCircle2 className="h-5 w-5 text-primary/40 shrink-0" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter className="p-0 mt-8 flex flex-col gap-4">
+                <Button className="w-full rounded-full h-16 text-lg font-black shadow-lg" asChild>
+                  <a href={tier.link} target="_blank">
+                    <CreditCard className="mr-3 h-5 w-5" /> Pay International
+                  </a>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* MALAWI LOCAL PRICING SECTION */}
+      <section className="space-y-8 pt-8 border-t-4 border-dashed border-muted">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-secondary/10 p-2 rounded-xl text-secondary"><Smartphone className="h-5 w-5" /></div>
+            <h2 className="text-xl font-black uppercase tracking-widest text-secondary">Malawi Local Support (MWK)</h2>
+          </div>
+          <Badge className="bg-primary text-primary-foreground font-black py-1 px-4 text-[10px] uppercase">Malawi Only 🇲🇼</Badge>
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          {MALAWI_LOCAL_TIERS.map((tier) => (
+            <Card key={tier.id} className="border-4 border-secondary/20 rounded-[3rem] p-8 flex flex-col sm:flex-row gap-8 bg-white relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+                <tier.icon className="h-32 w-32" />
               </div>
-            </CardHeader>
-            <CardContent className="p-0 flex-1">
-              <ul className="space-y-4">
-                {tier.features.map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-sm font-medium">
-                    <CheckCircle2 className="h-5 w-5 text-primary/40 shrink-0" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter className="p-0 mt-8 flex flex-col gap-4">
-              <Button className="w-full rounded-full h-16 text-lg font-black shadow-lg" asChild>
-                <a href={tier.link} target="_blank">
-                  <CreditCard className="mr-3 h-5 w-5" /> Pay Early Bird Rate
-                </a>
-              </Button>
-              <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
-                Safe & Secure via <span className="text-primary">PayChangu</span>
-              </p>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+              <div className="flex flex-col gap-4 flex-1">
+                <div>
+                  <Badge variant="outline" className="border-secondary text-secondary font-black text-[10px] uppercase mb-2">Local Pricing</Badge>
+                  <CardTitle className="text-3xl font-black">{tier.name}</CardTitle>
+                  <p className="text-sm text-muted-foreground font-medium mt-1">Special rate for Malawian professionals.</p>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black tracking-tight text-primary">{tier.priceLabel}</span>
+                  <span className="text-sm font-bold text-muted-foreground">/ {tier.days} Days</span>
+                </div>
+                <ul className="space-y-2 mt-4">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-center gap-3 text-xs font-bold">
+                      <CheckCircle2 className="h-4 w-4 text-secondary" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex flex-col justify-end gap-4 min-w-[200px]">
+                <Button className="w-full rounded-full h-16 text-lg font-black bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-xl" asChild>
+                  <a href={tier.link} target="_blank">
+                    <Wallet className="mr-3 h-5 w-5" /> Pay with Mobile Money
+                  </a>
+                </Button>
+                <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
+                  Supports <span className="text-red-500">Airtel</span> & <span className="text-green-600">Mpamba</span>
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-none bg-muted/30 p-8 rounded-[2.5rem] flex flex-col gap-6">
@@ -178,11 +255,11 @@ export default function PricingPage() {
             <div className="bg-primary/10 p-2 rounded-xl text-primary">
               <CreditCard className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-black uppercase tracking-tight">Payment Methods</h3>
+            <h3 className="text-xl font-black uppercase tracking-tight">Global Payment Methods</h3>
           </div>
           <div className="grid gap-4">
             <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Global Professionals</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">International Gateway</p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
                   <CreditCard className="h-3 w-3 text-primary" /> Visa
@@ -192,17 +269,6 @@ export default function PricingPage() {
                 </Badge>
                 <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
                   <Building2 className="h-3 w-3 text-primary" /> Bank Transfer
-                </Badge>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Local Malawi Support</p>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
-                  <Wallet className="h-3 w-3 text-red-500" /> Airtel Money
-                </Badge>
-                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
-                  <Wallet className="h-3 w-3 text-green-600" /> TNM Mpamba
                 </Badge>
               </div>
             </div>
@@ -216,7 +282,7 @@ export default function PricingPage() {
           <div>
             <AlertTitle className="text-xl font-black uppercase tracking-tight mb-2">Automated Activation</AlertTitle>
             <AlertDescription className="text-sm font-medium leading-relaxed opacity-80">
-              Upgrade is 100% automated. Whether you use a global card or local mobile money, your account will be upgraded for 30 days instantly upon successful checkout. Ensure you use the same email/phone as your Globlync profile.
+              Upgrade is 100% automated. Whether you use a global card (USD) or local Malawian mobile money (MWK), your account will be upgraded instantly upon successful checkout. Ensure you use the same email as your Globlync profile.
             </AlertDescription>
           </div>
         </Alert>
