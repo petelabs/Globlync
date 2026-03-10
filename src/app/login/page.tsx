@@ -85,15 +85,18 @@ function LoginContent() {
             invitedBy = referralDocSnap.data().uid;
             const inviterRef = doc(db, "workerProfiles", invitedBy);
             
+            // 1. Inviter Benefit: +20 points (Earns more than invited user)
             updateDoc(inviterRef, {
               referralCount: increment(1),
+              trustScore: increment(20),
               updatedAt: serverTimestamp()
             }).catch(() => {});
 
+            // 2. Inviter Notification
             const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
             addDoc(inviterNotifRef, {
               type: "profile_update",
-              message: "New Referral! Someone joined Globlync using your link.",
+              message: "Referral Success! Someone joined Globlync using your link. You earned +20 Trust Score.",
               isRead: false,
               createdAt: serverTimestamp()
             }).catch(() => {});
@@ -111,7 +114,7 @@ function LoginContent() {
       const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
-      // 1. Create the main profile first - MOST CRITICAL
+      // 3. Invited User Benefit: +10 points
       await setDoc(profileRef, {
         id: uid,
         name: finalName,
@@ -134,7 +137,7 @@ function LoginContent() {
         updatedAt: serverTimestamp(),
       });
 
-      // 2. Registries for uniqueness - silent fail to prevent signup crash
+      // 4. Registries for uniqueness
       try {
         await setDoc(doc(db, "usernames", finalUsername), { uid });
         await setDoc(doc(db, "referralCodes", newCode), { uid });
@@ -145,7 +148,9 @@ function LoginContent() {
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
       await addDoc(notifRef, {
         type: "app",
-        message: "Welcome to Globlync! Start by logging your work to build an evidence-based professional reputation.",
+        message: invitedBy 
+          ? "Welcome! You earned a +10 Trust Score bonus for joining via referral." 
+          : "Welcome to Globlync! Start by logging your work to build an evidence-based professional reputation.",
         isRead: false,
         createdAt: serverTimestamp()
       });

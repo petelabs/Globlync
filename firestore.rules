@@ -23,9 +23,9 @@ service cloud.firestore {
       allow list: if false; // Browsing all profiles is forbidden for privacy
       allow create: if isOwner(workerId);
       
-      // Allow the owner to update everything, or others to increment views/score
+      // Allow the owner to update everything, or others to increment views/score/referrals
       allow update: if isOwner(workerId)
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount']));
       
       match /jobs/{jobId} {
         allow read: if true;
