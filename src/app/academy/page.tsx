@@ -30,7 +30,7 @@ export interface Course {
   title: string;
   description: string;
   youtubeId: string;
-  category: "Remote Pro" | "Financial Excellence" | "Reputation Mastery" | "Trade Mastery";
+  category: "Remote Mastery";
   duration: string;
   reward: number;
   icon: any;
@@ -38,68 +38,18 @@ export interface Course {
 
 /**
  * UNRESTRICTED PROFESSIONAL CONTENT
- * Selected from high-stability educational channels (Google, Khan Academy, Website Learners)
+ * Simplified to high-stability, globally available content.
  */
 export const COURSES: Course[] = [
   {
-    id: "rep-101",
-    title: "Digital Reputation & Trust",
-    description: "Learn how digital trust is built and why your Globlync score is a lifelong professional asset.",
-    youtubeId: "20HeVmvS0sc",
-    category: "Reputation Mastery",
-    duration: "12 mins",
-    reward: 5,
-    icon: Target
-  },
-  {
     id: "rem-101",
-    title: "Professional Remote Habits",
-    description: "Essential habits and tools for succeeding in the global remote workspace.",
-    youtubeId: "nu5p9ZUXpfU",
-    category: "Remote Pro",
+    title: "Remote Work for Beginners",
+    description: "Master the essential skills needed to transition into the global remote workforce. Learn about tools, communication, and high-demand roles.",
+    youtubeId: "jBrCyXnjjGI",
+    category: "Remote Mastery",
     duration: "15 mins",
-    reward: 5,
+    reward: 10,
     icon: Globe
-  },
-  {
-    id: "fin-101",
-    title: "Business Finance Mastery",
-    description: "Master the basics of business financial literacy from Khan Academy experts.",
-    youtubeId: "ni1B_Hre8_Y",
-    category: "Financial Excellence",
-    duration: "10 mins",
-    reward: 5,
-    icon: Zap
-  },
-  {
-    id: "rem-102",
-    title: "Building Your Digital Brand",
-    description: "Learn how to present your skills online using insights from Website Learners.",
-    youtubeId: "27p9In6ZRXM",
-    category: "Remote Pro",
-    duration: "14 mins",
-    reward: 5,
-    icon: BookOpen
-  },
-  {
-    id: "trade-101",
-    title: "Technical Quality Assurance",
-    description: "Global quality standards and technical benchmarks for skilled professional operations.",
-    youtubeId: "ZIm_v9_ljRA",
-    category: "Trade Mastery",
-    duration: "12 mins",
-    reward: 5,
-    icon: Hammer
-  },
-  {
-    id: "rep-102",
-    title: "Evidence-Based Communication",
-    description: "How to communicate with global clients using verifiable evidence and professional logs.",
-    youtubeId: "nu5p9ZUXpfU",
-    category: "Reputation Mastery",
-    duration: "11 mins",
-    reward: 5,
-    icon: ShieldCheck
   }
 ];
 
@@ -116,7 +66,7 @@ export default function AcademyPage() {
   const { data: profile } = useDoc(workerRef);
   const completedIds = profile?.completedCourses || [];
 
-  const categories = ["Remote Pro", "Financial Excellence", "Reputation Mastery", "Trade Mastery"] as const;
+  const categories = ["Remote Mastery"] as const;
 
   const filteredCourses = useMemo(() => {
     return filter ? COURSES.filter(c => c.category === filter) : COURSES;
