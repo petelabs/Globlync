@@ -33,7 +33,14 @@ import {
   Heart,
   Star,
   ThumbsUp,
-  ShieldAlert
+  ShieldAlert,
+  Send,
+  Building2,
+  MapPin,
+  Globe,
+  Briefcase,
+  Search,
+  Info
 } from "lucide-react";
 import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
@@ -59,6 +66,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { INITIAL_TESTIMONIALS } from "@/lib/initial-testimonials";
+import { Logo } from "@/components/Navigation";
 
 const DELETION_REASONS = [
   "Not finding enough work opportunities",
@@ -278,27 +286,41 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm bg-accent/30 rounded-[2rem]">
+      <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <LifeBuoy className="h-5 w-5 text-primary" />
-            Help & Support
-          </CardTitle>
-          <CardDescription>Need help with your account or professional profile?</CardDescription>
+          <CardTitle className="text-lg">Appearance</CardTitle>
+          <CardDescription>Customize your visual experience.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3">
-          <Button variant="outline" className="w-full rounded-full border-primary text-primary font-bold bg-white h-12" asChild>
-            <a href="mailto:globlync+support@gmail.com?subject=Globlync%20Support%20Request">
-              <Mail className="mr-2 h-4 w-4" /> Email Support
-            </a>
-          </Button>
-          <Button variant="ghost" size="sm" className="w-full text-xs font-bold uppercase tracking-widest opacity-60" asChild>
-            <Link href="/contact">View All Contact Points</Link>
-          </Button>
+        <CardContent className="grid gap-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                {darkMode ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
+              </div>
+              <div className="space-y-0.5">
+                <Label htmlFor="dark-mode" className="text-sm font-bold">Dark Mode</Label>
+                <p className="text-xs text-muted-foreground">Switch to a darker theme for night use.</p>
+              </div>
+            </div>
+            <Switch id="dark-mode" checked={darkMode} onCheckedChange={toggleDarkMode} />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                {animationsDisabled ? <ZapOff className="h-5 w-5 text-primary" /> : <Zap className="h-5 w-5 text-primary" />}
+              </div>
+              <div className="space-y-0.5">
+                <Label htmlFor="animations" className="text-sm font-bold">Reduce Animations</Label>
+                <p className="text-xs text-muted-foreground">Turn off visual motion effects.</p>
+              </div>
+            </div>
+            <Switch id="animations" checked={animationsDisabled} onCheckedChange={toggleAnimations} />
+          </div>
         </CardContent>
       </Card>
 
-      {/* FEEDBACK SECTION MOVED FROM HOME */}
+      {/* FEEDBACK SECTION */}
       <Card className="border-none shadow-sm rounded-[2rem]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -354,37 +376,91 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm rounded-[2rem]">
-        <CardHeader>
-          <CardTitle className="text-lg">Appearance</CardTitle>
-          <CardDescription>Customize your visual experience.</CardDescription>
+      {/* PLATFORM INFO & LEGAL - RELOCATED FROM FOOTER */}
+      <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden">
+        <CardHeader className="bg-muted/30">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Info className="h-5 w-5 text-primary" />
+            Platform & Legal
+          </CardTitle>
+          <CardDescription>Official headquarters and professional links.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                {darkMode ? <Moon className="h-5 w-5 text-primary" /> : <Sun className="h-5 w-5 text-primary" />}
-              </div>
-              <div className="space-y-0.5">
-                <Label htmlFor="dark-mode" className="text-sm font-bold">Dark Mode</Label>
-                <p className="text-xs text-muted-foreground">Switch to a darker theme for night use.</p>
-              </div>
-            </div>
-            <Switch id="dark-mode" checked={darkMode} onCheckedChange={toggleDarkMode} />
-          </div>
+        <CardContent className="p-0">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="platform" className="border-none px-6">
+              <AccordionTrigger className="text-sm font-bold py-4 hover:no-underline">
+                <Briefcase className="h-4 w-4 mr-2 text-primary" /> Platform Links
+              </AccordionTrigger>
+              <AccordionContent className="pb-6">
+                <nav className="grid gap-3">
+                  <Link href="/search" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
+                    <span className="text-xs font-bold">Find Professionals</span>
+                    <Search className="h-3.5 w-3.5 opacity-40" />
+                  </Link>
+                  <Link href="/jobs" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
+                    <span className="text-xs font-bold">Global Jobs</span>
+                    <Briefcase className="h-3.5 w-3.5 opacity-40" />
+                  </Link>
+                  <Link href="/pricing" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
+                    <span className="text-xs font-bold">Advertising</span>
+                    <Zap className="h-3.5 w-3.5 opacity-40" />
+                  </Link>
+                </nav>
+              </AccordionContent>
+            </AccordionItem>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                {animationsDisabled ? <ZapOff className="h-5 w-5 text-primary" /> : <Zap className="h-5 w-5 text-primary" />}
-              </div>
-              <div className="space-y-0.5">
-                <Label htmlFor="animations" className="text-sm font-bold">Reduce Animations</Label>
-                <p className="text-xs text-muted-foreground">Turn off visual motion effects.</p>
-              </div>
-            </div>
-            <Switch id="animations" checked={animationsDisabled} onCheckedChange={toggleAnimations} />
-          </div>
+            <AccordionItem value="legal" className="border-none px-6 border-t">
+              <AccordionTrigger className="text-sm font-bold py-4 hover:no-underline">
+                <Shield className="h-4 w-4 mr-2 text-primary" /> Legal & Support
+              </AccordionTrigger>
+              <AccordionContent className="pb-6 space-y-4">
+                <div className="grid gap-2">
+                  <Link href="/contact" className="flex items-center gap-3 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <Mail className="h-3.5 w-3.5" /> Contact Support
+                  </Link>
+                  <Link href="/privacy" className="flex items-center gap-3 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <FileText className="h-3.5 w-3.5" /> Privacy Policy
+                  </Link>
+                  <Link href="/terms" className="flex items-center gap-3 text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <FileText className="h-3.5 w-3.5" /> Terms of Service
+                  </Link>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="hq" className="border-none px-6 border-t">
+              <AccordionTrigger className="text-sm font-bold py-4 hover:no-underline">
+                <Building2 className="h-4 w-4 mr-2 text-primary" /> About Globlync
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 space-y-6">
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-start">
+                    <div className="bg-primary/10 p-2 rounded-xl text-primary shrink-0"><Logo className="scale-75" /></div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-black uppercase tracking-tight">Globlync Global</p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">Building a verifiable labor market for every professional everywhere.</p>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 pt-2">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest">Headquarters</p>
+                        <p className="text-[11px] font-medium text-muted-foreground">Petediano Tech Office<br/>Dzenje Village, Mulanje, Malawi</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Globe className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest">Serving Globally</p>
+                        <p className="text-[11px] font-medium text-muted-foreground">United States, United Kingdom, EU, Africa & More</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
 
@@ -594,31 +670,6 @@ export default function SettingsPage() {
             </DialogContent>
           </Dialog>
         </CardFooter>
-      </Card>
-
-      <Card className="border-none shadow-sm rounded-[2rem]">
-        <CardHeader>
-          <CardTitle className="text-lg">Legal & Compliance</CardTitle>
-          <CardDescription>Review our policies and data protection.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="privacy">
-              <AccordionTrigger className="text-sm font-bold"><Shield className="h-4 w-4 mr-2 text-primary" /> Privacy Policy</AccordionTrigger>
-              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2 px-2">
-                <p>We use your data to verify jobs and build your reputation. We help cover storage and AI costs through optional Pro subscriptions.</p>
-                <Link href="/privacy" className="text-primary font-bold flex items-center gap-1">Read Full Privacy Policy <ExternalLink className="h-3 w-3" /></Link>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="terms">
-              <AccordionTrigger className="text-sm font-bold"><FileText className="h-4 w-4 mr-2 text-primary" /> Terms of Service</AccordionTrigger>
-              <AccordionContent className="text-xs text-muted-foreground space-y-4 pt-2 px-2">
-                <p>By using Globlync, you agree to log only genuine work. Subscriptions help sustain high-speed infrastructure for the professional labor market.</p>
-                <Link href="/terms" className="text-primary font-bold flex items-center gap-1">Read Full Terms <ExternalLink className="h-3 w-3" /></Link>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </CardContent>
       </Card>
 
       <footer className="text-center py-6">
