@@ -12,7 +12,9 @@ import {
   Lightbulb, 
   Users,
   Timer,
-  Star
+  Star,
+  Zap,
+  Gift
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -25,12 +27,25 @@ import { MOTIVATIONAL_QUOTES, type Motivation } from "@/lib/motivational-quotes"
 export default function Home() {
   const db = useFirestore();
   const [globalTip, setGlobalTip] = useState<Motivation | null>(null);
+  const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number}>({ h: 23, m: 59, s: 59 });
 
   useEffect(() => {
+    // 24 Hour Countdown Logic
+    const timer = setInterval(() => {
+      const now = new Date();
+      // Simple daily reset for the demo, or use localStorage for per-user 24h
+      const h = 23 - now.getHours();
+      const m = 59 - now.getMinutes();
+      const s = 59 - now.getSeconds();
+      setTimeLeft({ h, m, s });
+    }, 1000);
+
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
     const tipIndex = dayOfYear % MOTIVATIONAL_QUOTES.length;
     setGlobalTip(MOTIVATIONAL_QUOTES[tipIndex]);
+
+    return () => clearInterval(timer);
   }, []);
 
   const workersRef = useMemoFirebase(() => {
@@ -45,7 +60,30 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
-      <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden">
+      {/* 30% DISCOUNT BANNER */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-secondary text-secondary-foreground py-2 px-4 shadow-lg animate-in slide-in-from-top duration-500">
+        <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="bg-white/20 p-1.5 rounded-lg">
+              <Zap className="h-4 w-4 fill-current" />
+            </div>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
+              First User Bonus: <span className="underline">30% OFF PRO VIP</span>
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 font-mono text-[10px] sm:text-xs font-black bg-black/10 px-2 py-1 rounded">
+              <Timer className="h-3 w-3" />
+              <span>{String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}</span>
+            </div>
+            <Button size="sm" variant="secondary" className="h-7 rounded-full text-[9px] font-black uppercase bg-white text-secondary hover:bg-white/90" asChild>
+              <Link href="/login">Claim Now</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden mt-8">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         
         <div className="mb-4 animate-in zoom-in duration-700">
@@ -62,22 +100,22 @@ export default function Home() {
         </h1>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          The global remote economy moves fast. Build a digital, evidence-based reputation that follows you everywhere. <span className="text-primary font-bold underline decoration-secondary">Free for Life</span>.
+          Building your professional identity is <span className="text-primary font-bold underline decoration-secondary">Free for Life</span>. Join thousands of verified professionals globally.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
-            <Link href="/login">Secure My @Username</Link>
+            <Link href="/login">Join Globlync Free</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2" asChild>
-            <Link href="/jobs">Browse Remote Jobs <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            <Link href="/jobs">Find Remote Work <ArrowRight className="ml-2 h-5 w-5" /></Link>
           </Button>
         </div>
 
         <div className="mt-6 flex items-center gap-4 bg-orange-500/10 px-6 py-3 rounded-2xl border-2 border-orange-500/20">
-          <Timer className="h-4 w-4 text-orange-600 animate-spin" />
+          <Gift className="h-4 w-4 text-orange-600 animate-bounce" />
           <p className="text-[10px] font-black uppercase text-orange-700 tracking-widest">
-            Warning: 14 unique usernames reserved in the last hour. Secure yours now.
+            Special: 30% OFF PRO VIP for new members. Expires soon.
           </p>
         </div>
       </section>

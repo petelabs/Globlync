@@ -6,7 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, Sparkles, Wand2, Loader2, Gift, ShieldCheck, Users, Globe, User, CheckCircle2, Ticket, AlertCircle, Timer } from "lucide-react";
+import { 
+  Mail, 
+  Lock, 
+  Sparkles, 
+  Loader2, 
+  Gift, 
+  ShieldCheck, 
+  Users, 
+  Globe, 
+  User, 
+  CheckCircle2, 
+  Ticket, 
+  AlertCircle, 
+  Timer,
+  Phone,
+  ArrowRight
+} from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   GoogleAuthProvider, 
@@ -22,10 +38,13 @@ import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function LoginContent() {
   const [isSignUp, setIsSignUp] = useState(true);
+  const [authType, setAuthType] = useState<"email" | "phone">("email");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [desiredUsername, setDesiredUsername] = useState("");
@@ -85,14 +104,12 @@ function LoginContent() {
             invitedBy = referralDocSnap.data().uid;
             const inviterRef = doc(db, "workerProfiles", invitedBy);
             
-            // 1. Inviter Benefit: +20 points (Earns more than invited user)
             updateDoc(inviterRef, {
               referralCount: increment(1),
               trustScore: increment(20),
               updatedAt: serverTimestamp()
             }).catch(() => {});
 
-            // 2. Inviter Notification
             const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
             addDoc(inviterNotifRef, {
               type: "profile_update",
@@ -102,7 +119,7 @@ function LoginContent() {
             }).catch(() => {});
           }
         } catch (e) {
-          console.warn("Referral link failed to process, proceeding with registration.");
+          console.warn("Referral failed, proceeding.");
         }
       }
 
@@ -114,7 +131,6 @@ function LoginContent() {
       const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
-      // 3. Invited User Benefit: +10 points
       await setDoc(profileRef, {
         id: uid,
         name: finalName,
@@ -132,17 +148,16 @@ function LoginContent() {
         onboardingCompleted: false,
         isPro: false,
         isAvailable: true,
-        contactEmail: auth.currentUser?.email || email || "",
+        contactEmail: auth.currentUser?.email || email || (phoneNumber ? `${phoneNumber}@phone.globlync` : ""),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
-      // 4. Registries for uniqueness
       try {
         await setDoc(doc(db, "usernames", finalUsername), { uid });
         await setDoc(doc(db, "referralCodes", newCode), { uid });
       } catch (e) {
-        console.warn("Registry update blip (usually timing related), profile is secured.");
+        console.warn("Registry update blip.");
       }
 
       const notifRef = collection(db, "workerProfiles", uid, "notifications");
@@ -150,7 +165,7 @@ function LoginContent() {
         type: "app",
         message: invitedBy 
           ? "Welcome! You earned a +10 Trust Score bonus for joining via referral." 
-          : "Welcome to Globlync! Start by logging your work to build an evidence-based professional reputation.",
+          : "Welcome to Globlync! Build your evidence-based professional reputation here.",
         isRead: false,
         createdAt: serverTimestamp()
       });
@@ -166,149 +181,101 @@ function LoginContent() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    
     try {
       const result = await signInWithPopup(auth, provider);
       await handlePostAuth(result.user.uid);
     } catch (error: any) {
-      console.error("Google Auth Error:", error);
-      let errorMessage = "Ensure you are using a standard browser and check your internet.";
-      if (error.code === 'auth/popup-blocked') errorMessage = "The sign-in popup was blocked. Please allow popups for this site.";
-      
-      toast({ 
-        variant: "destructive", 
-        title: "Login Failed", 
-        description: errorMessage 
-      });
+      toast({ variant: "destructive", title: "Login Failed", description: "Ensure popups are allowed." });
       setIsLoading(false);
     }
   };
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     if (isSignUp && (!fullName || !desiredUsername)) {
-      toast({ variant: "destructive", title: "Registration Incomplete", description: "Name and Desired Username are required." });
+      toast({ variant: "destructive", title: "Incomplete", description: "Name and Username are required." });
       setIsLoading(false);
       return;
     }
+
+    // Phone numbers are converted to dummy emails for Firebase Auth Email/Password simplicity
+    const finalIdentifier = authType === "email" ? email : `${phoneNumber}@phone.globlync`;
 
     try {
       if (isSignUp) {
         const nameRef = doc(db!, "usernames", desiredUsername.toLowerCase());
         const nameSnap = await getDoc(nameRef);
         if (nameSnap.exists()) {
-          toast({ variant: "destructive", title: "Username Taken", description: "Please pick another username." });
+          toast({ variant: "destructive", title: "Username Taken", description: "Please pick another." });
           setIsLoading(false);
           return;
         }
 
-        const result = await createUserWithEmailAndPassword(auth, email, password);
+        const result = await createUserWithEmailAndPassword(auth, finalIdentifier, password);
         await handlePostAuth(result.user.uid, fullName, desiredUsername);
       } else {
-        const result = await signInWithEmailAndPassword(auth, email, password);
+        const result = await signInWithEmailAndPassword(auth, finalIdentifier, password);
         await handlePostAuth(result.user.uid);
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Auth Failed", description: error.message });
+      let msg = error.message;
+      if (error.code === 'auth/invalid-credential') msg = "Incorrect password or details.";
+      toast({ variant: "destructive", title: "Auth Failed", description: msg });
       setIsLoading(false);
     }
   };
 
   if (isSuccess) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 animate-in fade-in zoom-in-95 duration-500 text-center px-4">
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 text-center px-4">
         <div className="bg-primary/10 p-8 rounded-full shadow-2xl animate-bounce">
           <CheckCircle2 className="h-20 w-20 text-primary" />
         </div>
-        <div className="space-y-2">
-          <h2 className="text-4xl font-black tracking-tighter text-primary">Success!</h2>
-          <p className="text-muted-foreground text-lg font-medium">Preparing your professional gateway...</p>
-        </div>
+        <h2 className="text-4xl font-black tracking-tighter text-primary">Secured!</h2>
+        <p className="text-muted-foreground text-lg font-medium">Entering your professional hub...</p>
         <Loader2 className="h-6 w-6 animate-spin text-primary opacity-50" />
       </div>
     );
   }
 
   return (
-    <div className="grid lg:grid-cols-2 min-h-[80vh] items-center gap-12 py-12 px-4 max-w-6xl mx-auto">
-      <div className="space-y-8 text-center lg:text-left">
-        <div className="flex justify-center lg:justify-start">
-          <Logo className="scale-150 mb-4" />
-        </div>
+    <div className="flex flex-col items-center justify-center min-h-[85vh] py-12 px-4 max-w-4xl mx-auto">
+      <div className="w-full text-center mb-10 space-y-4">
+        <Logo className="scale-125 mb-4 mx-auto" />
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
-          Secure your <span className="text-primary">Professional Asset.</span>
+          The <span className="text-primary">Professional</span> Asset.
         </h1>
-        <p className="text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 font-medium">
-          Professional usernames are limited and unique. Secure yours now to claim your stake in the global evidence-based economy.
+        <p className="text-muted-foreground font-medium max-w-md mx-auto">
+          Secure your unique @username and claim your stake in the evidence-based economy.
         </p>
-        
-        <div className="grid grid-cols-3 gap-4 pt-4">
-          <div className="flex flex-col items-center lg:items-start gap-2">
-            <div className="bg-primary/10 p-3 rounded-2xl"><ShieldCheck className="h-6 w-6 text-primary" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Verified Trust</p>
-          </div>
-          <div className="flex flex-col items-center lg:items-start gap-2">
-            <div className="bg-secondary/10 p-3 rounded-2xl"><Users className="h-6 w-6 text-secondary" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Global Hub</p>
-          </div>
-          <div className="flex flex-col items-center lg:items-start gap-2">
-            <div className="bg-blue-500/10 p-3 rounded-2xl"><Globe className="h-6 w-6 text-blue-500" /></div>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Remote Scale</p>
-          </div>
-        </div>
-
-        <div className="bg-primary/5 p-6 rounded-[2.5rem] border-2 border-primary/10 text-left">
-          <h4 className="font-black text-sm uppercase tracking-tight flex items-center gap-2 mb-2 text-primary">
-            <Timer className="h-4 w-4 animate-pulse" /> Live Stats
-          </h4>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Over <b>3,280 members</b> have already secured their unique professional identity. Don't wait until your preferred @username is taken by someone else.
-          </p>
-        </div>
       </div>
 
-      <div className="relative">
-        {isLoading && !isSuccess && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-[3rem] animate-in fade-in duration-300">
-             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-             <p className="font-black text-primary uppercase tracking-widest text-xs">
-                {isSignUp ? "Securing Username..." : "Signing In..."}
-             </p>
-          </div>
-        )}
-        <Card className="border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden border-t-8 border-t-orange-500">
-          <CardHeader className="bg-muted/30 pb-8 pt-10 text-center">
+      <Card className="w-full max-w-md border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
+        <Tabs defaultValue="signup" onValueChange={(v) => setIsSignUp(v === "signup")}>
+          <TabsList className="w-full h-14 bg-muted/30 p-1 rounded-none border-b">
+            <TabsTrigger value="signup" className="flex-1 rounded-none font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">New Professional</TabsTrigger>
+            <TabsTrigger value="signin" className="flex-1 rounded-none font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">Sign In</TabsTrigger>
+          </TabsList>
+
+          <CardContent className="p-8">
             {isSignUp && (
               <div className="bg-orange-500/10 border-2 border-orange-500/20 p-4 rounded-2xl mb-6 flex items-center gap-3 animate-pulse">
                 <AlertCircle className="h-5 w-5 text-orange-600" />
-                <p className="text-[10px] font-black uppercase text-orange-700 tracking-widest text-left leading-tight">
-                  High Demand: 14 usernames reserved in the last hour.
+                <p className="text-[10px] font-black uppercase text-orange-700 tracking-tight leading-tight">
+                  Early Bird Bonus: 30% OFF PRO VIP for 24 Hours!
                 </p>
               </div>
             )}
-            <CardDescription className="font-bold text-sm">
-              {isSignUp ? "Reserve your professional username" : "Welcome back to Globlync"}
-            </CardDescription>
-            {referrerName && (
-              <div className="mt-4 flex flex-col items-center gap-2 animate-in zoom-in-95">
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 py-1.5 px-4 rounded-full font-black text-[10px] uppercase tracking-widest">
-                  <Gift className="h-3 w-3 mr-2" /> Joining via {referrerName}
-                </Badge>
-                <p className="text-[10px] font-bold text-muted-foreground">You will earn +10 Trust Score bonus!</p>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="grid gap-6 p-8">
+
             <Button 
               variant="outline" 
-              className="w-full rounded-full py-8 border-2 font-black text-base hover:bg-muted/50 transition-all active:scale-95 flex items-center justify-center" 
+              className="w-full rounded-full py-7 border-2 font-black text-sm hover:bg-muted/50 transition-all mb-6" 
               onClick={handleGoogleLogin} 
               disabled={isLoading}
             >
-              <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+              <svg className="mr-3 h-4 w-4" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -316,58 +283,84 @@ function LoginContent() {
               </svg>
               Continue with Google
             </Button>
-            
-            <div className="relative flex items-center justify-center">
+
+            <div className="relative flex items-center justify-center mb-6">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
-              <span className="relative bg-white px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">Or use email</span>
+              <span className="relative bg-white px-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">Or simple sign-up</span>
             </div>
 
-            <form onSubmit={handleEmailAuth} className="grid gap-4">
+            <form onSubmit={handleAuth} className="grid gap-4">
               {isSignUp && (
                 <>
-                  <div className="grid gap-2">
+                  <div className="grid gap-1">
                     <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Full Name</Label>
-                    <Input placeholder="e.g. John Doe" className="h-14 rounded-2xl bg-muted/10 border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                    <Input placeholder="e.g. John Doe" className="h-12 rounded-xl bg-muted/10 border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                   </div>
-                  <div className="grid gap-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60 flex items-center justify-between">
-                      Desired Username
-                      <span className="text-[8px] text-orange-600 font-black">Limited availability</span>
-                    </Label>
-                    <Input placeholder="e.g. jdoe_dev" className="h-14 rounded-2xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
+                  <div className="grid gap-1">
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired @Username</Label>
+                    <Input placeholder="e.g. john_pro" className="h-12 rounded-xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
                   </div>
-                  {!urlReferral && (
-                    <div className="grid gap-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60 flex items-center gap-1">
-                        <Ticket className="h-3 w-3" /> Referral Code (Optional)
-                      </Label>
-                      <Input placeholder="e.g. GL-ABC123" className="h-14 rounded-2xl bg-primary/5 border-2 border-dashed border-primary/20" value={manualReferral} onChange={(e) => setManualReferral(e.target.value.toUpperCase())} />
-                    </div>
-                  )}
                 </>
               )}
-              <div className="grid gap-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Email</Label>
-                <Input type="email" placeholder="professional@example.com" className="h-14 rounded-2xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
+
+              <div className="grid gap-1">
+                <div className="flex items-center justify-between ml-1 mb-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest opacity-60">Identifier</Label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setAuthType("email")} className={cn("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded", authType === "email" ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>Email</button>
+                    <button type="button" onClick={() => setAuthType("phone")} className={cn("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded", authType === "phone" ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>Phone</button>
+                  </div>
+                </div>
+                {authType === "email" ? (
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <Input type="email" placeholder="email@example.com" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <Input type="tel" placeholder="0989999999" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
+                  </div>
+                )}
               </div>
-              <div className="grid gap-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Password</Label>
-                <Input type="password" placeholder="••••••••" className="h-14 rounded-2xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
+
+              <div className="grid gap-1">
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Create Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input type="password" placeholder="••••••••" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                </div>
               </div>
-              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 active:scale-95" type="submit" disabled={isLoading}>
+
+              {isSignUp && !urlReferral && (
+                <div className="grid gap-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60 flex items-center gap-1">
+                    <Ticket className="h-3 w-3" /> Referral Code (Optional)
+                  </Label>
+                  <Input placeholder="GL-ABC123" className="h-12 rounded-xl bg-primary/5 border-2 border-dashed border-primary/20 uppercase font-mono text-center" value={manualReferral} onChange={(e) => setManualReferral(e.target.value.toUpperCase())} />
+                </div>
+              )}
+
+              <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 group" type="submit" disabled={isLoading}>
                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                {isSignUp ? "Reserve My Username Now" : "Sign In"}
+                {isSignUp ? "Start My Reputation Free" : "Sign In to My Hub"}
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4 p-8 pt-0">
-            <p className="text-center text-sm font-medium text-muted-foreground">
-              {isSignUp ? "Already secured yours?" : "New professional?"}{" "}
-              <button onClick={() => setIsSignUp(!isSignUp)} className="text-primary font-black hover:underline transition-colors">{isSignUp ? "Sign In" : "Register Free"}</button>
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
+        </Tabs>
+        
+        <CardFooter className="bg-muted/30 p-6 flex flex-col gap-2">
+          {referrerName && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 py-1.5 px-4 rounded-full font-black text-[10px] uppercase mx-auto">
+              <Gift className="h-3 w-3 mr-2" /> Joining via {referrerName} (+10 Pts)
+            </Badge>
+          )}
+          <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest">
+            Safe & Secure Professional Gateway
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

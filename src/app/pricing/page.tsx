@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -24,7 +25,8 @@ import {
   Globe,
   Wallet,
   Building2,
-  Lock
+  Lock,
+  Timer
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -36,7 +38,8 @@ const TIERS = [
   {
     id: "bronze",
     name: "Bronze Pro",
-    price: 0.9,
+    price: 0.63, // 30% off 0.9
+    originalPrice: 0.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-oz0qsN",
     icon: Medal,
@@ -48,7 +51,8 @@ const TIERS = [
   {
     id: "silver",
     name: "Silver Pro",
-    price: 1.9,
+    price: 1.33, // 30% off 1.9
+    originalPrice: 1.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-0siw5Z",
     icon: Star,
@@ -60,7 +64,8 @@ const TIERS = [
   {
     id: "gold",
     name: "Gold Pro",
-    price: 2.9,
+    price: 2.03, // 30% off 2.9
+    originalPrice: 2.9,
     days: 30,
     link: "https://pay.paychangu.com/SC-PuzKtb",
     icon: Trophy,
@@ -74,6 +79,19 @@ const TIERS = [
 export default function PricingPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const [timeLeft, setTimeLeft] = useState({h: 23, m: 59, s: 59});
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTimeLeft({
+        h: 23 - now.getHours(),
+        m: 59 - now.getMinutes(),
+        s: 59 - now.getSeconds()
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -87,8 +105,8 @@ export default function PricingPage() {
   return (
     <div className="flex flex-col gap-12 py-8 max-w-6xl mx-auto px-4">
       <header className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-primary">
-          <Sparkles className="h-3 w-3" /> Global Professional Network
+        <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary animate-pulse border border-secondary/20">
+          <Timer className="h-3 w-3" /> Early Bird: 30% OFF Ends in {timeLeft.h}h {timeLeft.m}m
         </div>
         <h1 className="text-4xl font-black tracking-tighter sm:text-7xl">Go Pro <span className="text-primary">VIP.</span></h1>
         <p className="max-w-[700px] mx-auto text-muted-foreground text-lg font-medium">
@@ -118,10 +136,16 @@ export default function PricingPage() {
               <tier.icon className={cn("h-8 w-8", tier.color)} />
             </div>
             <CardHeader className="p-0 mb-6">
-              <CardTitle className="text-2xl font-black">{tier.name}</CardTitle>
-              <div className="flex items-baseline gap-1 mt-4">
-                <span className="text-5xl font-black tracking-tight">${tier.price}</span>
-                <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
+              <div className="flex items-center gap-2 mb-2">
+                <CardTitle className="text-2xl font-black">{tier.name}</CardTitle>
+                <Badge className="bg-secondary text-secondary-foreground text-[8px] font-black uppercase">-30%</Badge>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-baseline gap-1 mt-4">
+                  <span className="text-5xl font-black tracking-tight">${tier.price}</span>
+                  <span className="text-sm text-muted-foreground font-bold">/ 30 Days</span>
+                </div>
+                <span className="text-xs text-muted-foreground line-through font-bold opacity-50 ml-1">Reg. ${tier.originalPrice}</span>
               </div>
             </CardHeader>
             <CardContent className="p-0 flex-1">
@@ -137,7 +161,7 @@ export default function PricingPage() {
             <CardFooter className="p-0 mt-8 flex flex-col gap-4">
               <Button className="w-full rounded-full h-16 text-lg font-black shadow-lg" asChild>
                 <a href={tier.link} target="_blank">
-                  <CreditCard className="mr-3 h-5 w-5" /> Pay ${tier.price}
+                  <CreditCard className="mr-3 h-5 w-5" /> Pay Early Bird Rate
                 </a>
               </Button>
               <p className="text-[10px] text-center text-muted-foreground font-bold uppercase tracking-widest">
@@ -192,7 +216,7 @@ export default function PricingPage() {
           <div>
             <AlertTitle className="text-xl font-black uppercase tracking-tight mb-2">Automated Activation</AlertTitle>
             <AlertDescription className="text-sm font-medium leading-relaxed opacity-80">
-              Upgrade is 100% automated. Whether you use a global card or local mobile money, your account will be upgraded for 30 days instantly upon successful checkout. Ensure you use the same email address as your Globlync profile.
+              Upgrade is 100% automated. Whether you use a global card or local mobile money, your account will be upgraded for 30 days instantly upon successful checkout. Ensure you use the same email/phone as your Globlync profile.
             </AlertDescription>
           </div>
         </Alert>
@@ -202,7 +226,7 @@ export default function PricingPage() {
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
           <Gift className="h-40 w-40" />
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="relative z-10 flex flex-col md:row items-center justify-between gap-8">
           <div className="space-y-2 text-center md:text-left">
             <Badge className="bg-secondary text-secondary-foreground font-black mb-2 uppercase text-[10px]">Earn for Free</Badge>
             <h3 className="text-3xl font-black tracking-tight">Unlock VIP without Cash</h3>
