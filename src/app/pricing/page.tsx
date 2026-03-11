@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -27,7 +26,10 @@ import {
   Building2,
   Lock,
   Timer,
-  Smartphone
+  Smartphone,
+  MessageSquare,
+  HelpCircle,
+  FileSearch
 } from "lucide-react";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -142,8 +144,13 @@ export default function PricingPage() {
   
   const activeBenefit = profile?.activeBenefits?.find((b: any) => new Date(b.expiresAt) > new Date());
 
+  const getWhatsAppLink = (planName: string) => {
+    const text = encodeURIComponent(`Hi Globlync Support! I just paid for the ${planName} but my VIP badge is not active yet. Attached is my payment screenshot. My email is ${user?.email || "N/A"}. Please verify me manually.`);
+    return `https://wa.me/265987066051?text=${text}`;
+  };
+
   return (
-    <div className="flex flex-col gap-12 py-8 max-w-6xl mx-auto px-4">
+    <div className="flex flex-col gap-12 py-8 max-w-6xl mx-auto px-4 pb-32">
       <header className="text-center space-y-4">
         {timeLeft ? (
           <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-orange-600 animate-pulse border border-orange-500/20">
@@ -284,43 +291,63 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 mt-8">
         <Card className="border-none bg-muted/30 p-8 rounded-[2.5rem] flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 p-2 rounded-xl text-primary">
               <CreditCard className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-black uppercase tracking-tight">Global Payment Methods</h3>
+            <h3 className="text-xl font-black uppercase tracking-tight">Payment Methods</h3>
           </div>
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">International Gateway</p>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
-                  <CreditCard className="h-3 w-3 text-primary" /> Visa
-                </Badge>
-                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
-                  <CreditCard className="h-3 w-3 text-primary" /> MasterCard
-                </Badge>
-                <Badge variant="outline" className="bg-white border-2 py-1.5 px-4 rounded-xl font-bold flex items-center gap-2">
-                  <Building2 className="h-3 w-3 text-primary" /> Bank Transfer
-                </Badge>
-              </div>
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+              Payments are processed securely via PayChangu. International cards (USD) and local Malawian mobile money (MWK) are accepted.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="bg-white border-2 py-1 px-3 rounded-lg font-bold text-[10px]">VISA</Badge>
+              <Badge variant="outline" className="bg-white border-2 py-1 px-3 rounded-lg font-bold text-[10px]">MASTERCARD</Badge>
+              <Badge variant="outline" className="bg-white border-2 py-1 px-3 rounded-lg font-bold text-[10px] text-red-500">AIRTEL</Badge>
+              <Badge variant="outline" className="bg-white border-2 py-1 px-3 rounded-lg font-bold text-[10px] text-green-600">MPAMBA</Badge>
             </div>
           </div>
         </Card>
 
-        <Alert className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[2.5rem] p-8 flex flex-col items-start gap-4">
-          <div className="bg-primary/10 p-3 rounded-full">
-            <Lock className="h-6 w-6 text-primary" />
+        <Card className="border-4 border-dashed border-primary/20 bg-primary/5 p-8 rounded-[2.5rem] flex flex-col gap-6 relative overflow-hidden">
+          <div className="absolute -top-4 -right-4 opacity-5">
+            <HelpCircle className="h-24 w-24" />
           </div>
-          <div>
-            <AlertTitle className="text-xl font-black uppercase tracking-tight mb-2">Automated Activation</AlertTitle>
-            <AlertDescription className="text-sm font-medium leading-relaxed opacity-80">
-              Upgrade is 100% automated. Whether you use a global card (USD) or local Malawian mobile money (MWK), your account will be upgraded instantly upon successful checkout. Ensure you use the same email as your Globlync profile.
-            </AlertDescription>
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="bg-white p-2 rounded-xl text-primary shadow-sm">
+              <AlertCircle className="h-6 w-6" />
+            </div>
+            <h3 className="text-xl font-black uppercase tracking-tight">Manual Verification</h3>
           </div>
-        </Alert>
+          <div className="space-y-4 relative z-10">
+            <div className="flex gap-3">
+              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-[10px] font-black">1</span>
+              </div>
+              <p className="text-xs font-bold leading-tight">If automatic VIP activation doesn't trigger within 5 minutes of your payment...</p>
+            </div>
+            <div className="flex gap-3">
+              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-[10px] font-black">2</span>
+              </div>
+              <p className="text-xs font-bold leading-tight">Take a screenshot of your success message or SMS proof.</p>
+            </div>
+            <div className="flex gap-3">
+              <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-[10px] font-black">3</span>
+              </div>
+              <p className="text-xs font-bold leading-tight">Send it to our WhatsApp team below for instant manual activation.</p>
+            </div>
+            <Button className="w-full h-14 rounded-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black shadow-lg" asChild>
+              <a href={getWhatsAppLink("Pro Membership")} target="_blank">
+                <MessageSquare className="mr-2 h-5 w-5" /> WhatsApp Manual Verification
+              </a>
+            </Button>
+          </div>
+        </Card>
       </div>
 
       <Card className="border-none bg-secondary/10 p-8 rounded-[3rem] shadow-xl relative overflow-hidden group max-w-4xl mx-auto w-full">

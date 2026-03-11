@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { QRCodeSVG } from "qrcode.react";
 import { 
   Camera, 
   Briefcase, 
@@ -36,7 +37,8 @@ import {
   Share2,
   Lock as LockIcon,
   Coins,
-  Timer
+  Timer,
+  Scan
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -104,6 +106,13 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [bioCooldownText, setBioCooldownText] = useState<string | null>(null);
   const [bonusTimeLeft, setBonusTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
+  const [profileUrl, setProfileUrl] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && user?.uid) {
+      setProfileUrl(`${window.location.origin}/public/${user.uid}`);
+    }
+  }, [user?.uid]);
 
   useEffect(() => {
     if (profile) {
@@ -443,20 +452,27 @@ export default function ProfilePage() {
             </div>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                <QrCode className="h-4 w-4" /> My Professional ID
+                <QrCode className="h-4 w-4" /> Professional ID
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
+              <div className="bg-white p-4 rounded-3xl flex justify-center shadow-inner">
+                {profileUrl ? (
+                  <QRCodeSVG value={profileUrl} size={140} level="H" includeMargin={false} className="rounded-sm" />
+                ) : (
+                  <div className="h-[140px] w-[140px] bg-muted animate-pulse rounded-xl" />
+                )}
+              </div>
               <div className="bg-black/20 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-                <p className="text-xl font-black tracking-tight text-secondary leading-none break-all">@{username || "..."}</p>
-                <p className="text-[10px] font-medium opacity-70 mt-2">Give this ID to others to connect securely.</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-80 mb-1">Instant Trust Handle</p>
+                <p className="text-lg font-black tracking-tight text-white leading-none break-all">@{username || "..."}</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" className="flex-1 rounded-full font-black text-[10px]" onClick={copyProfessionalId}>
                   <Copy className="mr-2 h-3 w-3" /> Copy ID
                 </Button>
-                <Button variant="secondary" size="sm" className="flex-1 rounded-full font-black text-[10px]">
-                  <Share2 className="mr-2 h-3 w-3" /> Share
+                <Button variant="secondary" size="sm" className="flex-1 rounded-full font-black text-[10px]" asChild>
+                  <Link href={`/public/${user?.uid}`}><Scan className="mr-2 h-3 w-3" /> View Portfolio</Link>
                 </Button>
               </div>
             </CardContent>
