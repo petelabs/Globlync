@@ -12,6 +12,14 @@ To ensure all professional features work correctly in production, add these **En
 4. **`PAYCHANGU_SECRET_KEY`**: Your live Secret Key from PayChangu (Required for payment verification).
 5. **`PAYCHANGU_WEBHOOK_SECRET`**: (Optional) The secret for signature verification. If your dashboard doesn't provide this, the app will automatically use API verification as a fallback.
 
+## 🎯 CPA Lead Postback Setup (Automatic Rewards)
+To automatically credit users when they finish a task:
+1. **Login**: Access your [CPALead Dashboard](https://www.cpalead.com).
+2. **Navigate**: Click **Postbacks** in the sidebar.
+3. **Set URL**: Enter exactly this: `https://globlync.vercel.app/api/cpa-postback?uid=[subid]&amount=[payout]`
+4. **Method**: Ensure it is set to **GET**.
+5. **Logic**: Globlync will receive the `[payout]` (e.g. 0.50), convert it to credits (50), and if the user hits 100 credits, it automatically unlocks 30 days of Pro VIP.
+
 ## 💳 PayChangu Webhook Setup (Step-by-Step)
 1. **Login**: Access your [PayChangu Dashboard](https://app.paychangu.com).
 2. **Navigate**: Click **Settings** -> **API Keys & Webhooks**.

@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
@@ -17,16 +18,20 @@ const db = admin.firestore();
 
 /**
  * CPA Postback Handler
- * This route is called by the CPA network (zWidget/CPALead) when a task is completed.
- * Expected params: ?uid=USER_ID&amount=PAYOUT
+ * This route is called by the CPA network (CPALead) when a task is completed.
+ * Expected params: ?uid=[subid]&amount=[payout]
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
+  
+  // CPALead Macros: uid=[subid], amount=[payout]
   const uid = searchParams.get('uid');
-  const amount = parseFloat(searchParams.get('amount') || "0");
+  const amountStr = searchParams.get('amount') || "0";
+  const amount = parseFloat(amountStr);
 
-  if (!uid) {
-    return NextResponse.json({ error: 'No UID' }, { status: 400 });
+  if (!uid || uid === "{subid}" || uid === "[subid]") {
+    console.error('[CPA Postback] Invalid or placeholder UID received:', uid);
+    return NextResponse.json({ error: 'Invalid UID' }, { status: 400 });
   }
 
   try {
@@ -34,16 +39,21 @@ export async function GET(req: Request) {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      console.error(`[CPA Postback] User ${uid} not found.`);
+      console.error(`[CPA Postback] User ${uid} not found in Firestore.`);
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const userData = userDoc.data() || {};
     
-    // Conversion: $1 = 100 Credits. 
-    // If the payout from network is in dollars (e.g. 0.50), convert to credits.
-    // If they already send points, adjust accordingly.
-    const creditsEarned = Math.round(amount * 100); 
+    // Conversion Logic: $1 Earned = 100 Credits for User
+    // If payout is 0.50, creditsEarned is 50.
+    const creditsEarned = Math.max(0, Math.round(amount * 100)); 
+    
+    if (creditsEarned === 0) {
+      console.warn(`[CPA Postback] Zero credits earned for user ${uid}. Amount was: ${amountStr}`);
+      return new Response("1", { status: 200 }); // Still acknowledge to stop retries
+    }
+
     const currentCredits = (userData.rewardCredits || 0) + creditsEarned;
 
     let isAutoActivated = false;
@@ -79,15 +89,15 @@ export async function GET(req: Request) {
     await notifRef.add({
       type: 'app',
       message: isAutoActivated 
-        ? `Task Complete! You earned ${creditsEarned} Credits and hit the 100-Credit milestone. Pro VIP Activated for 30 Days!` 
-        : `Task Complete! You earned ${creditsEarned} Credits. Reach 100 to unlock Pro VIP for free.`,
+        ? `Success! You earned ${creditsEarned} Credits and reached the 100-Credit milestone. 30 Days of Pro VIP is now active!` 
+        : `Task Complete! You earned ${creditsEarned} Credits. Reach 100 total credits to unlock Pro VIP for free.`,
       isRead: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log(`[CPA Postback] Success for ${uid}. Earned: ${creditsEarned}. Total: ${remainingCredits}`);
+    console.log(`[CPA Postback] Success for user ${uid}. Earned: ${creditsEarned}. Balance: ${remainingCredits}. Auto-VIP: ${isAutoActivated}`);
     
-    // Usually CPA networks expect a "1" or "OK" to acknowledge receipt
+    // CPALead expects a "1" to acknowledge success
     return new Response("1", { status: 200 });
   } catch (error) {
     console.error('[CPA Postback] Internal Error:', error);
