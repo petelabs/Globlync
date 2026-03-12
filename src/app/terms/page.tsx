@@ -37,14 +37,14 @@ export default function TermsOfServicePage() {
               <Coins className="h-5 w-5" /> 2. Reward Credits & Virtual Currency
             </h3>
             <div className="space-y-4">
-              <p>Users may earn <b>"Reward Credits"</b> by completing sponsored tasks through our official partner, <b>Monlix</b>. These credits have no cash value and can only be redeemed within the Globlync platform for professional benefits (e.g., VIP status, ranking boosts).</p>
-              <p>Globlync acts as a publisher for Monlix. All task tracking and credit allocation are managed by the Monlix system. We reserve the right to revoke credits if they were earned through fraudulent means.</p>
+              <p>Users may earn <b>"Reward Credits"</b> by completing sponsored tasks through our official reward partners. These credits have no cash value and can only be redeemed within the Globlync platform for professional benefits (e.g., VIP status, ranking boosts).</p>
+              <p>Globlync acts as a publisher. All task tracking and credit allocation are managed by the reward network's postback system. We reserve the right to revoke credits if they were earned through fraudulent means.</p>
             </div>
           </section>
 
           <section>
             <h3 className="text-lg font-black mb-3 text-primary">3. Reward Integrity & Anti-Fraud</h3>
-            <p>To maintain our partnership with Monlix and protect our professional ecosystem, we enforce a <b>Strict Anti-Fraud Policy</b>. The following actions will result in an immediate permanent account ban and forfeiture of all credits/trust scores:</p>
+            <p>To maintain our partnership with reward providers and protect our professional ecosystem, we enforce a <b>Strict Anti-Fraud Policy</b>. The following actions will result in an immediate permanent account ban and forfeiture of all credits/trust scores:</p>
             <ul className="list-disc pl-5 mt-3 space-y-2 font-medium">
               <li>Use of Virtual Private Networks (VPNs) or Proxy services.</li>
               <li>Creation of multiple accounts by a single professional.</li>

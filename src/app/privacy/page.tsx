@@ -31,8 +31,8 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h3 className="text-lg font-black mb-2 text-primary">2. Reward Center (Monlix)</h3>
-            <p>We partner with <b>Monlix</b> to provide a "Reward Center" where users can earn VIP status. When you interact with the Monlix offer wall, they may collect device identifiers and IP addresses to verify task completion. This interaction is governed by the <b>Monlix Privacy Policy</b>. Globlync does not sell your private profile data to these networks.</p>
+            <h3 className="text-lg font-black mb-2 text-primary">2. Reward Center Partnerships</h3>
+            <p>We partner with global reward networks to provide a "Reward Center" where users can earn VIP status. When you interact with the offer wall, they may collect device identifiers and IP addresses to verify task completion and prevent fraud. Globlync does not sell your private profile data to these networks.</p>
           </section>
 
           <section>
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h3 className="text-lg font-black mb-2 text-primary">4. Cookies and Tracking</h3>
-            <p>We use essential cookies to maintain your professional session and security. Third-party partners like Monlix may use cookies within their integrated frames to track reward eligibility.</p>
+            <p>We use essential cookies to maintain your professional session and security. Third-party partners within the integrated frames may use cookies to track reward eligibility.</p>
           </section>
 
           <section>

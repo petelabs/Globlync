@@ -19,8 +19,9 @@ export default function RewardsPage() {
 
   const { data: profile } = useDoc(workerRef);
   
-  // NOTE: Replace 'YOUR_MONLIX_APP_ID' with your actual ID from Monlix Dashboard
-  const MONLIX_URL = user ? `https://monlix.com/wall/YOUR_MONLIX_APP_ID/${user.uid}` : null;
+  // Dynamic CPA Offerwall Integration with SubID tracking
+  const OFFERWALL_BASE = "https://www.zwidgetbv3dft.xyz/list/zOJYuGd1";
+  const OFFERWALL_URL = user ? `${OFFERWALL_BASE}?subid=${user.uid}` : null;
 
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-4">
@@ -34,7 +35,7 @@ export default function RewardsPage() {
         </p>
       </header>
 
-      {/* Reward Balance UI - CRITICAL FOR MONLIX APPROVAL */}
+      {/* Reward Balance UI */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="border-none bg-primary text-primary-foreground rounded-[2rem] overflow-hidden shadow-xl relative group">
           <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
@@ -69,7 +70,6 @@ export default function RewardsPage() {
         </Card>
       </div>
 
-      {/* How it Works - MONLIX AUDIT REQUIREMENT */}
       <section className="grid gap-4 md:grid-cols-3">
         <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
           <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
@@ -98,7 +98,7 @@ export default function RewardsPage() {
         <CardHeader className="bg-muted/30 p-8 border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-black flex items-center gap-2">
-              <Gift className="h-6 w-6 text-secondary" /> Monlix Offer Wall
+              <Gift className="h-6 w-6 text-secondary" /> Global Task Wall
             </CardTitle>
             <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-white border-2">Verified Partner</Badge>
           </div>
@@ -107,7 +107,7 @@ export default function RewardsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 relative h-full">
-          {(!MONLIX_URL || MONLIX_URL.includes("YOUR_MONLIX_APP_ID")) ? (
+          {!OFFERWALL_URL ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/5 p-12 text-center gap-6">
                <div className="p-10 bg-white rounded-[2.5rem] shadow-xl animate-pulse border-2 border-dashed">
                   <Loader2 className="h-12 w-12 text-primary/30 animate-spin" />
@@ -121,16 +121,16 @@ export default function RewardsPage() {
             </div>
           ) : (
             <iframe 
-              src={MONLIX_URL} 
+              sandbox="allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-popups-to-escape-sandbox"
+              src={OFFERWALL_URL} 
               className="w-full h-[800px] border-none" 
-              title="Monlix Offer Wall" 
-              allow="camera; microphone"
+              title="Global Reward Center" 
+              frameBorder="0"
             />
           )}
         </CardContent>
       </Card>
 
-      {/* Compliance Footer - CRITICAL FOR APPROVAL */}
       <footer className="grid gap-4 sm:grid-cols-2">
         <div className="bg-destructive/5 p-8 rounded-[2rem] flex items-start gap-4 border-2 border-destructive/10">
           <div className="bg-white p-2 rounded-xl text-destructive shadow-sm">
@@ -150,7 +150,7 @@ export default function RewardsPage() {
           <div className="space-y-1">
             <h4 className="font-black text-[10px] uppercase tracking-widest text-primary">Task Support</h4>
             <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">
-              Offers are tracked by Monlix. If you don't receive credits, use the "Support" button inside the wall to report the issue.
+              Offers are tracked by the reward network. If you don't receive credits, use the "Support" link inside the task wall.
             </p>
           </div>
         </div>
