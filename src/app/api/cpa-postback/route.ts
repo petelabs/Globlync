@@ -34,7 +34,7 @@ export async function GET(req: Request) {
 
   if (clientIp !== CPALEAD_IP) {
     console.warn(`[CPA Postback] Blocked request from unauthorized IP: ${clientIp}. Expected: ${CPALEAD_IP}`);
-    // Strict enforcement enabled: only CPALead can trigger this route.
+    // During initial setup, if you see blocks, confirm the IP hasn't changed.
     return NextResponse.json({ error: 'Unauthorized IP' }, { status: 403 });
   }
   
@@ -43,10 +43,12 @@ export async function GET(req: Request) {
   const amountStr = searchParams.get('amount') || "0";
   const amount = parseFloat(amountStr);
 
+  console.log(`[CPA Postback] Ping received. UID: ${uid}, Payout: ${amountStr}`);
+
   // We check for literal placeholders to avoid errors during CPALead's "Test Postback" pings
-  if (!uid || uid === "{subid}" || uid === "[subid]") {
-    console.log('[CPA Postback] Placeholder or empty UID received (likely a test ping). Skipping credit award.');
-    return new Response("1", { status: 200 }); // Still return "1" so CPALead marks test as successful
+  if (!uid || uid === "{subid}" || uid === "[subid]" || uid === "12345") {
+    console.log('[CPA Postback] Placeholder or test UID received. Sending Success signal to CPALead tool.');
+    return new Response("1", { status: 200 }); 
   }
 
   try {
@@ -54,8 +56,9 @@ export async function GET(req: Request) {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      console.error(`[CPA Postback] User ${uid} not found in Firestore.`);
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      console.warn(`[CPA Postback] User ${uid} not found in Firestore. This might be a CPALead test or a deleted user.`);
+      // We return "1" anyway to stop CPALead from retrying a non-existent user forever
+      return new Response("1", { status: 200 });
     }
 
     const userData = userDoc.data() || {};
@@ -65,7 +68,7 @@ export async function GET(req: Request) {
     
     if (creditsEarned === 0) {
       console.warn(`[CPA Postback] Zero credits earned for user ${uid}. Amount was: ${amountStr}`);
-      return new Response("1", { status: 200 }); // Acknowledge to stop retries
+      return new Response("1", { status: 200 }); 
     }
 
     const currentCredits = (userData.rewardCredits || 0) + creditsEarned;
@@ -73,7 +76,7 @@ export async function GET(req: Request) {
     let isAutoActivated = false;
     let newBenefits = userData.activeBenefits || [];
 
-    // AUTO-VIP Logic: 100 credits = 30 days Pro
+    // AUTO-VIP Logic: 100 total credits = 30 days Pro
     let remainingCredits = currentCredits;
     if (remainingCredits >= 100) {
       remainingCredits -= 100;
@@ -111,7 +114,7 @@ export async function GET(req: Request) {
 
     console.log(`[CPA Postback] Success for user ${uid}. Earned: ${creditsEarned}. Balance: ${remainingCredits}. Auto-VIP: ${isAutoActivated}`);
     
-    // CPALead expects a "1" to acknowledge success
+    // CPALead expects a "1" string to acknowledge success
     return new Response("1", { status: 200 });
   } catch (error) {
     console.error('[CPA Postback] Internal Error:', error);

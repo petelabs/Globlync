@@ -19,17 +19,25 @@ To automatically credit users when they finish a task:
 3. **Set URL**: Enter exactly this: `https://globlync.vercel.app/api/cpa-postback?uid=[subid]&amount=[payout]`
    *   **Note**: Leave the `[subid]` and `[payout]` exactly as they are. These are "Macros" that CPALead will replace with real data automatically.
 4. **Method**: Ensure it is set to **GET**.
-5. **IP Whitelisting**: The app is configured to ONLY trust CPALead's official IP: `4.69.179.33`. Requests from any other IP will be blocked.
-6. **Logic**: Globlync will receive the `[payout]` (e.g. 0.50), convert it to credits (50), and if the user hits 100 credits, it automatically unlocks 30 days of Pro VIP.
+5. **IP Whitelisting**: The app is configured to ONLY trust CPALead's official IP: `4.69.179.33`.
+6. **Conversion**: The system converts `$1 Earned` into `100 User Credits`. When a user hits 100 credits, Pro VIP is automatically unlocked for 30 days.
 
-## 🛠️ Manual Admin Overrides (How Professionals Do It)
+## 🧪 How to Test the Postback
+1. **The "Test Tool"**: If you use the CPALead dashboard "Test" button, it will send a ping to your app. The app will return a "1" (Success), and you will see a green checkmark in CPALead. **No credits will be awarded** to real users because the ID is fake.
+2. **The "Real Test"**: 
+   * Create a test user on Globlync.
+   * Note their User ID (e.g., `abc-123`).
+   * In your browser, visit: `https://globlync.vercel.app/api/cpa-postback?uid=abc-123&amount=1.00`
+   * **Note**: You must be on the CPALead IP (4.69.179.33) for this manual test to work, or temporarily disable the IP check in `route.ts` just for the test.
+
+## 🛠️ Manual Admin Overrides
 If a user pays or completes a task but doesn't get their badge (due to network lag), follow these steps in your "Admin Office":
 1. **Open Firebase Console**: Go to your project's Firestore Database.
 2. **Find the User**: Go to the `workerProfiles` collection and find the user via their email.
 3. **Manual Activation**: 
    *   Change `isPro` to `true`.
    *   In the `activeBenefits` array, add a new item: `{ type: "Pro Member (Manual)", expiresAt: "2026-12-31T...", amountPaid: 0 }`.
-4. **Result**: The user will see their VIP badge instantly without needing a code update.
+4. **Result**: The user will see their VIP badge instantly.
 
 ## 💳 PayChangu Webhook Setup
 1. **Login**: Access your [PayChangu Dashboard](https://app.paychangu.com).
