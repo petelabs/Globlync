@@ -12,7 +12,7 @@ interface AdBannerProps {
 
 /**
  * Enhanced Reward Center Promotion.
- * Optimized to drive traffic to the Monlix Offer Wall.
+ * Drives traffic to the Global Task Wall for Free VIP.
  */
 export function AdBanner({ className }: AdBannerProps) {
   return (
@@ -24,12 +24,12 @@ export function AdBanner({ className }: AdBannerProps) {
               <Gift className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-black text-lg leading-tight uppercase tracking-tight">Free VIP via Monlix</h3>
-              <p className="text-xs opacity-80 font-medium">Complete one quick professional survey to unlock Pro features.</p>
+              <h3 className="font-black text-lg leading-tight uppercase tracking-tight">Free VIP via Global Tasks</h3>
+              <p className="text-xs opacity-80 font-medium">Complete one quick professional task to unlock Pro features for free.</p>
             </div>
           </div>
           <Button variant="outline" className="rounded-full bg-white text-secondary font-black border-none px-8 hover:bg-white/90" asChild>
-            <Link href="/rewards">Open Offer Wall</Link>
+            <Link href="/rewards">Open Reward Center</Link>
           </Button>
         </CardContent>
       </Card>
