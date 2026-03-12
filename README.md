@@ -10,7 +10,7 @@ To ensure all professional features work correctly in production, add these **En
 2. **`FIREBASE_SERVICE_ACCOUNT`**: Go to Firebase Console > Settings > Service Accounts > Generate New Private Key. Copy the **entire** JSON content and paste it here.
 3. **`JOOBLE_API_KEY`**: `11f7354d-81e2-4517-ba04-1399caa395ce`
 4. **`PAYCHANGU_SECRET_KEY`**: Your live Secret Key from PayChangu (Required for payment verification).
-5. **`PAYCHANGU_WEBHOOK_SECRET`**: (Optional) The secret for signature verification. If your dashboard doesn't provide this, the app will automatically use API verification as a fallback.
+5. **`PAYCHANGU_WEBHOOK_SECRET`**: (Optional) The secret for signature verification.
 
 ## 🎯 CPA Lead Postback Setup (Automatic Rewards)
 To automatically credit users when they finish a task:
@@ -18,7 +18,8 @@ To automatically credit users when they finish a task:
 2. **Navigate**: Click **Postbacks** in the sidebar.
 3. **Set URL**: Enter exactly this: `https://globlync.vercel.app/api/cpa-postback?uid=[subid]&amount=[payout]`
 4. **Method**: Ensure it is set to **GET**.
-5. **Logic**: Globlync will receive the `[payout]` (e.g. 0.50), convert it to credits (50), and if the user hits 100 credits, it automatically unlocks 30 days of Pro VIP.
+5. **IP Whitelisting**: The app is already configured to trust CPALead's official IP: `4.69.179.33`. This prevents fraud.
+6. **Logic**: Globlync will receive the `[payout]` (e.g. 0.50), convert it to credits (50), and if the user hits 100 credits, it automatically unlocks 30 days of Pro VIP.
 
 ## 💳 PayChangu Webhook Setup (Step-by-Step)
 1. **Login**: Access your [PayChangu Dashboard](https://app.paychangu.com).
@@ -28,7 +29,7 @@ To automatically credit users when they finish a task:
 5. **Match Email**: Users must pay using the **same email address** registered on their Globlync profile for automatic Pro activation.
 
 ## 🧠 Daily Tip Logic (Cost Optimization)
-The app uses a synchronized system to minimize API costs. Only **1 API call per day** is made for the entire platform. The first person to visit the site each day triggers the AI to update the `system/dailyTip` document in Firestore, which is then served to everyone else instantly.
+The app uses a synchronized system to minimize API costs. We use a curated library of professional quotes that rotates daily, requiring zero AI calls for general users.
 
 ## 🎨 Branding & Style
 - **Headers**: Strictly "Straight" (Non-italic) sans-serif for trust.

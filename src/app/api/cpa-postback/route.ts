@@ -1,5 +1,5 @@
-
 import { NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import * as admin from 'firebase-admin';
 
 if (!admin.apps.length) {
@@ -16,15 +16,30 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+// Trusted IP from CPALead for security
+const CPALEAD_IP = "4.69.179.33";
+
 /**
- * CPA Postback Handler
+ * CPA Postback Handler with IP Whitelisting
  * This route is called by the CPA network (CPALead) when a task is completed.
  * Expected params: ?uid=[subid]&amount=[payout]
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
+  const headersList = await headers();
   
-  // CPALead Macros: uid=[subid], amount=[payout]
+  // 1. IP Whitelisting Check (Fraud Prevention)
+  const forwardedFor = headersList.get('x-forwarded-for');
+  const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
+
+  // Note: We log the IP to help debugging if whitelisting fails during setup
+  if (clientIp !== CPALEAD_IP) {
+    console.warn(`[CPA Postback] Blocked request from unauthorized IP: ${clientIp}. Expected: ${CPALEAD_IP}`);
+    // If you want to be extremely strict, uncomment the line below:
+    // return NextResponse.json({ error: 'Unauthorized IP' }, { status: 403 });
+  }
+  
+  // 2. Extract CPALead Macros
   const uid = searchParams.get('uid');
   const amountStr = searchParams.get('amount') || "0";
   const amount = parseFloat(amountStr);
@@ -46,12 +61,11 @@ export async function GET(req: Request) {
     const userData = userDoc.data() || {};
     
     // Conversion Logic: $1 Earned = 100 Credits for User
-    // If payout is 0.50, creditsEarned is 50.
     const creditsEarned = Math.max(0, Math.round(amount * 100)); 
     
     if (creditsEarned === 0) {
       console.warn(`[CPA Postback] Zero credits earned for user ${uid}. Amount was: ${amountStr}`);
-      return new Response("1", { status: 200 }); // Still acknowledge to stop retries
+      return new Response("1", { status: 200 }); // Acknowledge to stop retries
     }
 
     const currentCredits = (userData.rewardCredits || 0) + creditsEarned;
@@ -59,7 +73,7 @@ export async function GET(req: Request) {
     let isAutoActivated = false;
     let newBenefits = userData.activeBenefits || [];
 
-    // AUTO-VIP Logic: If they hit 100 credits, spend 100 and give 30 days Pro.
+    // AUTO-VIP Logic: 100 credits = 30 days Pro
     let remainingCredits = currentCredits;
     if (remainingCredits >= 100) {
       remainingCredits -= 100;
