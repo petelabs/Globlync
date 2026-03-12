@@ -32,11 +32,10 @@ export async function GET(req: Request) {
   const forwardedFor = headersList.get('x-forwarded-for');
   const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : null;
 
-  // Note: We log the IP to help debugging if whitelisting fails during setup
   if (clientIp !== CPALEAD_IP) {
     console.warn(`[CPA Postback] Blocked request from unauthorized IP: ${clientIp}. Expected: ${CPALEAD_IP}`);
-    // If you want to be extremely strict, uncomment the line below:
-    // return NextResponse.json({ error: 'Unauthorized IP' }, { status: 403 });
+    // Strict enforcement enabled: only CPALead can trigger this route.
+    return NextResponse.json({ error: 'Unauthorized IP' }, { status: 403 });
   }
   
   // 2. Extract CPALead Macros
@@ -44,9 +43,10 @@ export async function GET(req: Request) {
   const amountStr = searchParams.get('amount') || "0";
   const amount = parseFloat(amountStr);
 
+  // We check for literal placeholders to avoid errors during CPALead's "Test Postback" pings
   if (!uid || uid === "{subid}" || uid === "[subid]") {
-    console.error('[CPA Postback] Invalid or placeholder UID received:', uid);
-    return NextResponse.json({ error: 'Invalid UID' }, { status: 400 });
+    console.log('[CPA Postback] Placeholder or empty UID received (likely a test ping). Skipping credit award.');
+    return new Response("1", { status: 200 }); // Still return "1" so CPALead marks test as successful
   }
 
   try {
