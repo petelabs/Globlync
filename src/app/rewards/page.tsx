@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -47,7 +48,7 @@ export default function RewardsPage() {
               <span className="text-5xl font-black tracking-tighter">{profile?.rewardCredits || 0}</span>
               <span className="text-sm font-bold opacity-80 uppercase tracking-widest">Credits</span>
             </div>
-            <p className="text-[10px] font-medium mt-4 opacity-60">100 Credits = 7 Days Pro VIP</p>
+            <p className="text-[10px] font-medium mt-4 opacity-60">100 Credits = 30 Days Pro VIP</p>
           </CardContent>
         </Card>
 
@@ -57,7 +58,7 @@ export default function RewardsPage() {
           </div>
           <div className="space-y-2">
             <div className="flex justify-between items-end">
-              <p className="text-2xl font-black leading-none">Pro Starter</p>
+              <p className="text-2xl font-black leading-none">Pro Activation</p>
               <p className="text-xs font-bold opacity-60">{profile?.rewardCredits || 0} / 100</p>
             </div>
             <div className="h-3 w-full bg-secondary/20 rounded-full overflow-hidden">
@@ -83,14 +84,14 @@ export default function RewardsPage() {
             <Award className="h-5 w-5" />
           </div>
           <h4 className="font-black text-sm uppercase tracking-tight">2. Earn Credits</h4>
-          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Credits are added to your account instantly after successful completion.</p>
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">100 Credits are earned for every $1 generated for the network.</p>
         </div>
         <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
           <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
             <ShieldCheck className="h-5 w-5" />
           </div>
           <h4 className="font-black text-sm uppercase tracking-tight">3. Go Pro</h4>
-          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Spend your credits to unlock HD photos and global ranking for your profile.</p>
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Redeem 100 credits to unlock Pro visibility and HD photos for 30 days.</p>
         </div>
       </section>
 

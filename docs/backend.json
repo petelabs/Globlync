@@ -14,7 +14,8 @@
         "bio": { "type": "string" },
         "profilePictureUrl": { "type": "string", "format": "uri" },
         "trustScore": { "type": "number" },
-        "knowledgePoints": { "type": "number", "description": "Earned through Academy courses." },
+        "knowledgePoints": { "type": "number", "description": "Earned through Academy courses (Deprecated)." },
+        "rewardCredits": { "type": "number", "description": "Virtual currency earned via CPA tasks. 100 Credits = $1 USD value." },
         "profileViews": { "type": "number" },
         "isAvailable": { "type": "boolean" },
         "isPro": { "type": "boolean" },
@@ -25,7 +26,7 @@
         "referralCode": { "type": "string" },
         "invitedBy": { "type": "string" },
         "referralCount": { "type": "number" },
-        "completedCourses": { "type": "array", "items": { "type": "string" }, "description": "IDs of completed Academy videos." },
+        "completedCourses": { "type": "array", "items": { "type": "string" } },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },

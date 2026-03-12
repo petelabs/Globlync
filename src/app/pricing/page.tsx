@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -358,7 +359,7 @@ export default function PricingPage() {
           <div className="space-y-2 text-center md:text-left">
             <Badge className="bg-secondary text-secondary-foreground font-black mb-2 uppercase text-[10px]">Earn for Free</Badge>
             <h3 className="text-3xl font-black tracking-tight">Unlock VIP without Cash</h3>
-            <p className="text-sm opacity-80 max-w-md font-medium leading-relaxed">Can't pay? Complete one quick survey or offer from our partners to unlock Bronze Pro status instantly. Support the network with your time.</p>
+            <p className="text-sm opacity-80 max-w-md font-medium leading-relaxed">Can't pay? Complete 100 credits worth of tasks (surveys or offers) to unlock 30 days of Pro VIP status instantly. Build your reputation with your time.</p>
           </div>
           <Button size="lg" className="rounded-full bg-secondary text-secondary-foreground font-black px-10 h-16 shadow-xl hover:scale-105 transition-transform" asChild>
             <Link href="/rewards">Open Reward Center <ArrowRight className="ml-2 h-4 w-4" /></Link>
