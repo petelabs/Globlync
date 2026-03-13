@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert, MousePointerClick } from "lucide-react";
+import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert, MousePointerClick, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+import Link from "next/link";
 
 export default function RewardsPage() {
   const { user } = useUser();
@@ -19,9 +20,9 @@ export default function RewardsPage() {
 
   const { data: profile } = useDoc(workerRef);
   
-  // Dynamic CPA Offerwall Integration with SubID tracking
+  // Dynamic CPA Offerwall Integration with SubID tracking (Fallback for Guests)
   const OFFERWALL_BASE = "https://www.zwidgetbv3dft.xyz/list/zOJYuGd1";
-  const OFFERWALL_URL = user ? `${OFFERWALL_BASE}?subid=${user.uid}` : null;
+  const OFFERWALL_URL = user ? `${OFFERWALL_BASE}?subid=${user.uid}` : OFFERWALL_BASE;
 
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto px-4">
@@ -70,6 +71,23 @@ export default function RewardsPage() {
         </Card>
       </div>
 
+      {!user && (
+        <Card className="border-none bg-amber-500/10 border-2 border-amber-500/20 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-amber-700">
+            <div className="bg-white p-3 rounded-2xl shadow-sm">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-black text-sm uppercase tracking-tight">Guest Mode Active</h4>
+              <p className="text-xs font-medium leading-tight">You can view offers, but tasks won't be credited to an account unless you sign in.</p>
+            </div>
+          </div>
+          <Button className="rounded-full font-black bg-amber-600 hover:bg-amber-700 shadow-lg" asChild>
+            <Link href="/login"><UserPlus className="mr-2 h-4 w-4" /> Sign In to Earn</Link>
+          </Button>
+        </Card>
+      )}
+
       {/* CONTENT LOCKER OVERLAY BUTTON */}
       <Card className="border-4 border-dashed border-primary/20 bg-primary/5 rounded-[2.5rem] overflow-hidden group hover:border-primary/40 transition-colors">
         <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -84,10 +102,6 @@ export default function RewardsPage() {
             </div>
           </div>
           
-          {/* 
-            CPALead Interaction Trigger 
-            Note: The external JS looks for [data-interact-trigger] and [data-tool-id]
-          */}
           <Button 
             asChild
             className="rounded-full h-16 px-10 font-black text-lg shadow-2xl hover:scale-105 transition-transform"
@@ -96,10 +110,10 @@ export default function RewardsPage() {
               href="#" 
               data-interact-trigger 
               data-tool-id="62893" 
-              data-subid={user?.uid}
+              data-subid={user?.uid || ""}
               data-title-mode="dynamic"
             >
-              Start Quick Task <ChevronRight className="ml-2 h-5 w-5" />
+              {user ? "Start Quick Task" : "Try Interaction"} <ChevronRight className="ml-2 h-5 w-5" />
             </a>
           </Button>
         </CardContent>
@@ -142,27 +156,13 @@ export default function RewardsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 relative h-full">
-          {!OFFERWALL_URL ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/5 p-12 text-center gap-6">
-               <div className="p-10 bg-white rounded-[2.5rem] shadow-xl animate-pulse border-2 border-dashed">
-                  <Loader2 className="h-12 w-12 text-primary/30 animate-spin" />
-               </div>
-               <div className="space-y-2">
-                  <p className="font-black text-xl text-primary">Connecting to Secure Network...</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground max-w-xs leading-relaxed">
-                    {user ? "Authenticating your Professional ID for reward synchronization." : "Please sign in to access the Reward Center."}
-                  </p>
-               </div>
-            </div>
-          ) : (
-            <iframe 
-              sandbox="allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-popups-to-escape-sandbox"
-              src={OFFERWALL_URL} 
-              className="w-full h-[800px] border-none" 
-              title="Global Reward Center" 
-              frameBorder="0"
-            />
-          )}
+          <iframe 
+            sandbox="allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-popups-to-escape-sandbox"
+            src={OFFERWALL_URL} 
+            className="w-full h-[800px] border-none" 
+            title="Global Reward Center" 
+            frameBorder="0"
+          />
         </CardContent>
       </Card>
 
