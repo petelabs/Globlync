@@ -1,4 +1,4 @@
-it 
+
 # Globlync - Global Evidence-Based Reputation
 
 Globlync is a professional platform designed for remote professionals and global freelancers to build a digital, evidence-based reputation. Headquartered in Malawi, serving the globe.
@@ -21,6 +21,12 @@ To automatically credit users when they finish a task:
 4. **Method**: Ensure it is set to **GET**.
 5. **IP Whitelisting**: The app is configured to ONLY trust CPALead's official IP: `4.69.179.33`.
 6. **Conversion**: The system converts `$1 Earned` into `100 User Credits`. When a user hits 100 credits, Pro VIP is automatically unlocked for 30 days.
+
+## 💡 Troubleshooting $0 Earnings
+If you see clicks but $0 earnings in CPALead:
+*   **Action vs Click**: CPALead is a CPA network. You only earn when a "Lead" occurs (completion of an offer). Clicks are free.
+*   **Offer Availability**: If you only see "CPALead" offers, it's because there are few third-party offers available for your specific IP/Location/Device right now.
+*   **Verification**: Ensure the `uid=[subid]` part of your postback URL is correct. Without the brackets, CPALead won't know which user to credit.
 
 ## 🧪 How to Test the Postback
 1. **The "Test Tool"**: If you use the CPALead dashboard "Test" button, it will send a ping to your app. The app will return a "1" (Success), and you will see a green checkmark in CPALead. **No credits will be awarded** to real users because the ID is fake.

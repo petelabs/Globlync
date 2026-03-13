@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert, MousePointerClick, UserPlus } from "lucide-react";
+import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert, MousePointerClick, UserPlus, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -20,7 +20,7 @@ export default function RewardsPage() {
 
   const { data: profile } = useDoc(workerRef);
   
-  // Dynamic CPA Offerwall Integration with SubID tracking (Fallback for Guests)
+  // Dynamic CPA Offerwall Integration with SubID tracking
   const OFFERWALL_BASE = "https://www.zwidgetbv3dft.xyz/list/zOJYuGd1";
   const OFFERWALL_URL = user ? `${OFFERWALL_BASE}?subid=${user.uid}` : OFFERWALL_BASE;
 
@@ -120,26 +120,26 @@ export default function RewardsPage() {
       </Card>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
-          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3 text-center">
+          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm mx-auto">
             <Zap className="h-5 w-5" />
           </div>
-          <h4 className="font-black text-sm uppercase tracking-tight">1. Select Task</h4>
-          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Choose a survey, app trial, or quick video from the list below.</p>
+          <h4 className="font-black text-[10px] uppercase tracking-widest opacity-70">1. Action Required</h4>
+          <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">Simply clicking doesn't earn money. You must <b>finish</b> the survey or install.</p>
         </div>
-        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
-          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3 text-center">
+          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm mx-auto">
             <Award className="h-5 w-5" />
           </div>
-          <h4 className="font-black text-sm uppercase tracking-tight">2. Earn Credits</h4>
-          <p className="text-xs text-muted-foreground font-medium leading-relaxed">100 Credits are earned for every $1 generated for the network.</p>
+          <h4 className="font-black text-[10px] uppercase tracking-widest opacity-70">2. Verify Lead</h4>
+          <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">The network verifies your task completion before sending credits to Globlync.</p>
         </div>
-        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">
-          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+        <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3 text-center">
+          <div className="bg-white w-10 h-10 rounded-xl flex items-center justify-center text-primary shadow-sm mx-auto">
             <ShieldCheck className="h-5 w-5" />
           </div>
-          <h4 className="font-black text-sm uppercase tracking-tight">3. Go Pro</h4>
-          <p className="text-xs text-muted-foreground font-medium leading-relaxed">Redeem 100 credits to unlock Pro visibility and HD photos for 30 days.</p>
+          <h4 className="font-black text-[10px] uppercase tracking-widest opacity-70">3. Auto-Activate</h4>
+          <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">Once verified, your VIP status activates instantly if you hit 100 credits.</p>
         </div>
       </section>
 
@@ -166,6 +166,27 @@ export default function RewardsPage() {
         </CardContent>
       </Card>
 
+      <Card className="border-none bg-muted/20 p-8 rounded-[2rem] space-y-6">
+        <div className="flex items-center gap-3">
+          <HelpCircle className="h-6 w-6 text-primary" />
+          <h3 className="font-black text-sm uppercase tracking-tight">Earning Guide & Support</h3>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <h4 className="font-black text-[10px] uppercase text-primary">Why $0 on clicks?</h4>
+            <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+              Globlync uses <b>CPA (Cost Per Action)</b>. Clicking a link pays nothing. The network only pays when a "Lead" is recorded—this happens when you fully complete a survey, sign up for a service, or download an app as instructed.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-black text-[10px] uppercase text-primary">Seeing few offers?</h4>
+            <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+              Offers are dynamic and based on your <b>Country and Device</b>. If you see generic CPALead offers, it means higher-paying third-party offers are currently limited in your region. Check back daily for new premium tasks!
+            </p>
+          </div>
+        </div>
+      </Card>
+
       <footer className="grid gap-4 sm:grid-cols-2">
         <div className="bg-destructive/5 p-8 rounded-[2rem] flex items-start gap-4 border-2 border-destructive/10">
           <div className="bg-white p-2 rounded-xl text-destructive shadow-sm">
@@ -174,7 +195,7 @@ export default function RewardsPage() {
           <div className="space-y-1">
             <h4 className="font-black text-[10px] uppercase tracking-widest text-destructive">Fraud Prevention</h4>
             <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">
-              Using VPNs, proxy servers, or multiple accounts to farm rewards will result in an immediate and permanent ban.
+              Using VPNs, proxy servers, or multiple accounts will result in an immediate ban. The network detects location mismatches automatically.
             </p>
           </div>
         </div>
@@ -183,9 +204,9 @@ export default function RewardsPage() {
             <Info className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <h4 className="font-black text-[10px] uppercase tracking-widest text-primary">Task Support</h4>
+            <h4 className="font-black text-[10px] uppercase tracking-widest text-primary">Missing Credits?</h4>
             <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">
-              Offers are tracked by the reward network. If you don't receive credits, use the "Support" link inside the task wall.
+              Credits can take 5-30 minutes to sync after completion. If they don't appear, use the "Support" icon inside the Global Task Wall frame.
             </p>
           </div>
         </div>
