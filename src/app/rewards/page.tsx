@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Gift, Zap, ShieldCheck, Star, Info, ChevronRight, Loader2, Sparkles, Award, Coins, AlertTriangle, ShieldAlert, MousePointerClick } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -70,6 +69,41 @@ export default function RewardsPage() {
           </div>
         </Card>
       </div>
+
+      {/* CONTENT LOCKER OVERLAY BUTTON */}
+      <Card className="border-4 border-dashed border-primary/20 bg-primary/5 rounded-[2.5rem] overflow-hidden group hover:border-primary/40 transition-colors">
+        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-5 text-center md:text-left">
+            <div className="bg-primary p-4 rounded-3xl text-white shadow-lg animate-bounce">
+              <MousePointerClick className="h-8 w-8" />
+            </div>
+            <div>
+              <Badge className="bg-primary text-white font-black text-[8px] uppercase tracking-[0.2em] mb-2">High Velocity Bonus</Badge>
+              <h3 className="text-2xl font-black tracking-tight leading-none">Interactive Survey Unlock</h3>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Earn 50-100 Credits instantly via our premium overlay locker.</p>
+            </div>
+          </div>
+          
+          {/* 
+            CPALead Interaction Trigger 
+            Note: The external JS looks for [data-interact-trigger] and [data-tool-id]
+          */}
+          <Button 
+            asChild
+            className="rounded-full h-16 px-10 font-black text-lg shadow-2xl hover:scale-105 transition-transform"
+          >
+            <a 
+              href="#" 
+              data-interact-trigger 
+              data-tool-id="62893" 
+              data-subid={user?.uid}
+              data-title-mode="dynamic"
+            >
+              Start Quick Task <ChevronRight className="ml-2 h-5 w-5" />
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4 md:grid-cols-3">
         <div className="bg-muted/30 p-6 rounded-[2rem] space-y-3">

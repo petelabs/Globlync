@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -6,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import Script from 'next/script';
 
 export const viewport: Viewport = {
   themeColor: '#00796B',
@@ -79,6 +79,12 @@ export default function RootLayout({
           <InstallPrompt />
           <Toaster />
         </FirebaseClientProvider>
+        
+        {/* CPALead Content Locker Integration */}
+        <Script id="cpalead-init" strategy="afterInteractive">
+          {`window.CPAlead_PublisherUserId = 3340760;`}
+        </Script>
+        <Script src="https://cdnflair.com/js/interact-form.js" strategy="lazyOnload" />
       </body>
     </html>
   );

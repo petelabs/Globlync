@@ -1,4 +1,4 @@
-
+it 
 # Globlync - Global Evidence-Based Reputation
 
 Globlync is a professional platform designed for remote professionals and global freelancers to build a digital, evidence-based reputation. Headquartered in Malawi, serving the globe.
