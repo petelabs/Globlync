@@ -14,11 +14,13 @@ import {
   Timer,
   Star,
   Zap,
-  Gift
+  Gift,
+  MessageSquare,
+  TrendingUp
 } from "lucide-react";
 import Link from "next/link";
-import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { Logo } from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
@@ -43,7 +45,6 @@ export default function Home() {
       let h = 0, m = 0, s = 0;
 
       if (profile?.createdAt) {
-        // PERSONALIZED TIMER: 24h from signup
         const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
         const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
         const diff = expiryDate.getTime() - now.getTime();
@@ -54,10 +55,9 @@ export default function Home() {
           s = Math.floor((diff % (1000 * 60)) / 1000);
           setTimeLeft({ h, m, s });
         } else {
-          setTimeLeft(null); // Bonus expired
+          setTimeLeft(null);
         }
       } else if (!user) {
-        // VISITOR TIMER: Simple daily reset for demo
         h = 23 - now.getHours();
         m = 59 - now.getMinutes();
         s = 59 - now.getSeconds();
@@ -73,19 +73,8 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [profile, user]);
 
-  const workersRef = useMemoFirebase(() => {
-    if (!db) return null;
-    return collection(db, "workerProfiles");
-  }, [db]);
-
-  const { data: allWorkers } = useCollection(workersRef);
-
-  const memberCount = (allWorkers?.length || 0) + 3280;
-  const proCount = (allWorkers?.length || 0) + 2140;
-
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
-      {/* 30% DISCOUNT BANNER (Visual cue for the +7 Day Bonus) */}
       {timeLeft && (
         <div className="fixed top-16 left-0 right-0 z-40 bg-secondary text-secondary-foreground py-2 px-4 shadow-lg animate-in slide-in-from-top duration-500">
           <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
@@ -119,34 +108,25 @@ export default function Home() {
 
         <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary animate-pulse">
           <Globe className="h-3 w-3" />
-          <span>100+ Global Jobs Verified Hourly</span>
+          <span>The Global Network for Verified Professionals</span>
         </div>
 
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Trust is the new <span className="text-primary font-black animate-shimmer-text">Currency.</span>
+          Your Reputation <br/>is your <span className="text-primary font-black animate-shimmer-text">Network.</span>
         </h1>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          Building your professional identity is <span className="text-primary font-bold underline decoration-secondary">Free for Life</span>. Join thousands of verified professionals globally.
+          Connect, post, and build an evidence-based professional identity. <span className="text-primary font-bold underline decoration-secondary">Verified & Open</span> for everyone everywhere.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
-            <Link href="/login">Join Globlync Free</Link>
+            <Link href={user ? "/feed" : "/login"}>{user ? "Open My Feed" : "Join Globlync Free"}</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2" asChild>
-            <Link href="/jobs">Find Remote Work <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            <Link href="/search">Browse Professionals <ArrowRight className="ml-2 h-5 w-5" /></Link>
           </Button>
         </div>
-
-        {timeLeft && (
-          <div className="mt-6 flex items-center gap-4 bg-orange-500/10 px-6 py-3 rounded-2xl border-2 border-orange-500/20">
-            <Gift className="h-4 w-4 text-orange-600 animate-bounce" />
-            <p className="text-[10px] font-black uppercase text-orange-700 tracking-widest">
-              Special: Upgrade in your first 24h to get <b>+7 EXTRA DAYS</b> of Pro VIP.
-            </p>
-          </div>
-        )}
       </section>
 
       <section className="max-w-4xl mx-auto w-full px-4">
@@ -179,21 +159,34 @@ export default function Home() {
         </Card>
       </section>
 
-      <section className="max-w-5xl mx-auto w-full px-4 grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-        {[
-          { label: "Members Registered", value: `${memberCount.toLocaleString()}`, icon: Users },
-          { label: "Verified Pros", value: `${proCount.toLocaleString()}`, icon: ShieldCheck },
-          { label: "Remote Focus", value: "92%", icon: Globe },
-          { label: "Trust Earned", value: "4.9/5", icon: Star }
-        ].map((stat, i) => (
-          <div key={i} className="flex flex-col items-center text-center gap-1 group cursor-default">
-            <div className="bg-muted/50 p-3 rounded-2xl group-hover:bg-primary/10 transition-colors">
-              <stat.icon className="h-5 w-5 text-primary/60" />
+      <section className="max-w-5xl mx-auto w-full px-4 flex flex-col items-center gap-8 mb-12">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-black uppercase tracking-widest text-primary">Global Professional Hub</h2>
+          <p className="text-muted-foreground text-sm font-medium">Verified trust for the remote economy.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
+            <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-8 w-8 text-primary" />
             </div>
-            <p className="text-2xl font-black tracking-tighter">{stat.value}</p>
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{stat.label}</p>
-          </div>
-        ))}
+            <h3 className="font-black text-lg">Build Trust</h3>
+            <p className="text-xs text-muted-foreground font-medium">Every interaction and verified log grows your global Trust Score.</p>
+          </Card>
+          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
+            <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="font-black text-lg">Network Scale</h3>
+            <p className="text-xs text-muted-foreground font-medium">Connect with vetted professionals from Malawi to the United Kingdom.</p>
+          </Card>
+          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
+            <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
+              <MessageSquare className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="font-black text-lg">Share Insights</h3>
+            <p className="text-xs text-muted-foreground font-medium">Post updates, share tips, and showcase your professional expertise.</p>
+          </Card>
+        </div>
       </section>
 
       <div className="max-w-4xl mx-auto w-full px-4 mb-20">

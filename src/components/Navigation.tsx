@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -10,12 +11,12 @@ import {
   Bell, 
   Settings as SettingsIcon,
   LogOut,
-  ClipboardCheck,
+  LayoutGrid,
   ChevronDown,
   Gift,
   Crown,
   Users,
-  Lock,
+  Search,
   MoveRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -96,9 +97,9 @@ export function Navigation() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
+    { label: "Feed", href: "/feed", icon: LayoutGrid, authRequired: true },
+    { label: "Search", href: "/search", icon: Search },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
-    { label: "Connect", href: "/search", icon: Lock },
-    { label: "Log", href: "/work-log", icon: ClipboardCheck, authRequired: true },
   ];
 
   return (

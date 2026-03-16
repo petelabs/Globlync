@@ -26,8 +26,7 @@ import {
   CreditCard,
   Mail,
   Loader2,
-  Star,
-  ThumbsUp,
+  TrendingUp,
   ShieldAlert,
   Send,
   Building2,
@@ -38,14 +37,13 @@ import {
   Info,
   AlertTriangle,
   Heart,
-  Fingerprint,
   Smartphone
 } from "lucide-react";
-import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { useAuth, useUser, useFirestore } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { doc, deleteDoc, collection, query, orderBy, limit, serverTimestamp, getDoc } from "firebase/firestore";
+import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { 
@@ -63,19 +61,16 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { INITIAL_TESTIMONIALS } from "@/lib/initial-testimonials";
 import { Logo } from "@/components/Navigation";
 
 const DELETION_REASONS = [
-  "Not finding enough work opportunities",
+  "Not finding enough networking value",
   "Too difficult to use",
   "I have privacy concerns",
   "Receiving too many notifications",
   "Found another platform I prefer",
-  "Verification process is too complicated",
   "Just testing the app",
   "Technical bugs and errors",
-  "Trust Score system is confusing",
   "Moving to a different career"
 ];
 
@@ -88,10 +83,6 @@ export default function SettingsPage() {
 
   const [darkMode, setDarkMode] = useState(false);
   const [animationsDisabled, setAnimationsDisabled] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState("");
-  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-  const [showAllReviews, setShowAllReviews] = useState(false);
   
   // Deletion States
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -109,56 +100,6 @@ export default function SettingsPage() {
     setDarkMode(isDark);
     setAnimationsDisabled(isNoAnim);
   }, []);
-
-  const appRatingsRef = useMemoFirebase(() => {
-    if (!db) return null;
-    return collection(db, "appRatings");
-  }, [db]);
-
-  const appRatingsQuery = useMemoFirebase(() => {
-    if (!appRatingsRef) return null;
-    return query(appRatingsRef, orderBy("createdAt", "desc"), limit(10));
-  }, [appRatingsRef]);
-
-  const { data: dbTestimonials } = useCollection(appRatingsQuery);
-
-  const combinedTestimonials = useMemo(() => {
-    const live = (dbTestimonials || []).map(t => ({
-      userName: t.userName,
-      username: `@${t.userName.toLowerCase().replace(/\s+/g, '_')}_pro`,
-      score: t.score,
-      feedback: t.feedback,
-      avatarColor: "bg-primary/10 text-primary",
-      createdAt: t.createdAt
-    }));
-
-    const sorted = [...live, ...INITIAL_TESTIMONIALS].sort((a, b) => 
-      (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-    );
-
-    return showAllReviews ? sorted : sorted.slice(0, 3);
-  }, [dbTestimonials, showAllReviews]);
-
-  const handleRateApp = async () => {
-    if (!user || !appRatingsRef || rating === 0) return;
-    setIsSubmittingFeedback(true);
-    try {
-      await addDocumentNonBlocking(appRatingsRef, {
-        uid: user.uid,
-        userName: user.displayName || "Professional",
-        score: rating,
-        feedback,
-        createdAt: serverTimestamp()
-      });
-      setRating(0);
-      setFeedback("");
-      toast({ title: "Feedback Received", description: "Thanks for helping Globlync grow!" });
-    } catch (e) {
-      toast({ variant: "destructive", title: "Submission Failed" });
-    } finally {
-      setIsSubmittingFeedback(false);
-    }
-  };
 
   const toggleDarkMode = (enabled: boolean) => {
     setDarkMode(enabled);
@@ -227,7 +168,6 @@ export default function SettingsPage() {
 
     try {
       if (!useFallback) {
-        // Option 1: Full Auth Delete (Requires re-auth)
         const providerId = user.providerData[0]?.providerId;
         if (providerId === 'password') {
           if (!password) {
@@ -244,7 +184,6 @@ export default function SettingsPage() {
         }
       }
 
-      // Step 2: Submit Deletion Feedback via API (Fire and forget)
       fetch('/api/account-deletion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -256,15 +195,11 @@ export default function SettingsPage() {
         })
       }).catch(() => {});
 
-      // Step 3: Scrub Firestore Data (Primary Goal)
       await scrubFirestoreData();
 
-      // Step 4: Finalize
       if (!useFallback) {
-        // Try to delete the actual Auth record if possible
         await deleteUser(user);
       } else {
-        // If fallback, just sign out since we can't delete Auth without re-auth
         await signOut(auth);
       }
 
@@ -353,61 +288,6 @@ export default function SettingsPage() {
               </div>
             </div>
             <Switch id="animations" checked={animationsDisabled} onCheckedChange={toggleAnimations} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-none shadow-sm rounded-[2rem]">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-primary" />
-            Rate Globlync
-          </CardTitle>
-          <CardDescription>Help us build a better platform for everyone.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex justify-center gap-3">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <button key={s} onClick={() => setRating(s)} className="hover:scale-125 transition-transform">
-                <Star className={cn("h-8 w-8", rating >= s ? "fill-secondary text-secondary" : "text-muted")} />
-              </button>
-            ))}
-          </div>
-          <Textarea 
-            placeholder="How is Globlync helping your career?" 
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            className="rounded-2xl border-2 min-h-[80px] text-sm"
-          />
-          <Button 
-            onClick={handleRateApp} 
-            disabled={isSubmittingFeedback || rating === 0} 
-            className="w-full rounded-full h-12 font-black"
-          >
-            {isSubmittingFeedback ? <Loader2 className="animate-spin mr-2" /> : <Send className="mr-2 h-4 w-4" />}
-            Submit Review
-          </Button>
-
-          <div className="pt-4 border-t space-y-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Professional Reviews</p>
-            {combinedTestimonials.map((t, i) => (
-              <div key={i} className="bg-muted/30 p-4 rounded-2xl space-y-2">
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, j) => (
-                      <Star key={j} className={cn("h-3 w-3", j < t.score ? "fill-secondary text-secondary" : "text-muted")} />
-                    ))}
-                  </div>
-                  <span className="text-[8px] font-black uppercase text-primary/60">{t.username}</span>
-                </div>
-                <p className="text-xs font-medium italic opacity-80 leading-relaxed">"{t.feedback}"</p>
-              </div>
-            ))}
-            {!showAllReviews && (
-              <Button variant="ghost" className="w-full text-[10px] font-black uppercase tracking-widest" onClick={() => setShowAllReviews(true)}>
-                View More Reviews <ChevronRight className="h-3 w-3 ml-1" />
-              </Button>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -577,7 +457,7 @@ export default function SettingsPage() {
                     <DialogTitle className="text-xl font-black tracking-tight">Understand the Impact</DialogTitle>
                   </div>
                   <DialogDescription className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p>Deleting your account will <span className="text-destructive font-black">permanently remove</span> your profile, trust score, verified jobs, and all professional evidence from our database.</p>
+                    <p>Deleting your account will <span className="text-destructive font-black">permanently remove</span> your profile, posts, networking history, and all professional evidence from our database.</p>
                     <p className="bg-muted/50 p-4 rounded-xl border-l-4 border-primary font-medium text-xs">
                       Note: You can still create another account using the same email at a later time if you change your mind.
                     </p>
@@ -744,7 +624,7 @@ export default function SettingsPage() {
       </Card>
 
       <footer className="text-center py-6">
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Globlync Global v1.5.0 • Est. 2026</p>
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Globlync Global v1.6.0 • Est. 2026</p>
         <p className="text-[10px] text-muted-foreground mt-1">© 2026 Petediano Tech • Built with Trust</p>
       </footer>
     </div>
