@@ -16,7 +16,8 @@ import {
   Clock, 
   TrendingUp,
   MoreHorizontal,
-  Repeat
+  Repeat,
+  LayoutGrid
 } from "lucide-react";
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, limit, serverTimestamp, doc, increment } from "firebase/firestore";
@@ -24,6 +25,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const MAX_POST_LENGTH = 280;
 

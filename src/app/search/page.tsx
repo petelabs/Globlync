@@ -20,7 +20,8 @@ import {
   QrCode,
   TrendingUp,
   MapPin,
-  ChevronRight
+  ChevronRight,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
