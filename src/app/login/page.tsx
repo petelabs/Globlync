@@ -1,31 +1,25 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { 
   Mail, 
   Lock, 
   Sparkles, 
   Loader2, 
   Gift, 
-  ShieldCheck, 
-  Users, 
-  Globe, 
-  User, 
   CheckCircle2, 
   Ticket, 
-  AlertCircle, 
   Timer,
   Phone,
   ArrowRight,
   ChevronLeft,
-  Zap,
   Fingerprint,
-  Smartphone
+  Smartphone,
+  Heart
 } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
@@ -40,7 +34,6 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -59,6 +52,7 @@ function LoginContent() {
   const [manualReferral, setManualReferral] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isReturningUser, setIsReturningUser] = useState(false);
   const [referrerName, setReferrerName] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState({h: 23, m: 59, s: 59});
   
@@ -70,7 +64,6 @@ function LoginContent() {
 
   const urlReferral = searchParams?.get('ref') || "";
 
-  // Success Sound Synthesis
   const playSuccessSound = () => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -86,14 +79,13 @@ function LoginContent() {
         osc.start(start);
         osc.stop(start + duration);
       };
-      playTone(523.25, audioCtx.currentTime, 0.1); // C5
-      playTone(659.25, audioCtx.currentTime + 0.1, 0.2); // E5
+      playTone(523.25, audioCtx.currentTime, 0.1); 
+      playTone(659.25, audioCtx.currentTime + 0.1, 0.2); 
     } catch (e) {
       console.warn("Audio synthesis failed:", e);
     }
   };
 
-  // 24 Hour Countdown
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -106,7 +98,6 @@ function LoginContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // Handle Magic Link Return
   useEffect(() => {
     if (auth && isSignInWithEmailLink(auth, window.location.href)) {
       let emailForLink = window.localStorage.getItem('emailForSignIn');
@@ -120,7 +111,7 @@ function LoginContent() {
             window.localStorage.removeItem('emailForSignIn');
             handlePostAuth(result.user.uid);
           })
-          .catch((error) => {
+          .catch(() => {
             toast({ variant: "destructive", title: "Link Expired", description: "The magic link is no longer valid." });
             setIsLoading(false);
           });
@@ -158,7 +149,10 @@ function LoginContent() {
     const profileRef = doc(db, "workerProfiles", uid);
     const snap = await getDoc(profileRef);
     
-    if (!snap.exists()) {
+    if (snap.exists()) {
+      setIsReturningUser(true);
+    } else {
+      setIsReturningUser(false);
       let invitedBy = "";
       const finalReferral = urlReferral || manualReferral;
 
@@ -186,7 +180,7 @@ function LoginContent() {
             }).catch(() => {});
           }
         } catch (e) {
-          console.warn("Referral propagation failed, proceeding silently.");
+          console.warn("Referral propagation failed.");
         }
       }
 
@@ -221,9 +215,8 @@ function LoginContent() {
           updatedAt: serverTimestamp(),
         });
 
-        // Registry updates handled safely to prevent "Insufficient Permissions" race conditions
-        setDoc(doc(db, "usernames", finalUsername), { uid }).catch(e => console.warn("Username registry delay:", e));
-        setDoc(doc(db, "referralCodes", newCode), { uid }).catch(e => console.warn("Referral registry delay:", e));
+        setDoc(doc(db, "usernames", finalUsername), { uid }).catch(() => {});
+        setDoc(doc(db, "referralCodes", newCode), { uid }).catch(() => {});
 
         const notifRef = collection(db, "workerProfiles", uid, "notifications");
         addDoc(notifRef, {
@@ -236,10 +229,8 @@ function LoginContent() {
         }).catch(() => {});
 
       } catch (e: any) {
-        console.error("Profile creation error:", e);
-        // Only show error if the main profile write fails
         if (e.code !== 'permission-denied') {
-          toast({ variant: "destructive", title: "Setup Error", description: "Your profile is created but setup hit a blip. Proceeding to Hub." });
+          toast({ variant: "destructive", title: "Setup Error", description: "Profile setup hit a blip. Proceeding to Feed." });
         }
       }
     }
@@ -247,8 +238,11 @@ function LoginContent() {
     setIsSuccess(true);
     playSuccessSound();
     setTimeout(() => {
-      router.push("/profile");
-      toast({ title: "Account Created!", description: "Welcome to the global network." });
+      router.push("/feed");
+      toast({ 
+        title: snap.exists() ? "Welcome Back!" : "Account Created!", 
+        description: snap.exists() ? "We missed your professional insights." : "Welcome to the global network." 
+      });
     }, 2000);
   };
 
@@ -300,7 +294,6 @@ function LoginContent() {
 
     try {
       if (isSignUp) {
-        // Safe check for taken usernames
         const nameRef = doc(db!, "usernames", desiredUsername.toLowerCase());
         const nameSnap = await getDoc(nameRef);
         if (nameSnap.exists()) {
@@ -320,15 +313,11 @@ function LoginContent() {
       if (error.code === 'auth/invalid-credential') msg = "Incorrect details.";
       if (error.code === 'auth/email-already-in-use') msg = "Email already registered. Try signing in.";
       
-      // Prevent showing Insufficient Permissions if the Auth part actually succeeded
       if (error.code !== 'permission-denied') {
         toast({ variant: "destructive", title: "Auth Failed", description: msg });
-      } else {
-        // Fallback for race conditions: if we hit a permission-denied but auth is signed in, we might be fine
-        if (auth.currentUser) {
-          handlePostAuth(auth.currentUser.uid, fullName, desiredUsername);
-          return;
-        }
+      } else if (auth.currentUser) {
+        handlePostAuth(auth.currentUser.uid, fullName, desiredUsername);
+        return;
       }
       setIsLoading(false);
     }
@@ -338,18 +327,32 @@ function LoginContent() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] gap-8 text-center px-4 animate-in fade-in zoom-in duration-500">
         <div className="relative">
-          <div className="bg-primary/10 p-10 rounded-full shadow-2xl animate-bounce">
-            <CheckCircle2 className="h-24 w-24 text-primary" />
+          <div className={cn(
+            "p-10 rounded-full shadow-2xl animate-bounce",
+            isReturningUser ? "bg-secondary/10" : "bg-primary/10"
+          )}>
+            {isReturningUser ? (
+              <Heart className="h-24 w-24 text-secondary fill-secondary" />
+            ) : (
+              <CheckCircle2 className="h-24 w-24 text-primary" />
+            )}
           </div>
           <Sparkles className="absolute -top-4 -right-4 h-10 w-10 text-secondary fill-secondary animate-pulse" />
           <Sparkles className="absolute -bottom-4 -left-4 h-8 w-8 text-secondary fill-secondary animate-pulse delay-75" />
         </div>
         <div className="space-y-3">
-          <h2 className="text-5xl font-black tracking-tighter text-primary">Secured!</h2>
-          <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">Account Created Successfully</p>
+          <h2 className={cn(
+            "text-5xl font-black tracking-tighter",
+            isReturningUser ? "text-secondary" : "text-primary"
+          )}>
+            {isReturningUser ? "Welcome Back!" : "Secured!"}
+          </h2>
+          <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">
+            {isReturningUser ? "We missed your insights" : "Account Created Successfully"}
+          </p>
         </div>
         <div className="flex flex-col items-center gap-4">
-          <p className="text-sm font-bold text-muted-foreground animate-pulse">Entering your professional hub...</p>
+          <p className="text-sm font-bold text-muted-foreground animate-pulse">Entering your professional feed...</p>
           <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
         </div>
       </div>

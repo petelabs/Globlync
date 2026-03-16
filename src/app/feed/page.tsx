@@ -1,8 +1,7 @@
-
 "use client";
 
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,21 +12,22 @@ import {
   Send, 
   Sparkles, 
   Loader2, 
-  Clock, 
   TrendingUp,
   MoreHorizontal,
   Repeat,
-  LayoutGrid
+  LayoutGrid,
+  AlertCircle,
+  Clock
 } from "lucide-react";
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
-import { collection, query, orderBy, limit, serverTimestamp, doc, increment } from "firebase/firestore";
+import { collection, query, orderBy, limit, serverTimestamp, doc, increment, where, getDocs, Timestamp } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const MAX_POST_LENGTH = 280;
+const DAILY_POST_LIMIT = 5;
 
 export default function FeedPage() {
   const { user } = useUser();
@@ -36,6 +36,8 @@ export default function FeedPage() {
   
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const [dailyPostCount, setDailyPostCount] = useState(0);
+  const [isCheckingLimit, setIsCheckingLimit] = useState(true);
 
   const postsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -49,9 +51,46 @@ export default function FeedPage() {
 
   const { data: posts, isLoading } = useCollection(postsQuery);
 
+  // Check post count for the last 24 hours
+  useEffect(() => {
+    async function checkDailyLimit() {
+      if (!db || !user?.uid) return;
+      
+      setIsCheckingLimit(true);
+      try {
+        const twentyFourHoursAgo = new Date();
+        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+        
+        const q = query(
+          collection(db, "posts"),
+          where("authorId", "==", user.uid),
+          where("createdAt", ">=", Timestamp.fromDate(twentyFourHoursAgo))
+        );
+        
+        const snap = await getDocs(q);
+        setDailyPostCount(snap.size);
+      } catch (err) {
+        console.error("Error checking post limit:", err);
+      } finally {
+        setIsCheckingLimit(false);
+      }
+    }
+    
+    checkDailyLimit();
+  }, [db, user?.uid]);
+
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim() || !user || !postsRef) return;
+
+    if (dailyPostCount >= DAILY_POST_LIMIT) {
+      toast({ 
+        variant: "destructive", 
+        title: "Daily Limit Reached", 
+        description: `You can share up to ${DAILY_POST_LIMIT} professional insights every 24 hours. Keep them high quality!` 
+      });
+      return;
+    }
 
     setIsPosting(true);
     try {
@@ -65,7 +104,8 @@ export default function FeedPage() {
         commentsCount: 0,
       });
       setContent("");
-      toast({ title: "Shared!", description: "Your post is live on the global feed." });
+      setDailyPostCount(prev => prev + 1);
+      toast({ title: "Shared!", description: "Your insight is live on the global feed." });
     } catch (err) {
       toast({ variant: "destructive", title: "Failed to post" });
     } finally {
@@ -83,15 +123,30 @@ export default function FeedPage() {
 
   if (!user) return null;
 
+  const isLimitReached = dailyPostCount >= DAILY_POST_LIMIT;
+
   return (
     <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4">
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-black tracking-tight">Professional Feed</h1>
-        <p className="text-muted-foreground text-sm">Real-time insights from the global network.</p>
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm font-medium">Real-time insights from the global network.</p>
+          {!isCheckingLimit && (
+            <span className={cn(
+              "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
+              isLimitReached ? "bg-orange-500/10 text-orange-600" : "bg-primary/5 text-primary/60"
+            )}>
+              {DAILY_POST_LIMIT - dailyPostCount} Posts Remaining Today
+            </span>
+          )}
+        </div>
       </header>
 
       {/* Post Composer */}
-      <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden bg-white">
+      <Card className={cn(
+        "border-none shadow-xl rounded-[2rem] overflow-hidden bg-white transition-all",
+        isLimitReached && "opacity-80"
+      )}>
         <CardContent className="p-6">
           <form onSubmit={handlePost} className="space-y-4">
             <div className="flex gap-4">
@@ -101,15 +156,24 @@ export default function FeedPage() {
               </Avatar>
               <div className="flex-1 space-y-2">
                 <Textarea 
-                  placeholder="Share a professional insight, tip, or update..." 
-                  className="min-h-[100px] border-none focus-visible:ring-0 text-lg resize-none p-0 bg-transparent placeholder:text-muted-foreground/40"
+                  placeholder={isLimitReached ? "Daily quota reached. Check back later!" : "Share a professional insight, tip, or update..."} 
+                  className="min-h-[100px] border-none focus-visible:ring-0 text-lg resize-none p-0 bg-transparent placeholder:text-muted-foreground/40 disabled:cursor-not-allowed"
                   value={content}
                   onChange={(e) => setContent(e.target.value.substring(0, MAX_POST_LENGTH))}
                   maxLength={MAX_POST_LENGTH}
+                  disabled={isLimitReached || isPosting}
                 />
+                
+                {isLimitReached && (
+                  <div className="bg-orange-500/5 p-3 rounded-xl border border-orange-500/10 flex items-center gap-2 mb-2 animate-in fade-in slide-in-from-top-1">
+                    <Clock className="h-4 w-4 text-orange-600" />
+                    <p className="text-[10px] font-black uppercase text-orange-700 tracking-tight">Daily limit reached. Quality over quantity!</p>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pt-4 border-t border-muted/50">
                   <div className="flex items-center gap-4 text-primary/40">
-                    <Sparkles className="h-5 w-5" />
+                    <Sparkles className={cn("h-5 w-5", !isLimitReached && "animate-pulse")} />
                     <TrendingUp className="h-5 w-5" />
                   </div>
                   <div className="flex items-center gap-4">
@@ -121,7 +185,7 @@ export default function FeedPage() {
                     </span>
                     <Button 
                       type="submit" 
-                      disabled={!content.trim() || isPosting}
+                      disabled={!content.trim() || isPosting || isLimitReached}
                       className="rounded-full font-black px-8 h-10 shadow-lg"
                     >
                       {isPosting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-2 h-4 w-4" /> Post</>}
