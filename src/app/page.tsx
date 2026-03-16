@@ -43,7 +43,7 @@ export default function Home() {
     const timer = setInterval(() => {
       const now = new Date();
       
-      // Personalized timer only for signed-in users within 24h
+      // Personalized timer only for signed-in users who registered within the last 24h
       if (user && profile?.createdAt) {
         const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
         const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
@@ -59,7 +59,6 @@ export default function Home() {
           setTimeLeft(null);
         }
       } else {
-        // Hide banner for home screen if not logged in
         setTimeLeft(null);
       }
     }, 1000);

@@ -17,7 +17,6 @@ import {
   MoreHorizontal,
   Repeat,
   LayoutGrid,
-  AlertCircle,
   Clock,
   RefreshCw
 } from "lucide-react";
@@ -32,7 +31,7 @@ const MAX_POST_LENGTH = 280;
 const DAILY_POST_LIMIT = 5;
 
 export default function FeedPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   
@@ -42,18 +41,18 @@ export default function FeedPage() {
   const [dailyPostCount, setDailyPostCount] = useState(0);
   const [isCheckingLimit, setIsCheckingLimit] = useState(true);
 
-  // Core Feed Query - Secured by firestore.rules
   const postsRef = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "posts");
   }, [db]);
 
+  // Feed is public read based on new rules, but we gate the composer
   const postsQuery = useMemoFirebase(() => {
     if (!postsRef) return null;
     return query(postsRef, orderBy("createdAt", "desc"), limit(50));
   }, [postsRef]);
 
-  const { data: posts, isLoading } = useCollection(postsQuery);
+  const { data: posts, isLoading: isFeedLoading } = useCollection(postsQuery);
 
   const checkDailyLimit = async () => {
     if (!db || !user?.uid) return;
@@ -79,7 +78,9 @@ export default function FeedPage() {
   };
 
   useEffect(() => {
-    checkDailyLimit();
+    if (user?.uid) {
+      checkDailyLimit();
+    }
   }, [db, user?.uid]);
 
   const handlePost = async (e: React.FormEvent) => {
@@ -118,7 +119,7 @@ export default function FeedPage() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // Standard useCollection will auto-update, but we re-trigger limit check for "pull to refresh" feel
+    // Refresh check limit and rely on useCollection real-time update
     checkDailyLimit().finally(() => {
       setTimeout(() => setIsRefreshing(false), 800);
       toast({ title: "Feed Updated" });
@@ -126,17 +127,20 @@ export default function FeedPage() {
   };
 
   const handleLike = (postId: string) => {
-    if (!db) return;
+    if (!db || !user) {
+      toast({ title: "Sign in to like" });
+      return;
+    }
     const postRef = doc(db, "posts", postId);
     updateDocumentNonBlocking(postRef, {
       likesCount: increment(1)
     });
   };
 
-  if (!user) return (
+  if (isUserLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4 text-center px-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary/20" />
-      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Securing Professional Session...</p>
+      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Syncing Feed...</p>
     </div>
   );
 
@@ -151,14 +155,14 @@ export default function FeedPage() {
             variant="ghost" 
             size="icon" 
             onClick={handleRefresh} 
-            className={cn("rounded-full", isRefreshing && "animate-spin")}
+            className={cn("rounded-full h-10 w-10 bg-primary/5 text-primary hover:bg-primary/10", isRefreshing && "animate-spin")}
           >
             <RefreshCw className="h-5 w-5" />
           </Button>
         </div>
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-sm font-medium">Real-time insights from the network.</p>
-          {!isCheckingLimit && (
+          {user && !isCheckingLimit && (
             <span className={cn(
               "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
               isLimitReached ? "bg-orange-500/10 text-orange-600" : "bg-primary/5 text-primary/60"
@@ -169,65 +173,74 @@ export default function FeedPage() {
         </div>
       </header>
 
-      {/* Post Composer */}
-      <Card className={cn(
-        "border-none shadow-xl rounded-[2rem] overflow-hidden bg-white transition-all",
-        isLimitReached && "opacity-80"
-      )}>
-        <CardContent className="p-6">
-          <form onSubmit={handlePost} className="space-y-4">
-            <div className="flex gap-4">
-              <Avatar className="h-12 w-12 border-2 border-primary/10">
-                <AvatarImage src={user.photoURL || ""} />
-                <AvatarFallback className="bg-primary/5 font-black">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-2">
-                <Textarea 
-                  placeholder={isLimitReached ? "Daily quota reached. Check back tomorrow!" : "Share a professional update..."} 
-                  className="min-h-[100px] border-none focus-visible:ring-0 text-lg resize-none p-0 bg-transparent placeholder:text-muted-foreground/40 disabled:cursor-not-allowed"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value.substring(0, MAX_POST_LENGTH))}
-                  maxLength={MAX_POST_LENGTH}
-                  disabled={isLimitReached || isPosting}
-                />
-                
-                {isLimitReached && (
-                  <div className="bg-orange-500/5 p-3 rounded-xl border border-orange-500/10 flex items-center gap-2 mb-2 animate-in fade-in slide-in-from-top-1">
-                    <Clock className="h-4 w-4 text-orange-600" />
-                    <p className="text-[10px] font-black uppercase text-orange-700 tracking-tight">Limit reached. See you tomorrow!</p>
-                  </div>
-                )}
+      {/* Post Composer - Only for signed in users */}
+      {user ? (
+        <Card className={cn(
+          "border-none shadow-xl rounded-[2rem] overflow-hidden bg-white transition-all",
+          isLimitReached && "opacity-80"
+        )}>
+          <CardContent className="p-6">
+            <form onSubmit={handlePost} className="space-y-4">
+              <div className="flex gap-4">
+                <Avatar className="h-12 w-12 border-2 border-primary/10">
+                  <AvatarImage src={user.photoURL || ""} />
+                  <AvatarFallback className="bg-primary/5 font-black">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-2">
+                  <Textarea 
+                    placeholder={isLimitReached ? "Daily quota reached. Check back tomorrow!" : "Share a professional update..."} 
+                    className="min-h-[100px] border-none focus-visible:ring-0 text-lg resize-none p-0 bg-transparent placeholder:text-muted-foreground/40 disabled:cursor-not-allowed"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value.substring(0, MAX_POST_LENGTH))}
+                    maxLength={MAX_POST_LENGTH}
+                    disabled={isLimitReached || isPosting}
+                  />
+                  
+                  {isLimitReached && (
+                    <div className="bg-orange-500/5 p-3 rounded-xl border border-orange-500/10 flex items-center gap-2 mb-2 animate-in fade-in slide-in-from-top-1">
+                      <Clock className="h-4 w-4 text-orange-600" />
+                      <p className="text-[10px] font-black uppercase text-orange-700 tracking-tight">Limit reached. See you tomorrow!</p>
+                    </div>
+                  )}
 
-                <div className="flex items-center justify-between pt-4 border-t border-muted/50">
-                  <div className="flex items-center gap-4 text-primary/40">
-                    <Sparkles className={cn("h-5 w-5", !isLimitReached && "animate-pulse")} />
-                    <TrendingUp className="h-5 w-5" />
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className={cn(
-                      "text-[10px] font-black",
-                      content.length >= MAX_POST_LENGTH - 20 ? "text-orange-500" : "text-muted-foreground/40"
-                    )}>
-                      {content.length} / {MAX_POST_LENGTH}
-                    </span>
-                    <Button 
-                      type="submit" 
-                      disabled={!content.trim() || isPosting || isLimitReached}
-                      className="rounded-full font-black px-8 h-10 shadow-lg"
-                    >
-                      {isPosting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-2 h-4 w-4" /> Post</>}
-                    </Button>
+                  <div className="flex items-center justify-between pt-4 border-t border-muted/50">
+                    <div className="flex items-center gap-4 text-primary/40">
+                      <Sparkles className={cn("h-5 w-5", !isLimitReached && "animate-pulse")} />
+                      <TrendingUp className="h-5 w-5" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={cn(
+                        "text-[10px] font-black",
+                        content.length >= MAX_POST_LENGTH - 20 ? "text-orange-500" : "text-muted-foreground/40"
+                      )}>
+                        {content.length} / {MAX_POST_LENGTH}
+                      </span>
+                      <Button 
+                        type="submit" 
+                        disabled={!content.trim() || isPosting || isLimitReached}
+                        className="rounded-full font-black px-8 h-10 shadow-lg"
+                      >
+                        {isPosting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-2 h-4 w-4" /> Post</>}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-none bg-primary/5 p-8 rounded-[2rem] text-center space-y-4">
+          <p className="text-muted-foreground text-sm font-medium">Join Globlync to share your own professional insights.</p>
+          <Button asChild className="rounded-full font-black px-10">
+            <Link href="/login">Join the Network</Link>
+          </Button>
+        </Card>
+      )}
 
       {/* Feed */}
       <div className="grid gap-4">
-        {isLoading ? (
+        {isFeedLoading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-10 w-10 animate-spin text-primary/20" /></div>
         ) : posts && posts.length > 0 ? (
           posts.map((post) => (

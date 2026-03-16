@@ -16,27 +16,21 @@ service cloud.firestore {
       allow write: if false; 
     }
 
-    // Fixed Posts Rules for Social Feed
+    // Social Feed Rules - Publicly readable for social discovery
     match /posts/{postId} {
-      // Allow any signed-in user to see and list posts
-      allow read, list: if isSignedIn();
-      
-      // Post creation restricted to signed-in users
+      allow read, list: if true; 
       allow create: if isSignedIn();
       
-      // Updates allowed for the author OR for anyone incrementing counts (likes/comments)
       allow update: if isSignedIn() && (
         request.auth.uid == resource.data.authorId || 
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'commentsCount'])
       );
       
-      // Only the author can delete their post
       allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
     }
 
     match /workerProfiles/{workerId} {
-      allow get: if true;
-      allow list: if false;
+      allow get, list: if true; // Public profiles and public directory
       allow create: if isOwner(workerId);
       allow delete: if isOwner(workerId);
       
