@@ -16,14 +16,22 @@ service cloud.firestore {
       allow write: if false; 
     }
 
+    // Consolidated Posts Rules for Social Feed
     match /posts/{postId} {
-      allow read, list: if true;
+      // Allow any signed-in user to see and list posts
+      allow get, list: if isSignedIn();
+      
+      // Post creation restricted to signed-in users
       allow create: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
+      
+      // Updates allowed for the author OR for anyone incrementing counts (likes/comments)
       allow update: if isSignedIn() && (
         request.auth.uid == resource.data.authorId || 
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'commentsCount'])
       );
+      
+      // Only the author can delete their post
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
     }
 
     match /workerProfiles/{workerId} {

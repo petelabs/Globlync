@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -39,6 +40,7 @@ export default function FeedPage() {
   const [dailyPostCount, setDailyPostCount] = useState(0);
   const [isCheckingLimit, setIsCheckingLimit] = useState(true);
 
+  // Core Feed Query - Secured by firestore.rules
   const postsRef = useMemoFirebase(() => {
     if (!db) return null;
     return collection(db, "posts");
@@ -51,7 +53,7 @@ export default function FeedPage() {
 
   const { data: posts, isLoading } = useCollection(postsQuery);
 
-  // Check post count for the last 24 hours
+  // Check post count for the rolling 24-hour window
   useEffect(() => {
     async function checkDailyLimit() {
       if (!db || !user?.uid) return;
@@ -83,11 +85,12 @@ export default function FeedPage() {
     e.preventDefault();
     if (!content.trim() || !user || !postsRef) return;
 
+    // Safety check again before submission
     if (dailyPostCount >= DAILY_POST_LIMIT) {
       toast({ 
         variant: "destructive", 
         title: "Daily Limit Reached", 
-        description: `You can share up to ${DAILY_POST_LIMIT} professional insights every 24 hours. Keep them high quality!` 
+        description: `Professional excellence means quality over quantity. You've hit your ${DAILY_POST_LIMIT} posts limit for today.` 
       });
       return;
     }
@@ -105,9 +108,9 @@ export default function FeedPage() {
       });
       setContent("");
       setDailyPostCount(prev => prev + 1);
-      toast({ title: "Shared!", description: "Your insight is live on the global feed." });
+      toast({ title: "Insight Shared!", description: "Your update is now live on the global network." });
     } catch (err) {
-      toast({ variant: "destructive", title: "Failed to post" });
+      toast({ variant: "destructive", title: "Action Failed", description: "Please check your network connection." });
     } finally {
       setIsPosting(false);
     }
@@ -121,7 +124,12 @@ export default function FeedPage() {
     });
   };
 
-  if (!user) return null;
+  if (!user) return (
+    <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4 text-center px-4">
+      <Loader2 className="h-10 w-10 animate-spin text-primary/20" />
+      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Securing Professional Session...</p>
+    </div>
+  );
 
   const isLimitReached = dailyPostCount >= DAILY_POST_LIMIT;
 
@@ -136,7 +144,7 @@ export default function FeedPage() {
               "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
               isLimitReached ? "bg-orange-500/10 text-orange-600" : "bg-primary/5 text-primary/60"
             )}>
-              {DAILY_POST_LIMIT - dailyPostCount} Posts Remaining Today
+              {Math.max(0, DAILY_POST_LIMIT - dailyPostCount)} Posts Remaining Today
             </span>
           )}
         </div>
@@ -152,11 +160,11 @@ export default function FeedPage() {
             <div className="flex gap-4">
               <Avatar className="h-12 w-12 border-2 border-primary/10">
                 <AvatarImage src={user.photoURL || ""} />
-                <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                <AvatarFallback className="bg-primary/5 font-black">{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-2">
                 <Textarea 
-                  placeholder={isLimitReached ? "Daily quota reached. Check back later!" : "Share a professional insight, tip, or update..."} 
+                  placeholder={isLimitReached ? "Daily quota reached. Check back tomorrow!" : "Share a professional update or tip..."} 
                   className="min-h-[100px] border-none focus-visible:ring-0 text-lg resize-none p-0 bg-transparent placeholder:text-muted-foreground/40 disabled:cursor-not-allowed"
                   value={content}
                   onChange={(e) => setContent(e.target.value.substring(0, MAX_POST_LENGTH))}
@@ -210,7 +218,7 @@ export default function FeedPage() {
                   <Link href={`/public/${post.authorId}`} className="flex gap-3 items-center group">
                     <Avatar className="h-10 w-10 border border-muted group-hover:scale-105 transition-transform">
                       <AvatarImage src={post.authorPhoto} />
-                      <AvatarFallback>{post.authorName?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/5 font-black">{post.authorName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col -space-y-0.5">
                       <span className="font-black text-sm group-hover:underline">{post.authorName}</span>

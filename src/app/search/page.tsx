@@ -142,7 +142,7 @@ export default function SearchPage() {
                       <CardContent className="p-6 flex items-center gap-4">
                         <Avatar className="h-16 w-16 border-2 border-primary/5 group-hover:scale-110 transition-transform">
                           <AvatarImage src={worker.profilePictureUrl} className="object-cover" />
-                          <AvatarFallback className="font-black">{worker.name?.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="bg-primary/5 font-black">{worker.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-black text-lg truncate leading-tight">{worker.name}</h3>

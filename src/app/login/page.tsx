@@ -151,6 +151,7 @@ function LoginContent() {
     const snap = await getDoc(profileRef);
     const alreadyExists = snap.exists();
     
+    // Set returning user status immediately for the UI feedback
     setIsReturningUser(alreadyExists);
 
     if (!alreadyExists) {
@@ -241,7 +242,7 @@ function LoginContent() {
     setTimeout(() => {
       router.push("/feed");
       toast({ 
-        title: alreadyExists ? "Welcome Back!" : "Account Created!", 
+        title: alreadyExists ? "Welcome Back!" : "Account Secured!", 
         description: alreadyExists ? "We missed your professional insights." : "Welcome to the global network." 
       });
     }, 2000);
