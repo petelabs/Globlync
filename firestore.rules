@@ -13,7 +13,7 @@ service cloud.firestore {
 
     // 1. Social Feed Rules (Simplified as requested for stability)
     match /posts/{postId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isSignedIn();
     }
 
     match /system/{document} {
