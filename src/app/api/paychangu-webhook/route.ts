@@ -48,13 +48,15 @@ export async function POST(req: Request) {
       if (signature === expectedSignature) {
         console.log('[PayChangu Webhook] Signature verified.');
         isVerified = true;
+      } else {
+        console.warn('[PayChangu Webhook] Signature mismatch. Check PAYCHANGU_WEBHOOK_SECRET.');
       }
     }
 
     // 2. Fallback: Manual API Verification (Bulletproof)
     const secretKey = process.env.PAYCHANGU_SECRET_KEY;
     if (!isVerified && secretKey && txRef) {
-      console.log('[PayChangu Webhook] Signature check skipped/failed. Falling back to API verification...');
+      console.log('[PayChangu Webhook] Falling back to API verification...');
       try {
         const verifyRes = await fetch(`https://api.paychangu.com/payment-verification/${txRef}`, {
           headers: {
@@ -77,7 +79,8 @@ export async function POST(req: Request) {
 
     if (!isVerified) {
       console.error('[PayChangu Webhook] Verification failed for Ref:', txRef);
-      return NextResponse.json({ message: 'Verification failed' }, { status: 401 });
+      // We return 200 anyway to stop PayChangu from retrying if we've logged it
+      return NextResponse.json({ message: 'Verification failed' }, { status: 200 });
     }
 
     // 3. Process the VIP Activation
@@ -98,9 +101,10 @@ export async function POST(req: Request) {
       let tierName = "Pro Member";
       let days = 30;
 
-      if (amount === 100) { tierName = "Trial Pro (MWK)"; days = 2; }
-      else if (amount === 500) { tierName = "Pro Member (MWK)"; days = 30; }
-      else if (amount === 1000) { tierName = "Pro Max (MWK)"; days = 35; }
+      // Logic based on your specific plans
+      if (amount >= 1000) { tierName = "Pro Max (MWK)"; days = 35; }
+      else if (amount >= 500) { tierName = "Pro Member (MWK)"; days = 30; }
+      else if (amount >= 100) { tierName = "Trial Pro (MWK)"; days = 2; }
       else {
         if (amount >= 2.5) tierName = "Gold Pro";
         else if (amount >= 1.5) tierName = "Silver Pro";
