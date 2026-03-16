@@ -11,14 +11,9 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    match /system/{document} {
-      allow read: if true;
-      allow write: if false; 
-    }
-
-    // Social Feed Rules - Publicly readable for social discovery
+    // 1. Social Feed Rules (Public Read for discovery)
     match /posts/{postId} {
-      allow read, list: if true; 
+      allow read, get, list: if true; 
       allow create: if isSignedIn();
       
       allow update: if isSignedIn() && (
@@ -27,6 +22,11 @@ service cloud.firestore {
       );
       
       allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
+    }
+
+    match /system/{document} {
+      allow read: if true;
+      allow write: if false; 
     }
 
     match /workerProfiles/{workerId} {
