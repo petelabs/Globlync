@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -148,11 +149,11 @@ function LoginContent() {
     
     const profileRef = doc(db, "workerProfiles", uid);
     const snap = await getDoc(profileRef);
+    const alreadyExists = snap.exists();
     
-    if (snap.exists()) {
-      setIsReturningUser(true);
-    } else {
-      setIsReturningUser(false);
+    setIsReturningUser(alreadyExists);
+
+    if (!alreadyExists) {
       let invitedBy = "";
       const finalReferral = urlReferral || manualReferral;
 
@@ -240,8 +241,8 @@ function LoginContent() {
     setTimeout(() => {
       router.push("/feed");
       toast({ 
-        title: snap.exists() ? "Welcome Back!" : "Account Created!", 
-        description: snap.exists() ? "We missed your professional insights." : "Welcome to the global network." 
+        title: alreadyExists ? "Welcome Back!" : "Account Created!", 
+        description: alreadyExists ? "We missed your professional insights." : "Welcome to the global network." 
       });
     }, 2000);
   };
@@ -348,7 +349,7 @@ function LoginContent() {
             {isReturningUser ? "Welcome Back!" : "Secured!"}
           </h2>
           <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">
-            {isReturningUser ? "We missed your insights" : "Account Created Successfully"}
+            {isReturningUser ? "We missed your professional insights" : "Account Created Successfully"}
           </p>
         </div>
         <div className="flex flex-col items-center gap-4">
