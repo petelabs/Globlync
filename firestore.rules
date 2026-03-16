@@ -11,14 +11,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Social Feed Rules
-    match /posts/{postId} {
-      allow read: if true; // Public view for a social platform
-      allow create: if isSignedIn();
-      allow update: if isSignedIn(); // Allow likes
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
-    }
-
     match /system/{document} {
       allow read: if true;
       allow write: if false; 

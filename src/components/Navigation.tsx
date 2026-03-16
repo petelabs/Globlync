@@ -11,13 +11,11 @@ import {
   Bell, 
   Settings as SettingsIcon,
   LogOut,
-  LayoutGrid,
   ChevronDown,
   Gift,
   Crown,
   Users,
-  Search,
-  MoveRight
+  Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -97,9 +95,9 @@ export function Navigation() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Feed", href: "/feed", icon: LayoutGrid, authRequired: true },
     { label: "Search", href: "/search", icon: Search },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
+    { label: "Profile", href: "/profile", icon: User, authRequired: true },
   ];
 
   return (

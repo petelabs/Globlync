@@ -38,7 +38,6 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Badge } from "@/components/ui/badge";
 
 type AuthMethod = "choice" | "phone" | "email-pass" | "email-link" | "google";
 
@@ -64,28 +63,6 @@ function LoginContent() {
   const { toast } = useToast();
 
   const urlReferral = searchParams?.get('ref') || "";
-
-  const playSuccessSound = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const playTone = (freq: number, start: number, duration: number) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.1, start);
-        gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
-        osc.start(start);
-        osc.stop(start + duration);
-      };
-      playTone(523.25, audioCtx.currentTime, 0.1); 
-      playTone(659.25, audioCtx.currentTime + 0.1, 0.2); 
-    } catch (e) {
-      console.warn("Audio synthesis failed:", e);
-    }
-  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -120,34 +97,9 @@ function LoginContent() {
     }
   }, [auth]);
 
-  useEffect(() => {
-    async function checkReferrer() {
-      const code = urlReferral || manualReferral;
-      if (code && db) {
-        try {
-          const refDoc = await getDoc(doc(db, "referralCodes", code.trim().toUpperCase()));
-          if (refDoc.exists()) {
-            const profileDoc = await getDoc(doc(db, "workerProfiles", refDoc.data().uid));
-            if (profileDoc.exists()) {
-              setReferrerName(profileDoc.data().name);
-            }
-          } else {
-            setReferrerName(null);
-          }
-        } catch (e) {
-          setReferrerName(null);
-        }
-      } else {
-        setReferrerName(null);
-      }
-    }
-    checkReferrer();
-  }, [urlReferral, manualReferral, db]);
-
   const handlePostAuth = async (uid: string, manualName?: string, manualUsername?: string) => {
     if (!db) return;
     
-    // 1. Check if user already exists BEFORE setting any UI state
     const profileRef = doc(db, "workerProfiles", uid);
     const snap = await getDoc(profileRef);
     const alreadyExists = snap.exists();
@@ -231,21 +183,17 @@ function LoginContent() {
         }).catch(() => {});
 
       } catch (e: any) {
-        if (e.code !== 'permission-denied') {
-          toast({ variant: "destructive", title: "Setup Error", description: "Profile setup hit a blip. Proceeding to Feed." });
-        }
+        console.error("Profile setup hit a blip.");
       }
     }
 
     setIsSuccess(true);
-    playSuccessSound();
     
-    // Redirect faster for returning users
     setTimeout(() => {
-      router.push("/feed");
+      router.push("/profile");
       toast({ 
         title: alreadyExists ? "Welcome Back!" : "Account Secured!", 
-        description: alreadyExists ? "We missed your professional insights." : "Welcome to the global network." 
+        description: alreadyExists ? "Ready to manage your hub." : "Welcome to the global network." 
       });
     }, 1800);
   };
@@ -317,12 +265,7 @@ function LoginContent() {
       if (error.code === 'auth/invalid-credential') msg = "Incorrect details.";
       if (error.code === 'auth/email-already-in-use') msg = "Email already registered. Try signing in.";
       
-      if (error.code !== 'permission-denied') {
-        toast({ variant: "destructive", title: "Auth Failed", description: msg });
-      } else if (auth.currentUser) {
-        handlePostAuth(auth.currentUser.uid, fullName, desiredUsername);
-        return;
-      }
+      toast({ variant: "destructive", title: "Auth Failed", description: msg });
       setIsLoading(false);
     }
   };
@@ -342,7 +285,6 @@ function LoginContent() {
             )}
           </div>
           <Sparkles className="absolute -top-4 -right-4 h-10 w-10 text-secondary fill-secondary animate-pulse" />
-          <Sparkles className="absolute -bottom-4 -left-4 h-8 w-8 text-secondary fill-secondary animate-pulse delay-75" />
         </div>
         <div className="space-y-3">
           <h2 className={cn(
@@ -352,11 +294,11 @@ function LoginContent() {
             {isReturningUser ? "Welcome Back!" : "Secured!"}
           </h2>
           <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">
-            {isReturningUser ? "We missed your professional insights" : "Account Created Successfully"}
+            {isReturningUser ? "Accessing your professional profile" : "Account Created Successfully"}
           </p>
         </div>
         <div className="flex flex-col items-center gap-4">
-          <p className="text-sm font-bold text-muted-foreground animate-pulse">Entering your professional feed...</p>
+          <p className="text-sm font-bold text-muted-foreground animate-pulse">Entering your hub...</p>
           <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
         </div>
       </div>
@@ -520,11 +462,6 @@ function LoginContent() {
         </CardContent>
         
         <CardFooter className="bg-muted/30 p-6 flex flex-col gap-2">
-          {referrerName && (
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 py-1.5 px-4 rounded-full font-black text-[10px] uppercase mx-auto">
-              <Gift className="h-3 w-3 mr-2" /> Joining via {referrerName} (+10 Pts)
-            </Badge>
-          )}
           <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest">
             100% Safe Professional Encryption
           </p>

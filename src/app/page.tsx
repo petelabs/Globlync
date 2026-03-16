@@ -114,12 +114,12 @@ export default function Home() {
         </h1>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          Connect, post, and build an evidence-based professional identity. <span className="text-primary font-bold underline decoration-secondary">Verified & Open</span> for everyone everywhere.
+          Connect, log work, and build an evidence-based professional identity. <span className="text-primary font-bold underline decoration-secondary">Verified & Open</span> for everyone everywhere.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row mt-4">
           <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
-            <Link href={user ? "/feed" : "/login"}>{user ? "Open My Feed" : "Join Globlync Free"}</Link>
+            <Link href={user ? "/profile" : "/login"}>{user ? "Open My Hub" : "Join Globlync Free"}</Link>
           </Button>
           <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2" asChild>
             <Link href="/search">Browse Professionals <ArrowRight className="ml-2 h-5 w-5" /></Link>
@@ -179,10 +179,10 @@ export default function Home() {
           </Card>
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
-              <MessageSquare className="h-8 w-8 text-primary" />
+              <ShieldCheck className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-black text-lg">Share Insights</h3>
-            <p className="text-xs text-muted-foreground font-medium">Post updates, share tips, and showcase your professional expertise.</p>
+            <h3 className="font-black text-lg">Verified Identity</h3>
+            <p className="text-xs text-muted-foreground font-medium">Secure your unique @username handle and build a digital footprint that lasts.</p>
           </Card>
         </div>
       </section>

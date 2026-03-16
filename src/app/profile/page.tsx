@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { QRCodeSVG } from "qrcode.react";
 import { 
   Camera, 
@@ -18,46 +17,20 @@ import {
   Sparkles, 
   Loader2, 
   QrCode, 
-  ExternalLink,
   Settings,
   User as UserIcon,
   CheckCircle2,
   AlertCircle,
-  MapPin,
-  ChevronDown,
-  Mail,
-  Phone,
   Crown,
-  Zap,
-  Clock,
   TrendingUp,
-  Star,
-  Gift,
-  Users,
-  Copy,
-  Share2,
-  Lock as LockIcon,
-  Coins,
-  Timer,
-  Scan,
-  LayoutGrid,
-  Heart,
-  MessageCircle,
-  Hammer
+  Star
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { generateProfessionalBio } from "@/ai/flows/generate-bio-flow";
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
-import { doc, getDoc, setDoc, serverTimestamp, deleteDoc, collection, query, where, orderBy, limit } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDistanceToNow } from "date-fns";
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -70,18 +43,7 @@ export default function ProfilePage() {
     return doc(db, "workerProfiles", user.uid);
   }, [db, user?.uid]);
 
-  const postsRef = useMemoFirebase(() => {
-    if (!db || !user?.uid) return null;
-    return collection(db, "posts");
-  }, [db, user?.uid]);
-
-  const myPostsQuery = useMemoFirebase(() => {
-    if (!postsRef || !user?.uid) return null;
-    return query(postsRef, where("authorId", "==", user.uid), orderBy("createdAt", "desc"), limit(20));
-  }, [postsRef, user?.uid]);
-
   const { data: profile, isLoading: isProfileLoading } = useDoc(workerRef);
-  const { data: myPosts } = useCollection(myPostsQuery);
 
   const [username, setUsername] = useState("");
   const [trade, setTrade] = useState("");
@@ -95,7 +57,6 @@ export default function ProfilePage() {
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [bioCooldownText, setBioCooldownText] = useState<string | null>(null);
   const [profileUrl, setProfileUrl] = useState("");
 
   useEffect(() => {
@@ -114,20 +75,6 @@ export default function ProfilePage() {
       setPhone(profile.phoneNumber || "");
       setContactEmail(profile.contactEmail || user?.email || "");
       setServiceAreas(profile.serviceAreas || []);
-      
-      if (profile.lastBioPolishAt && !profile.isPro) {
-        const lastUsed = new Date(profile.lastBioPolishAt);
-        const cooldownDays = 14;
-        const resetDate = new Date(lastUsed.getTime() + cooldownDays * 24 * 60 * 60 * 1000);
-        const now = new Date();
-        
-        if (now < resetDate) {
-          const diffDays = Math.ceil((resetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-          setBioCooldownText(`Reset in ${diffDays}d`);
-        } else {
-          setBioCooldownText(null);
-        }
-      }
     }
   }, [profile, user?.email]);
 
@@ -268,15 +215,6 @@ export default function ProfilePage() {
         </Card>
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary"><LayoutGrid className="h-4 w-4" /></div>
-            <div>
-              <p className="text-[10px] font-black uppercase text-muted-foreground">Social Status</p>
-              <p className="text-xs font-black uppercase text-primary">Coming Soon</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
-          <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl text-primary"><Star className="h-4 w-4" /></div>
             <div>
               <p className="text-[10px] font-black uppercase text-muted-foreground">Rewards</p>
@@ -284,104 +222,91 @@ export default function ProfilePage() {
             </div>
           </div>
         </Card>
+        <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl hidden md:block">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Briefcase className="h-4 w-4" /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Network</p>
+              <p className="text-xl font-black">Global</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-muted/50 p-1 rounded-xl">
-          <TabsTrigger value="profile" className="rounded-lg font-bold">Edit Profile</TabsTrigger>
-          <TabsTrigger value="posts" className="rounded-lg font-bold">My Posts</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="posts" className="space-y-4">
-          <Card className="border-none bg-muted/10 rounded-[2rem] p-12 text-center flex flex-col items-center gap-4 relative overflow-hidden">
-            <div className="bg-white p-6 rounded-[2rem] shadow-xl text-primary animate-pulse">
-              <Hammer className="h-10 w-10" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-xl font-black tracking-tight">Timeline Coming Soon.</h3>
-              <p className="text-sm text-muted-foreground font-medium max-w-xs mx-auto">Your professional timeline is undergoing a security audit to ensure 100% privacy.</p>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary/40">
-              <Sparkles className="h-3 w-3" /> Security v2.0
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="md:col-span-1 space-y-6">
+          <Card className="border-none shadow-sm text-center pt-6 overflow-hidden">
+            <CardContent className="flex flex-col items-center gap-4">
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                <Avatar className="h-32 w-32 border-4 border-primary shadow-xl group-hover:opacity-80 transition-opacity">
+                  <AvatarImage src={displayPhoto} className="object-cover" />
+                  <AvatarFallback className="text-2xl font-black">{profile?.name?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
+                <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full shadow-md border border-border"><Camera className="h-4 w-4" /></Button>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">{profile?.name || "Skilled Pro"}</h2>
+                <Badge variant={isAvailable ? "default" : "secondary"} className="mt-1 font-black">
+                  {isAvailable ? "Available for Hire" : "Currently Busy"}
+                </Badge>
+              </div>
+            </CardContent>
+            <div className="bg-muted/30 p-4 border-t flex items-center justify-between">
+              <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase tracking-widest">Global Visibility</Label>
+              <Switch id="availability-toggle" checked={isAvailable} onCheckedChange={setIsAvailable} />
             </div>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="profile" className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-1 space-y-6">
-            <Card className="border-none shadow-sm text-center pt-6 overflow-hidden">
-              <CardContent className="flex flex-col items-center gap-4">
-                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                  <Avatar className="h-32 w-32 border-4 border-primary shadow-xl group-hover:opacity-80 transition-opacity">
-                    <AvatarImage src={displayPhoto} className="object-cover" />
-                    <AvatarFallback className="text-2xl font-black">{profile?.name?.charAt(0) || 'U'}</AvatarFallback>
-                  </Avatar>
-                  <Button size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full shadow-md border border-border"><Camera className="h-4 w-4" /></Button>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoSelect} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">{profile?.name || "Skilled Pro"}</h2>
-                  <Badge variant={isAvailable ? "default" : "secondary"} className="mt-1 font-black">
-                    {isAvailable ? "Available for Hire" : "Currently Busy"}
-                  </Badge>
-                </div>
-              </CardContent>
-              <div className="bg-muted/30 p-4 border-t flex items-center justify-between">
-                <Label htmlFor="availability-toggle" className="text-xs font-bold uppercase tracking-widest">Global Visibility</Label>
-                <Switch id="availability-toggle" checked={isAvailable} onCheckedChange={setIsAvailable} />
+          <Card className="border-none shadow-xl rounded-[2rem] bg-primary text-primary-foreground overflow-hidden relative group">
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2"><QrCode className="h-4 w-4" /> Professional ID</CardTitle></CardHeader>
+            <CardContent className="space-y-4 relative z-10">
+              <div className="bg-white p-4 rounded-3xl flex justify-center shadow-inner">
+                {profileUrl ? <QRCodeSVG value={profileUrl} size={140} level="H" includeMargin={false} className="rounded-sm" /> : <div className="h-[140px] w-[140px] bg-muted animate-pulse rounded-xl" />}
               </div>
-            </Card>
+              <div className="bg-black/20 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+                <p className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-80 mb-1">Instant Trust Handle</p>
+                <p className="text-lg font-black tracking-tight text-white leading-none break-all">@{username || "..."}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <Card className="border-none shadow-xl rounded-[2rem] bg-primary text-primary-foreground overflow-hidden relative group">
-              <CardHeader className="pb-2"><CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2"><QrCode className="h-4 w-4" /> Professional ID</CardTitle></CardHeader>
-              <CardContent className="space-y-4 relative z-10">
-                <div className="bg-white p-4 rounded-3xl flex justify-center shadow-inner">
-                  {profileUrl ? <QRCodeSVG value={profileUrl} size={140} level="H" includeMargin={false} className="rounded-sm" /> : <div className="h-[140px] w-[140px] bg-muted animate-pulse rounded-xl" />}
+        <div className="md:col-span-2">
+          <form onSubmit={handleUpdate} className="grid gap-6">
+            <Card className="border-none shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">Professional Identity</CardTitle>
+                <CardDescription>Your unique ID is used for secure connections and identification.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="username">Professional ID / Username</Label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input id="username" placeholder="e.g. john_pro" value={username} onChange={(e) => { setUsername(e.target.value); checkUsername(e.target.value); }} className={cn("pl-10 h-12 rounded-xl", usernameStatus === "available" && "border-green-500", usernameStatus === "taken" && "border-destructive")} />
+                    <div className="absolute right-3 top-3.5">{usernameStatus === "checking" && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}{usernameStatus === "available" && <CheckCircle2 className="h-4 w-4 text-green-500" />}{usernameStatus === "taken" && <AlertCircle className="h-4 w-4 text-destructive" />}</div>
+                  </div>
                 </div>
-                <div className="bg-black/20 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-80 mb-1">Instant Trust Handle</p>
-                  <p className="text-lg font-black tracking-tight text-white leading-none break-all">@{username || "..."}</p>
+                <div className="grid gap-2">
+                  <Label htmlFor="trade">Main Professional Skill</Label>
+                  <div className="relative"><Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input id="trade" placeholder="e.g. Senior React Developer" value={trade} onChange={(e) => setTrade(e.target.value)} className="pl-10 h-12 rounded-xl" /></div>
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="bio">Professional Story</Label>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateBio} disabled={isGenerating} className="font-bold h-8 text-primary"><Sparkles className="h-3 w-3 mr-1" /> AI Polish</Button>
+                  </div>
+                  <Textarea id="bio" placeholder="Describe your expertise..." value={bio} onChange={(e) => setBio(e.target.value)} className="min-h-[100px] rounded-xl" />
                 </div>
               </CardContent>
+              <CardFooter className="bg-muted/10 border-t">
+                <Button type="submit" disabled={isSaving || usernameStatus === "taken"} className="w-full rounded-full py-6 text-lg shadow-lg font-black">{isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}Update Profile</Button>
+              </CardFooter>
             </Card>
-          </div>
-
-          <div className="md:col-span-2">
-            <form onSubmit={handleUpdate} className="grid gap-6">
-              <Card className="border-none shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Professional Identity</CardTitle>
-                  <CardDescription>Your unique ID is used for secure connections and feed identification.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-6">
-                  <div className="grid gap-2">
-                    <Label htmlFor="username">Professional ID / Username</Label>
-                    <div className="relative">
-                      <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input id="username" placeholder="e.g. john_pro" value={username} onChange={(e) => { setUsername(e.target.value); checkUsername(e.target.value); }} className={cn("pl-10 h-12 rounded-xl", usernameStatus === "available" && "border-green-500", usernameStatus === "taken" && "border-destructive")} />
-                      <div className="absolute right-3 top-3.5">{usernameStatus === "checking" && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}{usernameStatus === "available" && <CheckCircle2 className="h-4 w-4 text-green-500" />}{usernameStatus === "taken" && <AlertCircle className="h-4 w-4 text-destructive" />}</div>
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="trade">Main Professional Skill</Label>
-                    <div className="relative"><Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input id="trade" placeholder="e.g. Senior React Developer" value={trade} onChange={(e) => setTrade(e.target.value)} className="pl-10 h-12 rounded-xl" /></div>
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="bio">Professional Story</Label>
-                      <Button type="button" variant="ghost" size="sm" onClick={handleGenerateBio} disabled={isGenerating} className="font-bold h-8 text-primary"><Sparkles className="h-3 w-3 mr-1" /> AI Polish</Button>
-                    </div>
-                    <Textarea id="bio" placeholder="Describe your expertise..." value={bio} onChange={(e) => setBio(e.target.value)} className="min-h-[100px] rounded-xl" />
-                  </div>
-                </CardContent>
-                <CardFooter className="bg-muted/10 border-t">
-                  <Button type="submit" disabled={isSaving || usernameStatus === "taken"} className="w-full rounded-full py-6 text-lg shadow-lg font-black">{isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}Update Profile</Button>
-                </CardFooter>
-              </Card>
-            </form>
-          </div>
-        </TabsContent>
-      </Tabs>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
