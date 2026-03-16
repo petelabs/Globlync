@@ -16,6 +16,16 @@ service cloud.firestore {
       allow write: if false; 
     }
 
+    match /posts/{postId} {
+      allow read, list: if true;
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.authorId || 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'commentsCount'])
+      );
+    }
+
     match /workerProfiles/{workerId} {
       allow get: if true;
       allow list: if false;
@@ -23,7 +33,7 @@ service cloud.firestore {
       allow delete: if isOwner(workerId);
       
       allow update: if isOwner(workerId)
-                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'knowledgePoints', 'completedCourses', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount']));
+                   || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'knowledgePoints', 'completedCourses', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount', 'lastBioPolishAt']));
       
       match /jobs/{jobId} {
         allow read: if true;
