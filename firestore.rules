@@ -16,10 +16,10 @@ service cloud.firestore {
       allow write: if false; 
     }
 
-    // Consolidated Posts Rules for Social Feed
+    // Fixed Posts Rules for Social Feed
     match /posts/{postId} {
       // Allow any signed-in user to see and list posts
-      allow get, list: if isSignedIn();
+      allow read, list: if isSignedIn();
       
       // Post creation restricted to signed-in users
       allow create: if isSignedIn();

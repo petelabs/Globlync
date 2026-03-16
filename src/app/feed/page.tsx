@@ -18,7 +18,8 @@ import {
   Repeat,
   LayoutGrid,
   AlertCircle,
-  Clock
+  Clock,
+  RefreshCw
 } from "lucide-react";
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, limit, serverTimestamp, doc, increment, where, getDocs, Timestamp } from "firebase/firestore";
@@ -37,6 +38,7 @@ export default function FeedPage() {
   
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [dailyPostCount, setDailyPostCount] = useState(0);
   const [isCheckingLimit, setIsCheckingLimit] = useState(true);
 
@@ -53,31 +55,30 @@ export default function FeedPage() {
 
   const { data: posts, isLoading } = useCollection(postsQuery);
 
-  // Check post count for the rolling 24-hour window
-  useEffect(() => {
-    async function checkDailyLimit() {
-      if (!db || !user?.uid) return;
-      
-      setIsCheckingLimit(true);
-      try {
-        const twentyFourHoursAgo = new Date();
-        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-        
-        const q = query(
-          collection(db, "posts"),
-          where("authorId", "==", user.uid),
-          where("createdAt", ">=", Timestamp.fromDate(twentyFourHoursAgo))
-        );
-        
-        const snap = await getDocs(q);
-        setDailyPostCount(snap.size);
-      } catch (err) {
-        console.error("Error checking post limit:", err);
-      } finally {
-        setIsCheckingLimit(false);
-      }
-    }
+  const checkDailyLimit = async () => {
+    if (!db || !user?.uid) return;
     
+    setIsCheckingLimit(true);
+    try {
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+      
+      const q = query(
+        collection(db, "posts"),
+        where("authorId", "==", user.uid),
+        where("createdAt", ">=", Timestamp.fromDate(twentyFourHoursAgo))
+      );
+      
+      const snap = await getDocs(q);
+      setDailyPostCount(snap.size);
+    } catch (err) {
+      console.error("Error checking post limit:", err);
+    } finally {
+      setIsCheckingLimit(false);
+    }
+  };
+
+  useEffect(() => {
     checkDailyLimit();
   }, [db, user?.uid]);
 
@@ -85,12 +86,11 @@ export default function FeedPage() {
     e.preventDefault();
     if (!content.trim() || !user || !postsRef) return;
 
-    // Safety check again before submission
     if (dailyPostCount >= DAILY_POST_LIMIT) {
       toast({ 
         variant: "destructive", 
         title: "Daily Limit Reached", 
-        description: `Professional excellence means quality over quantity. You've hit your ${DAILY_POST_LIMIT} posts limit for today.` 
+        description: `Quality over quantity. You've hit your ${DAILY_POST_LIMIT} posts limit.` 
       });
       return;
     }
@@ -108,12 +108,21 @@ export default function FeedPage() {
       });
       setContent("");
       setDailyPostCount(prev => prev + 1);
-      toast({ title: "Insight Shared!", description: "Your update is now live on the global network." });
+      toast({ title: "Insight Shared!" });
     } catch (err) {
-      toast({ variant: "destructive", title: "Action Failed", description: "Please check your network connection." });
+      toast({ variant: "destructive", title: "Action Failed" });
     } finally {
       setIsPosting(false);
     }
+  };
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Standard useCollection will auto-update, but we re-trigger limit check for "pull to refresh" feel
+    checkDailyLimit().finally(() => {
+      setTimeout(() => setIsRefreshing(false), 800);
+      toast({ title: "Feed Updated" });
+    });
   };
 
   const handleLike = (postId: string) => {
@@ -136,9 +145,19 @@ export default function FeedPage() {
   return (
     <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4">
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black tracking-tight">Professional Feed</h1>
         <div className="flex items-center justify-between">
-          <p className="text-muted-foreground text-sm font-medium">Real-time insights from the global network.</p>
+          <h1 className="text-3xl font-black tracking-tight">Professional Feed</h1>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleRefresh} 
+            className={cn("rounded-full", isRefreshing && "animate-spin")}
+          >
+            <RefreshCw className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm font-medium">Real-time insights from the network.</p>
           {!isCheckingLimit && (
             <span className={cn(
               "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
@@ -164,7 +183,7 @@ export default function FeedPage() {
               </Avatar>
               <div className="flex-1 space-y-2">
                 <Textarea 
-                  placeholder={isLimitReached ? "Daily quota reached. Check back tomorrow!" : "Share a professional update or tip..."} 
+                  placeholder={isLimitReached ? "Daily quota reached. Check back tomorrow!" : "Share a professional update..."} 
                   className="min-h-[100px] border-none focus-visible:ring-0 text-lg resize-none p-0 bg-transparent placeholder:text-muted-foreground/40 disabled:cursor-not-allowed"
                   value={content}
                   onChange={(e) => setContent(e.target.value.substring(0, MAX_POST_LENGTH))}
@@ -175,7 +194,7 @@ export default function FeedPage() {
                 {isLimitReached && (
                   <div className="bg-orange-500/5 p-3 rounded-xl border border-orange-500/10 flex items-center gap-2 mb-2 animate-in fade-in slide-in-from-top-1">
                     <Clock className="h-4 w-4 text-orange-600" />
-                    <p className="text-[10px] font-black uppercase text-orange-700 tracking-tight">Daily limit reached. Quality over quantity!</p>
+                    <p className="text-[10px] font-black uppercase text-orange-700 tracking-tight">Limit reached. See you tomorrow!</p>
                   </div>
                 )}
 
@@ -271,7 +290,7 @@ export default function FeedPage() {
           <div className="text-center py-20 bg-muted/20 rounded-[3rem] border-4 border-dashed">
             <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground/20" />
             <p className="text-muted-foreground font-black text-lg">No posts yet.</p>
-            <p className="text-xs text-muted-foreground/60">Be the first to share an insight with the global network!</p>
+            <p className="text-xs text-muted-foreground/60">Be the first to share an insight!</p>
           </div>
         )}
       </div>

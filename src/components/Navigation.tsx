@@ -81,7 +81,7 @@ export function Navigation() {
   const { data: unreadNotifications } = useCollection(unreadQuery);
   const unreadCount = unreadNotifications?.length || 0;
   
-  const isPro = profile?.activeBenefits?.some((b: any) => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10;
+  const isPro = profile?.activeBenefits?.some((b: any) => new Date(b.expiresAt) > new Date()) || (profile?.referralCount || 0) >= 10 || profile?.isPro;
   
   const displayPhoto = profile?.profilePictureUrl || user?.photoURL || "";
 
@@ -115,9 +115,6 @@ export function Navigation() {
           <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             {user ? (
               <>
-                <div className="hidden sm:flex items-center gap-2 mr-2">
-                  <MoveRight className="h-5 w-5 text-secondary animate-link-right" />
-                </div>
                 {!isPro && (
                   <Button variant="ghost" size="sm" asChild className="hidden lg:flex text-secondary font-black hover:text-secondary hover:bg-secondary/10 rounded-full">
                     <Link href="/rewards">
@@ -126,10 +123,10 @@ export function Navigation() {
                     </Link>
                   </Button>
                 )}
-                <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors hidden sm:flex">
+                <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-secondary text-[9px] font-black text-secondary-foreground border-2 border-background">
+                    <span className="absolute right-1.5 top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white border-2 border-background">
                       {unreadCount}
                     </span>
                   )}

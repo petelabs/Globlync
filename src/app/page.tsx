@@ -42,26 +42,25 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
-      let h = 0, m = 0, s = 0;
-
-      if (profile?.createdAt) {
+      
+      // Personalized timer only for signed-in users within 24h
+      if (user && profile?.createdAt) {
         const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
         const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
         const diff = expiryDate.getTime() - now.getTime();
 
         if (diff > 0) {
-          h = Math.floor(diff / (1000 * 60 * 60));
-          m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          s = Math.floor((diff % (1000 * 60)) / 1000);
-          setTimeLeft({ h, m, s });
+          setTimeLeft({ 
+            h: Math.floor(diff / (1000 * 60 * 60)), 
+            m: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)), 
+            s: Math.floor((diff % (1000 * 60)) / 1000) 
+          });
         } else {
           setTimeLeft(null);
         }
-      } else if (!user) {
-        h = 23 - now.getHours();
-        m = 59 - now.getMinutes();
-        s = 59 - now.getSeconds();
-        setTimeLeft({ h, m, s });
+      } else {
+        // Hide banner for home screen if not logged in
+        setTimeLeft(null);
       }
     }, 1000);
 
@@ -75,7 +74,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
-      {timeLeft && (
+      {timeLeft && user && (
         <div className="fixed top-16 left-0 right-0 z-40 bg-secondary text-secondary-foreground py-2 px-4 shadow-lg animate-in slide-in-from-top duration-500">
           <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -83,7 +82,7 @@ export default function Home() {
                 <Zap className="h-4 w-4 fill-current" />
               </div>
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
-                {user ? 'My Signup Bonus:' : 'New User Bonus:'} <span className="underline">+7 FREE PRO DAYS</span>
+                My Signup Bonus: <span className="underline">+7 FREE PRO DAYS</span>
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -92,7 +91,7 @@ export default function Home() {
                 <span>{String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}</span>
               </div>
               <Button size="sm" variant="secondary" className="h-7 rounded-full text-[9px] font-black uppercase bg-white text-secondary hover:bg-white/90" asChild>
-                <Link href={user ? "/pricing" : "/login"}>{user ? "Claim Bonus" : "Join Now"}</Link>
+                <Link href="/pricing">Claim Bonus</Link>
               </Button>
             </div>
           </div>
