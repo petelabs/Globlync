@@ -147,11 +147,11 @@ function LoginContent() {
   const handlePostAuth = async (uid: string, manualName?: string, manualUsername?: string) => {
     if (!db) return;
     
+    // 1. Check if user already exists BEFORE setting any UI state
     const profileRef = doc(db, "workerProfiles", uid);
     const snap = await getDoc(profileRef);
     const alreadyExists = snap.exists();
     
-    // Set returning user status immediately for the UI feedback
     setIsReturningUser(alreadyExists);
 
     if (!alreadyExists) {
@@ -239,13 +239,15 @@ function LoginContent() {
 
     setIsSuccess(true);
     playSuccessSound();
+    
+    // Redirect faster for returning users
     setTimeout(() => {
       router.push("/feed");
       toast({ 
         title: alreadyExists ? "Welcome Back!" : "Account Secured!", 
         description: alreadyExists ? "We missed your professional insights." : "Welcome to the global network." 
       });
-    }, 2000);
+    }, 1800);
   };
 
   const handleGoogleLogin = async () => {

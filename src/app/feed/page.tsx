@@ -46,7 +46,6 @@ export default function FeedPage() {
     return collection(db, "posts");
   }, [db]);
 
-  // Feed is public read based on new rules, but we gate the composer
   const postsQuery = useMemoFirebase(() => {
     if (!postsRef) return null;
     return query(postsRef, orderBy("createdAt", "desc"), limit(50));
@@ -119,7 +118,6 @@ export default function FeedPage() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // Refresh check limit and rely on useCollection real-time update
     checkDailyLimit().finally(() => {
       setTimeout(() => setIsRefreshing(false), 800);
       toast({ title: "Feed Updated" });
