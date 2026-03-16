@@ -46,16 +46,16 @@ export default function MessagesPage() {
 
   const handleStartChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Upgrade in Progress", description: "Secure messaging is currently being tuned for global scale." });
+    toast({ title: "Coming Soon", description: "Secure messaging is currently being tuned for global scale." });
   };
 
   if (!user) return null;
 
   return (
     <div className="relative flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4 min-h-[70vh]">
-      {/* MAINTENANCE OVERLAY */}
+      {/* COMING SOON OVERLAY */}
       <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-background/60 backdrop-blur-[6px] rounded-[3rem] animate-in fade-in duration-700">
-        <Card className="max-w-sm w-full border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] rounded-[2.5rem] overflow-hidden">
+        <Card className="max-w-sm w-full border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] rounded-[2.5rem] overflow-hidden bg-white">
           <div className="bg-primary p-10 flex flex-col items-center gap-6 text-center text-primary-foreground relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <Hammer className="h-32 w-32 -rotate-12" />
@@ -71,7 +71,7 @@ export default function MessagesPage() {
           <CardContent className="p-8 text-center space-y-6">
             <div className="space-y-2">
               <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                <span>Network Tuning</span>
+                <span>Coming Soon</span>
                 <span>85% Complete</span>
               </div>
               <div className="h-2 w-full bg-muted rounded-full overflow-hidden">

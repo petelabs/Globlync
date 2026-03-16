@@ -28,7 +28,7 @@ export default function ChatDetailPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-2xl mx-auto px-2 relative">
-      {/* MAINTENANCE OVERLAY */}
+      {/* COMING SOON OVERLAY */}
       <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-background/40 backdrop-blur-[8px] rounded-[3rem] animate-in fade-in duration-500">
         <Card className="max-w-sm w-full border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
           <div className="p-10 text-center space-y-8">
@@ -36,7 +36,7 @@ export default function ChatDetailPage() {
               <Hammer className="h-12 w-12" />
             </div>
             <div className="space-y-3">
-              <h2 className="text-2xl font-black tracking-tight">Channel Maintenance</h2>
+              <h2 className="text-2xl font-black tracking-tight">Coming Soon</h2>
               <p className="text-sm text-muted-foreground font-medium leading-relaxed">
                 This professional channel is currently undergoing a security audit to ensure maximum privacy for your global network.
               </p>
