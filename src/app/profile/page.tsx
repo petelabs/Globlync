@@ -42,7 +42,8 @@ import {
   Scan,
   LayoutGrid,
   Heart,
-  MessageCircle
+  MessageCircle,
+  Hammer
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -57,20 +58,6 @@ import {
 } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
-
-const MALAWI_DISTRICTS = [
-  "Chitipa", "Karonga", "Likoma", "Mzimba", "Nkhata Bay", "Rumphi", "Mzuzu City",
-  "Dedza", "Dowa", "Kasungu", "Lilongwe District", "Lilongwe City", "Mchinji", "Nkhotakota", "Ntcheu", "Ntchisi", "Salima",
-  "Balaka", "Blantyre District", "Blantyre City", "Chikwawa", "Chiradzulu", "Machinga", "Mangochi", "Mulanje", "Mwanza", "Neno", "Nsanje", "Phalombe", "Thyolo", "Zomba District", "Zomba City"
-];
-
-const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024; 
-
-const WhatsAppIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-  </svg>
-);
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -106,11 +93,9 @@ export default function ProfilePage() {
   const [serviceAreas, setServiceAreas] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
-  const [isAreasOpen, setIsAreasOpen] = useState(false);
   const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [bioCooldownText, setBioCooldownText] = useState<string | null>(null);
-  const [bonusTimeLeft, setBonusTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
   const [profileUrl, setProfileUrl] = useState("");
 
   useEffect(() => {
@@ -143,26 +128,6 @@ export default function ProfilePage() {
           setBioCooldownText(null);
         }
       }
-
-      const timer = setInterval(() => {
-        const now = new Date();
-        if (profile.createdAt) {
-          const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
-          const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
-          const diff = expiryDate.getTime() - now.getTime();
-
-          if (diff > 0) {
-            setBonusTimeLeft({
-              h: Math.floor(diff / (1000 * 60 * 60)),
-              m: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-              s: Math.floor((diff % (1000 * 60)) / 1000)
-            });
-          } else {
-            setBonusTimeLeft(null);
-          }
-        }
-      }, 1000);
-      return () => clearInterval(timer);
     }
   }, [profile, user?.email]);
 
@@ -176,10 +141,6 @@ export default function ProfilePage() {
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > IMAGE_SIZE_LIMIT) {
-        toast({ variant: "destructive", title: "File Too Large" });
-        return;
-      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewProfilePic(reader.result as string);
@@ -251,10 +212,6 @@ export default function ProfilePage() {
       toast({ variant: "destructive", title: "Trade Required" });
       return;
     }
-    if (bioCooldownText && !isPro) {
-      toast({ variant: "destructive", title: "AI on Cooldown" });
-      return;
-    }
     setIsGenerating(true);
     try {
       const result = await generateProfessionalBio({ trade });
@@ -293,9 +250,6 @@ export default function ProfilePage() {
               <Link href="/pricing">Upgrade to VIP</Link>
             </Button>
           )}
-          <Button variant="outline" size="sm" asChild className="rounded-full hidden sm:flex font-bold">
-            <Link href={`/public/${user?.uid}`}><ExternalLink className="mr-2 h-4 w-4" /> View Public</Link>
-          </Button>
           <Button variant="outline" size="sm" asChild className="rounded-full">
             <Link href="/settings"><Settings className="h-4 w-4" /></Link>
           </Button>
@@ -316,8 +270,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl text-primary"><LayoutGrid className="h-4 w-4" /></div>
             <div>
-              <p className="text-[10px] font-black uppercase text-muted-foreground">Posts</p>
-              <p className="text-xl font-black">{myPosts?.length || 0}</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground">Social Status</p>
+              <p className="text-xs font-black uppercase text-primary">Coming Soon</p>
             </div>
           </div>
         </Card>
@@ -332,57 +286,25 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="posts" className="w-full">
+      <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-8 h-12 bg-muted/50 p-1 rounded-xl">
-          <TabsTrigger value="posts" className="rounded-lg font-bold">My Posts</TabsTrigger>
           <TabsTrigger value="profile" className="rounded-lg font-bold">Edit Profile</TabsTrigger>
+          <TabsTrigger value="posts" className="rounded-lg font-bold">My Posts</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts" className="space-y-4">
-          <Card className="border-none bg-primary/5 rounded-[2rem] p-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <div>
-                <h4 className="font-bold text-sm">Professional Updates</h4>
-                <p className="text-xs text-muted-foreground">Your recent shares on the global feed.</p>
-              </div>
+          <Card className="border-none bg-muted/10 rounded-[2rem] p-12 text-center flex flex-col items-center gap-4 relative overflow-hidden">
+            <div className="bg-white p-6 rounded-[2rem] shadow-xl text-primary animate-pulse">
+              <Hammer className="h-10 w-10" />
             </div>
-            <Button size="sm" className="rounded-full font-black" asChild>
-              <Link href="/feed">Create New Post</Link>
-            </Button>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black tracking-tight">Timeline Coming Soon.</h3>
+              <p className="text-sm text-muted-foreground font-medium max-w-xs mx-auto">Your professional timeline is undergoing a security audit to ensure 100% privacy.</p>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary/40">
+              <Sparkles className="h-3 w-3" /> Security v2.0
+            </div>
           </Card>
-
-          <div className="grid gap-4">
-            {myPosts && myPosts.length > 0 ? (
-              myPosts.map(post => (
-                <Card key={post.id} className="border-none shadow-sm rounded-[1.5rem] bg-white">
-                  <CardContent className="p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-                        {post.createdAt?.seconds 
-                          ? formatDistanceToNow(new Date(post.createdAt.seconds * 1000), { addSuffix: true }) 
-                          : "Just now"}
-                      </span>
-                      <div className="flex gap-3">
-                        <span className="flex items-center gap-1 text-[10px] font-black text-red-500">
-                          <Heart className="h-3 w-3 fill-current" /> {post.likesCount || 0}
-                        </span>
-                        <span className="flex items-center gap-1 text-[10px] font-black text-primary">
-                          <MessageCircle className="h-3 w-3 fill-current" /> {post.commentsCount || 0}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-sm font-medium leading-relaxed">{post.content}</p>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-2 border-dashed">
-                <LayoutGrid className="h-10 w-10 mx-auto mb-2 text-muted-foreground/20" />
-                <p className="text-xs font-bold text-muted-foreground">You haven't posted anything yet.</p>
-              </div>
-            )}
-          </div>
         </TabsContent>
 
         <TabsContent value="profile" className="grid gap-6 md:grid-cols-3">

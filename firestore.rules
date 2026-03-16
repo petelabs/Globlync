@@ -11,10 +11,12 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // 1. Social Feed Rules
-    // This allows any logged-in user to see and create posts as requested
+    // Social Feed Rules
     match /posts/{postId} {
-      allow read, write: if isSignedIn();
+      allow read: if true; // Public view for a social platform
+      allow create: if isSignedIn();
+      allow update: if isSignedIn(); // Allow likes
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.authorId;
     }
 
     match /system/{document} {
