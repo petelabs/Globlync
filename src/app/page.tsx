@@ -12,7 +12,6 @@ import {
   Lightbulb, 
   Users,
   Timer,
-  Star,
   Zap,
   Gift,
   TrendingUp,
@@ -107,8 +106,8 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-            <Users className="h-3.5 w-3.5" />
-            <span>Trusted by 500+ Professionals Locally & Globally</span>
+            <Globe className="h-3.5 w-3.5" />
+            <span>Built for Professionals Across Malawi & The Globe</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
             Your Reputation <br/>is your <span className="text-primary font-black animate-shimmer-text">Asset.</span>
@@ -116,49 +115,35 @@ export default function Home() {
         </div>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          The global directory for skilled manual workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that clients can verify instantly.
+          The professional directory for skilled manual workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that clients can verify instantly.
         </p>
 
-        <div className="flex flex-col gap-4 sm:flex-row mt-4 w-full max-w-md">
-          <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black flex-1" asChild>
-            <Link href={user ? "/profile" : "/login"}>{user ? "Open My Hub" : "Start My Reputation Free"}</Link>
-          </Button>
-          <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2 flex-1" asChild>
-            <Link href="/search">Browse Directory</Link>
-          </Button>
+        <div className="flex flex-col gap-4 sm:flex-row mt-8 w-full max-w-lg">
+          {user ? (
+            <Button size="lg" className="rounded-full px-10 h-20 text-xl shadow-xl hover:scale-105 transition-transform font-black flex-1" asChild>
+              <Link href="/profile">Open My Professional Hub <ArrowRight className="ml-2 h-6 w-6" /></Link>
+            </Button>
+          ) : (
+            <>
+              <Button size="lg" className="rounded-full px-10 h-20 text-xl shadow-xl hover:scale-105 transition-transform font-black flex-1 bg-primary" asChild>
+                <Link href="/login">Create My Account</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="rounded-full px-10 h-20 text-xl font-black border-4 flex-1" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Dynamic Social Proof Marquee */}
-        <div className="mt-12 w-full overflow-hidden relative">
+        <div className="mt-16 w-full overflow-hidden relative">
           <div className="flex gap-8 animate-marquee whitespace-nowrap py-4">
             {[1,2,3,4,5,6].map(i => (
               <div key={i} className="flex items-center gap-2 bg-white shadow-sm border px-4 py-2 rounded-full">
                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-tight text-muted-foreground">New Verification: @pro_worker_{i}</span>
+                <span className="text-[10px] font-black uppercase tracking-tight text-muted-foreground">Recent Evidence Verified: @pro_member_{i}</span>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="max-w-screen-xl mx-auto w-full px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
-            <p className="text-3xl font-black text-primary">500+</p>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Verified Pros</p>
-          </div>
-          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
-            <p className="text-3xl font-black text-primary">1.2K</p>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Job Logs</p>
-          </div>
-          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
-            <p className="text-3xl font-black text-primary">28</p>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Districts Covered</p>
-          </div>
-          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
-            <p className="text-3xl font-black text-primary">98%</p>
-            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Trust Score Avg</p>
           </div>
         </div>
       </section>
@@ -195,8 +180,8 @@ export default function Home() {
 
       <section className="max-w-5xl mx-auto w-full px-4 flex flex-col items-center gap-8 mb-12">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-black uppercase tracking-widest text-primary">Global Professional Hub</h2>
-          <p className="text-muted-foreground text-sm font-medium">Everything you need to prove your worth.</p>
+          <h2 className="text-2xl font-black uppercase tracking-widest text-primary">High-Trust Ecosystem</h2>
+          <p className="text-muted-foreground text-sm font-medium">Built to bridge the gap between skill and proof.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
