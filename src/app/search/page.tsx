@@ -16,7 +16,8 @@ import {
   MessageSquare,
   MapPin,
   Users,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
@@ -178,8 +179,6 @@ export default function SearchPage() {
 }
 
 function ProfessionalCard({ worker, currentUserId }: { worker: any, currentUserId?: string }) {
-  const chatId = currentUserId ? [currentUserId, worker.id].sort().join("_") : null;
-
   return (
     <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-white group hover:scale-[1.01] transition-transform max-w-md mx-auto">
       <div className="h-32 bg-primary/5 flex items-center justify-center relative overflow-hidden">
@@ -202,15 +201,9 @@ function ProfessionalCard({ worker, currentUserId }: { worker: any, currentUserI
           <Button variant="outline" className="rounded-full font-black h-12 border-2" asChild>
             <Link href={`/public/${worker.id}`}>View Portfolio</Link>
           </Button>
-          {chatId ? (
-            <Button className="rounded-full font-black h-12 shadow-lg" asChild>
-              <Link href={`/messages/${chatId}`}><MessageSquare className="mr-2 h-4 w-4" /> Secure Message</Link>
-            </Button>
-          ) : (
-            <Button className="rounded-full font-black h-12 shadow-lg" asChild>
-              <Link href="/login"><MessageSquare className="mr-2 h-4 w-4" /> Join to Message</Link>
-            </Button>
-          )}
+          <Button className="rounded-full font-black h-12 shadow-lg opacity-50 cursor-not-allowed" disabled>
+            <Lock className="mr-2 h-4 w-4" /> Messaging Locked
+          </Button>
         </div>
 
         <div className="mt-8 pt-6 border-t flex items-center justify-center gap-6">
