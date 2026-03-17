@@ -14,7 +14,6 @@ import {
   Gift, 
   CheckCircle2, 
   Ticket, 
-  Timer,
   Phone,
   ArrowRight,
   ChevronLeft,
@@ -32,7 +31,6 @@ import {
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink
 } from "firebase/auth";
@@ -40,7 +38,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Navigation";
-import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 type AuthMethod = "choice" | "phone" | "email-pass" | "email-link" | "google" | "finish-profile";
@@ -99,7 +97,7 @@ function LoginContent() {
       setTimeout(() => router.push("/profile"), 1800);
     } else {
       setPendingUser({ uid, name: defaultName || fullName });
-      setMethod("finish-profile");
+      setMethod("finish-profile"); // Always force username step for new accounts
       setIsLoading(false);
     }
   };
@@ -142,7 +140,7 @@ function LoginContent() {
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
       const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 15); // 15 Days Promo
+      expiryDate.setDate(expiryDate.getDate() + 15); // 15 Days Pioneer Pro VIP
       
       const promoBenefit = {
         type: "Pioneer Launch Pro (15 Days)",
@@ -154,7 +152,7 @@ function LoginContent() {
 
       await setDoc(doc(db, "workerProfiles", uid), {
         id: uid,
-        name: pendingUser.name || "New Professional",
+        name: pendingUser.name || "Malawian Professional",
         username: cleanUsername,
         tradeSkill: "",
         bio: "",
@@ -176,7 +174,6 @@ function LoginContent() {
       await setDoc(nameRef, { uid });
       await setDoc(doc(db, "referralCodes", newCode), { uid });
 
-      // Reward the referrer
       if (referrerUid) {
         const referrerProfileRef = doc(db, "workerProfiles", referrerUid);
         await updateDoc(referrerProfileRef, {
@@ -213,11 +210,6 @@ function LoginContent() {
 
     try {
       if (isSignUp) {
-        if (!fullName || !desiredUsername) {
-          toast({ variant: "destructive", title: "Missing Details", description: "Name and Username required." });
-          setIsLoading(false);
-          return;
-        }
         const result = await createUserWithEmailAndPassword(auth, finalIdentifier, password);
         await handlePostAuthCheck(result.user.uid, fullName);
       } else {
@@ -238,23 +230,16 @@ function LoginContent() {
             "p-10 rounded-full shadow-2xl animate-bounce",
             isReturningUser ? "bg-secondary/10" : "bg-primary/10"
           )}>
-            {isReturningUser ? (
-              <Heart className="h-24 w-24 text-secondary fill-secondary" />
-            ) : (
-              <CheckCircle2 className="h-24 w-24 text-primary" />
-            )}
+            {isReturningUser ? <Heart className="h-24 w-24 text-secondary fill-secondary" /> : <CheckCircle2 className="h-24 w-24 text-primary" />}
           </div>
           <Sparkles className="absolute -top-4 -right-4 h-10 w-10 text-secondary fill-secondary animate-pulse" />
         </div>
         <div className="space-y-3">
-          <h2 className={cn(
-            "text-5xl font-black tracking-tighter",
-            isReturningUser ? "text-secondary" : "text-primary"
-          )}>
-            {isReturningUser ? "Welcome Back!" : "Account Secured!"}
+          <h2 className={cn("text-5xl font-black tracking-tighter", isReturningUser ? "text-secondary" : "text-primary")}>
+            {isReturningUser ? "Welcome Back!" : "Identity Secured!"}
           </h2>
           <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">
-            {isReturningUser ? "We missed your insights." : "Welcome to the national network."}
+            {isReturningUser ? "Ready for your next milestone." : "Welcome to the national registry."}
           </p>
         </div>
         <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
@@ -270,14 +255,14 @@ function LoginContent() {
           Claim Your <span className="text-primary">Professional</span> Handle.
         </h1>
         <p className="text-muted-foreground font-medium max-w-md mx-auto">
-          Secure your unique ID and join the directory of Malawian excellence.
+          Secure your unique ID and join the national directory of Malawian excellence.
         </p>
       </div>
 
-      <Card className="w-full max-w-md border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
+      <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden">
         <div className="bg-orange-500 text-white p-3 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest">
           <MapPin className="h-3 w-3" />
-          MALAWIAN PROFESSIONAL GATEWAY
+          MALAWI NATIONAL PROFESSIONAL GATEWAY
         </div>
 
         <CardContent className="p-8">
@@ -286,7 +271,7 @@ function LoginContent() {
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-black text-sm uppercase tracking-tight">Access Options</h3>
                 <button onClick={() => setIsSignUp(!isSignUp)} className="text-[10px] font-black text-primary underline uppercase">
-                  {isSignUp ? "Already a pro?" : "New to the network?"}
+                  {isSignUp ? "Already a pro?" : "New to the registry?"}
                 </button>
               </div>
               
@@ -310,13 +295,13 @@ function LoginContent() {
               <Button variant="outline" className="h-20 rounded-2xl border-2 border-green-500/20 bg-green-500/5 text-green-700 font-black" onClick={() => setMethod("phone")}>
                 <div className="flex items-center gap-4 w-full">
                   <div className="bg-white p-2 rounded-xl border-2"><Smartphone className="h-6 w-6" /></div>
-                  <div className="text-left"><p className="text-sm font-black">Phone Number</p><p className="text-[10px] opacity-60">Local Support</p></div>
+                  <div className="text-left"><p className="text-sm font-black">Phone Number</p><p className="text-[10px] opacity-60">Local SMS Entry</p></div>
                 </div>
               </Button>
 
               <div className="relative flex items-center justify-center my-4">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
-                <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Other Methods</span>
+                <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Advanced Methods</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -360,16 +345,10 @@ function LoginContent() {
               <button onClick={() => setMethod("choice")} className="flex items-center gap-2 text-[10px] font-black uppercase text-primary mb-4"><ChevronLeft className="h-3 w-3" /> Back</button>
               <form onSubmit={handleAuth} className="grid gap-4">
                 {isSignUp && (
-                  <>
-                    <div className="grid gap-1">
-                      <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Full Name</Label>
-                      <Input placeholder="e.g. John Doe" className="h-12 rounded-xl bg-muted/10 border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                    </div>
-                    <div className="grid gap-1">
-                      <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired @Username</Label>
-                      <Input placeholder="e.g. john_pro" className="h-12 rounded-xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
-                    </div>
-                  </>
+                  <div className="grid gap-1">
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Full Name</Label>
+                    <Input placeholder="e.g. John Doe" className="h-12 rounded-xl bg-muted/10 border-2" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  </div>
                 )}
                 {method === "phone" ? (
                   <div className="grid gap-1">
@@ -388,14 +367,14 @@ function LoginContent() {
                 </div>
                 <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl" type="submit" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                  {isSignUp ? "Create Account" : "Sign In"}
+                  {isSignUp ? "Secure Identity" : "Sign In"}
                 </Button>
               </form>
             </div>
           )}
         </CardContent>
         <CardFooter className="bg-muted/30 p-6 flex flex-col gap-2">
-          <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest"><Globe className="inline h-3 w-3 mr-1" /> Secure National Gateway v2.1</p>
+          <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest"><Globe className="inline h-3 w-3 mr-1" /> Secure National Registry v2.2</p>
         </CardFooter>
       </Card>
     </div>

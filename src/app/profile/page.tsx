@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
 import { 
   Camera, 
-  Briefcase, 
   Sparkles, 
   Loader2, 
   QrCode, 
@@ -84,7 +83,7 @@ export default function ProfilePage() {
   const canChangeUsername = useMemo(() => {
     if (!profile?.lastUsernameChangeAt) return true;
     const lastChange = profile.lastUsernameChangeAt.toDate ? profile.lastUsernameChangeAt.toDate() : new Date(profile.lastUsernameChangeAt);
-    const cooldownEnd = addDays(lastChange, 14);
+    const cooldownEnd = addDays(lastChange, 14); // 14-day integrity cooldown
     return isAfter(new Date(), cooldownEnd);
   }, [profile?.lastUsernameChangeAt]);
 
@@ -133,7 +132,7 @@ export default function ProfilePage() {
     try {
       if (username.toLowerCase() !== profile?.username?.toLowerCase()) {
         if (!canChangeUsername) {
-          toast({ variant: "destructive", title: "Wait 14 Days", description: "You recently changed your username." });
+          toast({ variant: "destructive", title: "Integrity Locked", description: "Username changes allowed once every 14 days." });
           setIsSaving(false);
           return;
         }
@@ -182,7 +181,7 @@ export default function ProfilePage() {
   const copyInviteLink = () => {
     const link = `${window.location.origin}/login?ref=${profile?.referralCode}`;
     navigator.clipboard.writeText(link);
-    toast({ title: "Invite Link Copied", description: "Share this to build your reputation." });
+    toast({ title: "Invite Link Copied" });
   };
 
   const copyReferralCode = () => {
@@ -217,7 +216,7 @@ export default function ProfilePage() {
         <Card className="border-none shadow-sm bg-primary/5 p-4 rounded-3xl">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl text-primary"><Star className="h-4 w-4" /></div>
-            <div><p className="text-[10px] font-black uppercase text-muted-foreground">Rewards</p><p className="text-xl font-black">{profile?.rewardCredits || 0} Cr</p></div>
+            <div><p className="text-[10px] font-black uppercase text-muted-foreground">Verified</p><p className="text-xl font-black">{profile?.referralCount || 0}</p></div>
           </div>
         </Card>
         <Card className="border-none shadow-sm bg-secondary/10 p-4 rounded-3xl col-span-2 md:col-span-1">

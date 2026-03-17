@@ -26,7 +26,7 @@ service cloud.firestore {
                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['profileViews', 'trustScore', 'knowledgePoints', 'completedCourses', 'updatedAt', 'isPro', 'activeBenefits', 'rewardCredits', 'referralCount', 'lastBioPolishAt']));
       
       match /jobs/{jobId} {
-        allow read: if true;
+        allow get, list: if true; // Explicitly allow public discovery of evidence
         allow create: if isOwner(workerId);
         allow update: if isOwner(workerId) || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isVerified', 'updatedAt']);
         allow delete: if isOwner(workerId);
@@ -50,8 +50,8 @@ service cloud.firestore {
       allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
 
       match /messages/{messageId} {
-        allow read, list: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
-        allow create: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
+        allow read, list: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants).participants;
+        allow create: if isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants).participants;
       }
     }
 
