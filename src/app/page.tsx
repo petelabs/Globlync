@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -17,7 +16,8 @@ import {
   TrendingUp,
   CheckCircle2,
   Medal,
-  Briefcase
+  Briefcase,
+  MapPin
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
@@ -80,7 +80,7 @@ export default function Home() {
                 <Zap className="h-4 w-4 fill-current" />
               </div>
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
-                Signup Bonus Active: <span className="underline">+7 FREE PRO DAYS</span>
+                Pioneer Bonus Active: <span className="underline">+7 FREE PRO DAYS</span>
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -106,16 +106,16 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-            <Globe className="h-3.5 w-3.5" />
-            <span>Built for Professionals Across Malawi & The Globe</span>
+            <MapPin className="h-3.5 w-3.5" />
+            <span>Exclusively for Professionals Across Malawi</span>
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-            Your Reputation <br/>is your <span className="text-primary font-black animate-shimmer-text">Asset.</span>
+            Prove Your Skill. <br/>Build Your <span className="text-primary font-black animate-shimmer-text">Legacy.</span>
           </h1>
         </div>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          The professional directory for skilled manual workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that clients can verify instantly.
+          The national directory for Malawian skilled workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that employers can verify instantly.
         </p>
 
         <div className="flex flex-col gap-4 sm:flex-row mt-8 w-full max-w-lg">
@@ -141,7 +141,7 @@ export default function Home() {
             {[1,2,3,4,5,6].map(i => (
               <div key={i} className="flex items-center gap-2 bg-white shadow-sm border px-4 py-2 rounded-full">
                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-tight text-muted-foreground">Recent Evidence Verified: @pro_member_{i}</span>
+                <span className="text-[10px] font-black uppercase tracking-tight text-muted-foreground">Recent Evidence Verified in Malawi: @pro_member_{i}</span>
               </div>
             ))}
           </div>
@@ -159,13 +159,13 @@ export default function Home() {
             </div>
             <div className="space-y-2 flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Daily Mentor Tip</Badge>
+                <Badge className="bg-primary text-primary-foreground font-black text-[9px] uppercase tracking-widest">Daily National Tip</Badge>
               </div>
               {globalTip ? (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000">
                   <h3 className="text-2xl font-black tracking-tighter text-foreground leading-none">{globalTip.title}</h3>
                   <p className="text-sm text-muted-foreground font-medium leading-relaxed mt-2">"{globalTip.content}"</p>
-                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-3">— Expert Tip by {globalTip.author}</p>
+                  <p className="text-[10px] font-black uppercase text-primary tracking-widest mt-3">— Expert Insight for Malawian Pros</p>
                 </div>
               ) : (
                 <div className="space-y-2 py-2">
@@ -181,7 +181,7 @@ export default function Home() {
       <section className="max-w-5xl mx-auto w-full px-4 flex flex-col items-center gap-8 mb-12">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-black uppercase tracking-widest text-primary">High-Trust Ecosystem</h2>
-          <p className="text-muted-foreground text-sm font-medium">Built to bridge the gap between skill and proof.</p>
+          <p className="text-muted-foreground text-sm font-medium">Empowering the Malawian labor market with verifiable skill.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
@@ -189,21 +189,21 @@ export default function Home() {
               <TrendingUp className="h-8 w-8 text-primary" />
             </div>
             <h3 className="font-black text-lg">Growth Tracking</h3>
-            <p className="text-xs text-muted-foreground font-medium">Every verified job log increases your global Trust Score automatically.</p>
+            <p className="text-xs text-muted-foreground font-medium">Every verified job log increases your national Trust Score automatically.</p>
           </Card>
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <Medal className="h-8 w-8 text-primary" />
             </div>
             <h3 className="font-black text-lg">Verified Badges</h3>
-            <p className="text-xs text-muted-foreground font-medium">Unlock exclusive badges that prove your reliability to high-paying clients.</p>
+            <p className="text-xs text-muted-foreground font-medium">Unlock exclusive badges that prove your reliability to local and global clients.</p>
           </Card>
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <ShieldCheck className="h-8 w-8 text-primary" />
             </div>
             <h3 className="font-black text-lg">Digital ID</h3>
-            <p className="text-xs text-muted-foreground font-medium">Your @username is your professional brand. Secure it today before others do.</p>
+            <p className="text-xs text-muted-foreground font-medium">Your @username is your professional brand. Secure it today before others in Malawi do.</p>
           </Card>
         </div>
       </section>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -21,7 +20,8 @@ import {
   Fingerprint,
   Smartphone,
   Heart,
-  Globe
+  Globe,
+  MapPin
 } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
@@ -121,14 +121,14 @@ function LoginContent() {
             
             updateDoc(inviterRef, {
               referralCount: increment(1),
-              trustScore: increment(20),
+              // NO legacy points added anymore, everyone starts at zero
               updatedAt: serverTimestamp()
             }).catch(() => {});
 
             const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
             addDoc(inviterNotifRef, {
               type: "profile_update",
-              message: "Referral Success! Someone joined Globlync using your link. You earned +20 Trust Score.",
+              message: "Referral Success! Someone joined Globlync using your link.",
               isRead: false,
               createdAt: serverTimestamp()
             }).catch(() => {});
@@ -146,7 +146,6 @@ function LoginContent() {
       const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
-      // FIRST 500 BONUS LOGIC
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
       const earlyBirdBenefit = {
@@ -165,15 +164,15 @@ function LoginContent() {
           tradeSkill: "",
           bio: "",
           profilePictureUrl: yellowAvatar,
-          trustScore: invitedBy ? 10 : 0,
-          profileViews: 0,
+          trustScore: 0, // ALWAYS ZERO START
+          profileViews: 0, // ALWAYS ZERO START
           referralCode: newCode,
           invitedBy,
           referralCount: 0,
           activeBenefits: [earlyBirdBenefit],
           badgeIds: ["early-pioneer"],
           onboardingCompleted: false,
-          isPro: true, // Auto-pro for first 500
+          isPro: true, 
           isAvailable: true,
           contactEmail: auth.currentUser?.email || email || (phoneNumber ? `${phoneNumber}@phone.globlync` : ""),
           createdAt: serverTimestamp(),
@@ -186,7 +185,7 @@ function LoginContent() {
         const notifRef = collection(db, "workerProfiles", uid, "notifications");
         addDoc(notifRef, {
           type: "app",
-          message: "Welcome Pioneer! You've been granted 30 Days of Pro VIP status for being one of the first 500 users.",
+          message: "Welcome Pioneer! You've been granted 30 Days of Pro VIP status for joining our early network.",
           isRead: false,
           createdAt: serverTimestamp()
         }).catch(() => {});
@@ -202,7 +201,7 @@ function LoginContent() {
       router.push("/profile");
       toast({ 
         title: alreadyExists ? "Welcome Back!" : "Account Secured!", 
-        description: alreadyExists ? "Ready to manage your hub." : "Welcome to the global network." 
+        description: alreadyExists ? "Ready to manage your hub." : "Welcome to the national network." 
       });
     }, 1800);
   };
@@ -303,7 +302,7 @@ function LoginContent() {
             {isReturningUser ? "Welcome Back!" : "Account Secured!"}
           </h2>
           <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">
-            {isReturningUser ? "We missed your insights." : "Welcome to the global network."}
+            {isReturningUser ? "We missed your insights." : "Welcome to the national network."}
           </p>
         </div>
         <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
@@ -316,26 +315,26 @@ function LoginContent() {
       <div className="w-full text-center mb-10 space-y-4">
         <Logo className="scale-125 mb-4 mx-auto" />
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
-          Join <span className="text-primary">500+</span> Professionals.
+          Claim Your <span className="text-primary">Professional</span> Handle.
         </h1>
         <p className="text-muted-foreground font-medium max-w-md mx-auto">
-          One tap to secure your unique professional handle and start building global trust.
+          Secure your unique ID and join the directory of Malawian excellence.
         </p>
       </div>
 
       <Card className="w-full max-w-md border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden">
         <div className="bg-orange-500 text-white p-3 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest">
-          <Timer className="h-3 w-3" />
-          +7 BONUS PRO DAYS Ends in {String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}
+          <MapPin className="h-3 w-3" />
+          MALAWIAN PROFESSIONAL GATEWAY
         </div>
 
         <CardContent className="p-8">
           {method === "choice" && (
             <div className="grid gap-4">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-black text-sm uppercase tracking-tight">Quick Sign-Up</h3>
+                <h3 className="font-black text-sm uppercase tracking-tight">Access Options</h3>
                 <button onClick={() => setIsSignUp(!isSignUp)} className="text-[10px] font-black text-primary underline uppercase">
-                  {isSignUp ? "Already a pro?" : "Need an ID?"}
+                  {isSignUp ? "Already a pro?" : "New to the network?"}
                 </button>
               </div>
               
@@ -456,7 +455,7 @@ function LoginContent() {
         
         <CardFooter className="bg-muted/30 p-6 flex flex-col gap-2">
           <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest">
-            <Globe className="inline h-3 w-3 mr-1" /> Secure Global Entry v2.0
+            <Globe className="inline h-3 w-3 mr-1" /> Secure National Gateway v2.0
           </p>
         </CardFooter>
       </Card>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -89,12 +88,12 @@ export default function SearchPage() {
       <header className="flex flex-col gap-6 text-center">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-1.5 rounded-full text-primary border border-primary/10">
-            <Users className="h-3.5 w-3.5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Global Directory • 500+ Professionals</span>
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Malawi National Directory</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">Find <span className="text-primary">Verified</span> Pros.</h1>
           <p className="text-muted-foreground text-base font-medium max-w-md mx-auto leading-relaxed">
-            Direct access to the world's most reliable skilled workers and digital experts.
+            Direct access to Malawi's most reliable skilled workers and digital experts.
           </p>
         </div>
 
@@ -131,7 +130,7 @@ export default function SearchPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between px-2">
               <h2 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                <Star className="h-5 w-5 fill-primary" /> Ranked Experts
+                <Star className="h-5 w-5 fill-primary" /> Top Rated in Malawi
               </h2>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="font-bold bg-green-500/5 text-green-600 border-green-200">Online Now</Badge>
@@ -175,7 +174,7 @@ export default function SearchPage() {
               ) : (
                 <div className="col-span-full text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed flex flex-col items-center gap-4">
                   <Users className="h-12 w-12 text-muted-foreground/20" />
-                  <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">Populating Global Marketplace...</p>
+                  <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">Populating National Marketplace...</p>
                 </div>
               )}
             </div>
