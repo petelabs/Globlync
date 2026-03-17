@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
@@ -17,8 +18,9 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://globlync.vercel.app'),
   title: 'Globlync | Global Evidence-Based Reputation',
-  description: 'Globlync helps professionals worldwide build a digital, evidence-based reputation with AI-verified job logs and verified ratings. Headquartered in Malawi, serving the globe.',
+  description: 'Globlync helps professionals build a digital, evidence-based reputation with AI-verified job logs and verified ratings. Headquartered in Malawi, serving the globe.',
   manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
@@ -30,6 +32,7 @@ export const metadata: Metadata = {
     url: 'https://globlync.vercel.app',
     title: 'Globlync | Global Professional Reputation',
     description: 'Verifiable trust for skilled professionals everywhere. Headquartered in Malawi.',
+    siteName: 'Globlync',
     images: [{ 
       url: '/og-image.png',
       width: 1200,

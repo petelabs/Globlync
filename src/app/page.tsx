@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -101,7 +102,7 @@ export default function Home() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         
         <div className="mb-4 animate-in zoom-in duration-700">
-          <Logo className="scale-[2] mb-8" />
+          <Logo className="scale-[2] mb-8 animate-float" />
         </div>
 
         <div className="flex flex-col items-center gap-3">
@@ -118,18 +119,18 @@ export default function Home() {
           The national directory for Malawian skilled workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that employers can verify instantly.
         </p>
 
-        <div className="flex flex-col gap-4 sm:flex-row mt-8 w-full max-w-lg">
+        <div className="flex flex-col gap-6 sm:flex-row mt-10 w-full max-w-xl">
           {user ? (
-            <Button size="lg" className="rounded-full px-10 h-20 text-xl shadow-xl hover:scale-105 transition-transform font-black flex-1" asChild>
-              <Link href="/profile">Open My Professional Hub <ArrowRight className="ml-2 h-6 w-6" /></Link>
+            <Button size="lg" className="rounded-full px-10 h-24 text-2xl shadow-2xl hover:scale-105 transition-transform font-black flex-1 animate-pulse-cta" asChild>
+              <Link href="/profile">Open My Hub <ArrowRight className="ml-2 h-8 w-8" /></Link>
             </Button>
           ) : (
             <>
-              <Button size="lg" className="rounded-full px-10 h-20 text-xl shadow-xl hover:scale-105 transition-transform font-black flex-1 bg-primary" asChild>
-                <Link href="/login">Create My Account</Link>
+              <Button size="lg" className="rounded-full px-12 h-24 text-2xl shadow-[0_20px_50px_-12px_rgba(0,121,107,0.4)] hover:scale-105 transition-transform font-black flex-1 bg-primary animate-pulse-cta" asChild>
+                <Link href="/login">CREATE MY ACCOUNT</Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-full px-10 h-20 text-xl font-black border-4 flex-1" asChild>
-                <Link href="/login">Sign In</Link>
+              <Button size="lg" variant="outline" className="rounded-full px-10 h-24 text-2xl font-black border-4 flex-1 hover:bg-muted/50 transition-all" asChild>
+                <Link href="/login">SIGN IN</Link>
               </Button>
             </>
           )}
@@ -184,21 +185,21 @@ export default function Home() {
           <p className="text-muted-foreground text-sm font-medium">Empowering the Malawian labor market with verifiable skill.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
+          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-all hover:-translate-y-1">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <TrendingUp className="h-8 w-8 text-primary" />
             </div>
             <h3 className="font-black text-lg">Growth Tracking</h3>
             <p className="text-xs text-muted-foreground font-medium">Every verified job log increases your national Trust Score automatically.</p>
           </Card>
-          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
+          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-all hover:-translate-y-1">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <Medal className="h-8 w-8 text-primary" />
             </div>
             <h3 className="font-black text-lg">Verified Badges</h3>
             <p className="text-xs text-muted-foreground font-medium">Unlock exclusive badges that prove your reliability to local and global clients.</p>
           </Card>
-          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
+          <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-all hover:-translate-y-1">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <ShieldCheck className="h-8 w-8 text-primary" />
             </div>
