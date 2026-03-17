@@ -49,14 +49,14 @@ service cloud.firestore {
       }
     }
 
-    // Community Job Board
+    // Community Job Board: Publicly readable, created by signed-in users
     match /communityJobs/{jobId} {
       allow get, list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isSignedIn() && (resource.data.postedBy == request.auth.uid);
     }
 
-    // Messaging (Temporary permissions for setup)
+    // Messaging: Restricted to participants but allows checking existence
     match /chats/{chatId} {
       allow get: if isSignedIn() && (chatId.contains(request.auth.uid));
       allow list: if isSignedIn() && (request.auth.uid in resource.data.participants);
