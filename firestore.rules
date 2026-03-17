@@ -56,7 +56,7 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && (resource.data.postedBy == request.auth.uid);
     }
 
-    // Messaging: Restricted to participants but allows checking existence
+    // Messaging: Restricted to participants
     match /chats/{chatId} {
       allow get: if isSignedIn() && (chatId.contains(request.auth.uid));
       allow list: if isSignedIn() && (request.auth.uid in resource.data.participants);

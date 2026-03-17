@@ -1,76 +1,88 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
-  Search, 
   MapPin, 
   Briefcase, 
   Clock, 
   Building2,
   ChevronRight,
   Loader2,
-  Languages,
   PlusCircle,
   Sparkles,
-  Award,
-  MessageSquare
+  MessageSquare,
+  AlertCircle,
+  CheckCircle2,
+  Trophy
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { searchJoobleJobs } from "./actions";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { collection, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
-
-const SUGGESTED_KEYWORDS = ["Accountant", "Driver", "Developer", "Sales", "Nurse", "Security"];
 
 export default function JobsBoardPage() {
   const { user } = useUser();
+  const db = useFirestore();
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [allJobs, setAllJobs] = useState<any[]>([]);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
 
-  useEffect(() => {
-    async function loadInitialJobs() {
-      setIsInitialLoading(true);
-      try {
-        const results = await searchJoobleJobs("");
-        setAllJobs(results.sort((a: any, b: any) => b.createdAt - a.createdAt));
-      } catch (err) {
-        console.error("Error loading initial jobs:", err);
-      } finally {
-        setIsInitialLoading(false);
-      }
-    }
-    loadInitialJobs();
-  }, []);
+  const [isPosting, setIsPosting] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [newJob, setNewJob] = useState({
+    title: "",
+    company: "",
+    location: "",
+    description: "",
+    applyLink: "",
+  });
 
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setIsSearching(true);
+  const jobsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "communityJobs"), orderBy("createdAt", "desc"));
+  }, [db]);
+
+  const { data: communityJobs, isLoading } = useCollection(jobsQuery);
+
+  const handlePostJob = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db || !user) return;
+
+    setIsPosting(true);
     try {
-      const results = await searchJoobleJobs(searchTerm);
-      setAllJobs(results);
+      await addDocumentNonBlocking(collection(db, "communityJobs"), {
+        ...newJob,
+        postedBy: user.uid,
+        postedByEmail: user.email,
+        isFeatured: false,
+        createdAt: serverTimestamp(),
+      });
+
+      setNewJob({ title: "", company: "", location: "", description: "", applyLink: "" });
+      setIsPosting(false);
+      setIsSuccessOpen(true);
     } catch (err) {
-      console.error("Search failed:", err);
-    } finally {
-      setIsSearching(false);
+      toast({ variant: "destructive", title: "Posting Failed", description: "Please ensure you are signed in." });
+      setIsPosting(false);
     }
   };
 
-  const openTranslation = (text: string) => {
-    const cleanText = text.replace(/<[^>]*>?/gm, '');
-    const translateUrl = `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(cleanText)}&op=translate`;
-    window.open(translateUrl, '_blank');
-  };
-
-  const getWhatsAppPostingLink = () => {
-    const text = encodeURIComponent(`Hi Globlync Admin! I want to post a new vacancy on the app. \n\nJob Title: \nCompany: \nLocation: \nRequirements: \n\nPlease let me know the process for Featured Listings (K1000).`);
+  const getWhatsAppFeaturedLink = () => {
+    const text = encodeURIComponent(`Hi Globlync Admin! I just posted a job called "${newJob.title || 'a new vacancy'}" and I want to pay K1000 to feature it at the top for 2 weeks.`);
     return `https://wa.me/265987066051?text=${text}`;
   };
 
@@ -82,87 +94,133 @@ export default function JobsBoardPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-center gap-2 text-primary">
             <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em]">National Opportunity Engine</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Direct National Vacancies</span>
           </div>
           <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground leading-none">
-            Your Malawi <span className="text-primary">Career.</span>
+            Malawi <span className="text-primary">Opportunities.</span>
           </h1>
           <p className="text-muted-foreground text-lg font-medium max-w-2xl mx-auto">
-            Search for verified vacancies across all 28 districts. Every listing is pulled from verified national and professional sources.
+            A community-driven board for Malawian professionals. Post a vacancy or find your next professional milestone instantly.
           </p>
         </div>
-        
-        <form onSubmit={handleSearch} className="space-y-6 w-full max-w-3xl mx-auto">
-          <div className="relative group w-full">
-            <Search className="absolute left-8 top-8 h-10 w-10 text-muted-foreground group-focus-within:text-primary transition-all scale-90" />
-            <Input 
-              placeholder="e.g. Driver, Sales, or Bank" 
-              className="pl-20 h-24 rounded-[3rem] shadow-xl border-4 border-primary/5 text-2xl font-black"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="absolute right-6 top-6 flex gap-2">
-              <Button 
-                type="submit" 
-                className="h-12 md:h-14 rounded-full px-8 md:px-12 font-black uppercase shadow-2xl"
-                disabled={isSearching}
-              >
-                {isSearching ? <Loader2 className="h-6 w-6 animate-spin" /> : "Discovery"}
-              </Button>
-            </div>
-          </div>
 
-          <div className="flex flex-wrap justify-center gap-3">
-            {SUGGESTED_KEYWORDS.map(kw => (
-              <button
-                key={kw}
-                type="button"
-                onClick={() => { setSearchTerm(kw); handleSearch(); }}
-                className="px-5 py-2.5 rounded-full bg-white border-2 border-primary/5 text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all uppercase shadow-sm"
-              >
-                {kw}
-              </button>
-            ))}
-          </div>
-        </form>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
+          {user ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="rounded-full font-black px-10 h-16 shadow-2xl bg-primary text-white border-4 border-white/20 hover:scale-105 transition-transform">
+                  <PlusCircle className="mr-3 h-6 w-6" /> Post a Vacancy (FREE)
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-[2.5rem] max-w-lg p-0 overflow-hidden border-none shadow-2xl">
+                <DialogHeader className="p-8 bg-primary text-primary-foreground">
+                  <DialogTitle className="text-2xl font-black tracking-tight">Post Local Vacancy</DialogTitle>
+                  <DialogDescription className="text-primary-foreground/70 font-medium">
+                    Your listing will go live instantly to the Malawian community.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handlePostJob} className="p-8 space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest ml-1">Job Title</Label>
+                    <Input id="title" placeholder="e.g. Senior Accountant" required value={newJob.title} onChange={e => setNewJob({...newJob, title: e.target.value})} className="h-12 rounded-xl" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="company" className="text-[10px] font-black uppercase tracking-widest ml-1">Company</Label>
+                      <Input id="company" placeholder="Local Enterprise" required value={newJob.company} onChange={e => setNewJob({...newJob, company: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="location" className="text-[10px] font-black uppercase tracking-widest ml-1">Location</Label>
+                      <Input id="location" placeholder="Lilongwe, MWA" required value={newJob.location} onChange={e => setNewJob({...newJob, location: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="desc" className="text-[10px] font-black uppercase tracking-widest ml-1">Description & Requirements</Label>
+                    <Textarea id="desc" placeholder="Describe the role..." required value={newJob.description} onChange={e => setNewJob({...newJob, description: e.target.value})} className="min-h-[100px] rounded-xl" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="apply" className="text-[10px] font-black uppercase tracking-widest ml-1">How to Apply (Email/Link)</Label>
+                    <Input id="apply" placeholder="jobs@example.mw" required value={newJob.applyLink} onChange={e => setNewJob({...newJob, applyLink: e.target.value})} className="h-12 rounded-xl" />
+                  </div>
+                  <Button type="submit" className="w-full h-14 rounded-full font-black text-lg mt-4 shadow-xl" disabled={isPosting}>
+                    {isPosting ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
+                    Post Vacancy Now
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button variant="outline" className="rounded-full font-black px-10 h-16 border-4" onClick={() => window.location.href='/login'}>
+              Sign In to Post Jobs
+            </Button>
+          )}
 
-        <div className="flex justify-center mt-4">
           <Button 
-            className="rounded-full font-black px-10 h-16 shadow-[0_20px_40px_-10px_rgba(255,193,7,0.3)] bg-secondary hover:bg-secondary/90 text-secondary-foreground border-4 border-white/20 animate-bounce"
+            variant="outline"
+            className="rounded-full font-black px-10 h-16 shadow-[0_20px_40px_-10px_rgba(255,193,7,0.3)] bg-secondary hover:bg-secondary/90 text-secondary-foreground border-4 border-white/20"
             asChild
           >
-            <a href={getWhatsAppPostingLink()} target="_blank">
-              <MessageSquare className="mr-3 h-6 w-6" /> Post a Local Vacancy
+            <a href="https://wa.me/265987066051" target="_blank">
+              <MessageSquare className="mr-3 h-6 w-6" /> Featured Listing (K1000)
             </a>
           </Button>
         </div>
       </header>
 
+      {/* Success Dialog for Featured Upsell */}
+      <Dialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
+        <DialogContent className="rounded-[3rem] max-w-md p-10 text-center space-y-6">
+          <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto animate-bounce">
+            <Trophy className="h-10 w-10 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <DialogTitle className="text-3xl font-black tracking-tight">Job Posted!</DialogTitle>
+            <DialogDescription className="font-medium text-muted-foreground">
+              Your vacancy is now visible to thousands of Malawian professionals. 
+            </DialogDescription>
+          </div>
+          <Card className="border-none bg-secondary/10 p-6 rounded-3xl text-left border-2 border-secondary/20">
+            <h4 className="font-black text-secondary text-sm flex items-center gap-2 mb-2 uppercase">
+              <Sparkles className="h-4 w-4" /> Want 10x More Reach?
+            </h4>
+            <p className="text-xs font-bold leading-tight mb-4">Feature this job at the top of the board for 2 weeks for only <span className="text-primary font-black">K1000</span>.</p>
+            <Button className="w-full rounded-full bg-secondary text-secondary-foreground font-black shadow-lg" asChild>
+              <a href={getWhatsAppFeaturedLink()} target="_blank">Upgrade to Featured Listing</a>
+            </Button>
+          </Card>
+          <Button variant="ghost" className="w-full text-xs font-bold uppercase tracking-widest" onClick={() => setIsSuccessOpen(false)}>
+            Maybe Later
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       <section className="grid gap-6 w-full max-w-4xl mx-auto pb-20">
         <div className="flex items-center justify-between px-4 mb-4">
           <h2 className="text-lg font-black uppercase tracking-[0.2em] text-primary">
-            {searchTerm ? `Results for "${searchTerm}"` : "Active National Vacancies"}
+            Latest National Vacancies
           </h2>
-          {(isInitialLoading || isSearching) && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
+          {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
         </div>
 
-        {allJobs.length > 0 ? (
-          allJobs.map((job) => (
+        {communityJobs && communityJobs.length > 0 ? (
+          communityJobs.map((job) => (
             <Card key={job.id} className="border-none shadow-sm hover:shadow-xl transition-all overflow-hidden group border-l-8 rounded-[2.5rem] bg-white border-l-transparent hover:border-l-primary">
               <CardHeader className="p-8 pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div className="flex-1">
                     <CardTitle className="text-2xl font-black text-primary group-hover:underline cursor-pointer">
-                      <a href={job.url} target="_blank" rel="noopener noreferrer">{job.title}</a>
+                      {job.title}
                     </CardTitle>
                     <div className="flex items-center gap-2 text-base font-bold mt-2 text-muted-foreground">
                       <Building2 className="h-5 w-5 text-primary/40" />
                       <span>{job.company}</span>
                     </div>
                   </div>
-                  <Badge className="bg-primary/10 text-primary border-none uppercase text-[10px] font-black px-4 py-1.5 rounded-full">
-                    {job.remote ? "Remote Pro" : "On-Site"}
-                  </Badge>
+                  {job.isFeatured && (
+                    <Badge className="bg-secondary text-secondary-foreground border-none uppercase text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg animate-pulse">
+                      <Sparkles className="mr-1.5 h-3 w-3" /> Featured
+                    </Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="px-8 pb-6 space-y-6">
@@ -173,28 +231,30 @@ export default function JobsBoardPage() {
                   </div>
                   <div className="flex items-center gap-2 font-black text-[10px] uppercase bg-muted/50 px-3 py-1.5 rounded-xl">
                     <Clock className="h-4 w-4 text-primary/60" />
-                    <span>{formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}</span>
+                    <span>{job.createdAt ? formatDistanceToNow(new Date(job.createdAt.seconds * 1000), { addSuffix: true }) : "just now"}</span>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed line-clamp-3 text-muted-foreground font-medium">
-                  {job.description ? job.description.replace(/<[^>]*>?/gm, '') : "View full description on the application page."}
+                <p className="text-sm leading-relaxed line-clamp-3 text-muted-foreground font-medium whitespace-pre-wrap">
+                  {job.description}
                 </p>
               </CardContent>
               <CardFooter className="bg-muted/30 p-6 flex justify-between items-center px-8">
-                <Button variant="ghost" size="sm" onClick={() => openTranslation(job.description || job.title)} className="text-[10px] font-black uppercase text-primary/60">
-                  <Languages className="h-3.5 w-3.5 mr-1.5" /> Translate
-                </Button>
-                <Button className="rounded-full font-black px-8 h-12 uppercase shadow-lg" asChild>
-                  <a href={job.url} target="_blank">Apply Now <ChevronRight className="ml-2 h-4 w-4" /></a>
+                <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  <AlertCircle className="h-3.5 w-3.5 opacity-40" /> Verify employer legacy before applying
+                </div>
+                <Button className="rounded-full font-black px-8 h-12 uppercase shadow-lg group-hover:scale-105 transition-transform" asChild>
+                  <a href={job.applyLink.includes('@') ? `mailto:${job.applyLink}` : job.applyLink} target="_blank">
+                    Quick Apply <ChevronRight className="ml-2 h-4 w-4" />
+                  </a>
                 </Button>
               </CardFooter>
             </Card>
           ))
-        ) : (!isInitialLoading && !isSearching) ? (
+        ) : !isLoading ? (
           <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed mx-2 flex flex-col items-center gap-6">
-            <Search className="h-16 w-16 text-muted-foreground/20" />
-            <p className="text-muted-foreground font-black text-2xl">No matching roles found in Malawi.</p>
-            <Button variant="outline" className="rounded-full font-black px-10 h-14" onClick={() => window.location.reload()}>Refresh All Listings</Button>
+            <Briefcase className="h-16 w-16 text-muted-foreground/20" />
+            <p className="text-muted-foreground font-black text-2xl">No vacancies posted yet.</p>
+            <p className="text-muted-foreground text-sm font-medium -mt-4">Be the first to post a community vacancy!</p>
           </div>
         ) : (
           <div className="space-y-6 w-full">
