@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -15,29 +15,25 @@ import {
   FileText, 
   LogOut, 
   Trash2, 
-  ChevronRight, 
   Lock as LockIcon, 
-  BellRing,
-  Moon,
-  Sun,
-  Zap,
-  ZapOff,
-  Crown,
-  CreditCard,
-  Mail,
-  Loader2,
-  TrendingUp,
-  ShieldAlert,
-  Send,
-  Building2,
-  MapPin,
-  Globe,
-  Briefcase,
-  Search,
-  Info,
-  AlertTriangle,
+  Moon, 
+  Sun, 
+  Zap, 
+  ZapOff, 
+  Crown, 
+  CreditCard, 
+  Mail, 
+  Loader2, 
+  ShieldAlert, 
+  Building2, 
+  MapPin, 
+  Globe, 
+  Briefcase, 
+  Search, 
+  Info, 
+  AlertTriangle, 
   Heart,
-  Smartphone
+  ExternalLink
 } from "lucide-react";
 import { useAuth, useUser, useFirestore } from "@/firebase";
 import { signOut, deleteUser, reauthenticateWithCredential, EmailAuthProvider, GoogleAuthProvider, reauthenticateWithPopup } from "firebase/auth";
@@ -45,7 +41,6 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { 
   Accordion, 
   AccordionContent, 
@@ -308,6 +303,10 @@ export default function SettingsPage() {
               </AccordionTrigger>
               <AccordionContent className="pb-6">
                 <nav className="grid gap-3">
+                  <Link href="/about" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
+                    <span className="text-xs font-bold">Our Founding Story</span>
+                    <Heart className="h-3.5 w-3.5 opacity-40 fill-primary/20" />
+                  </Link>
                   <Link href="/search" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
                     <span className="text-xs font-bold">Find Professionals</span>
                     <Search className="h-3.5 w-3.5 opacity-40" />
@@ -315,10 +314,6 @@ export default function SettingsPage() {
                   <Link href="/jobs" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
                     <span className="text-xs font-bold">Global Jobs</span>
                     <Briefcase className="h-3.5 w-3.5 opacity-40" />
-                  </Link>
-                  <Link href="/pricing" className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 transition-colors">
-                    <span className="text-xs font-bold">Advertising</span>
-                    <Zap className="h-3.5 w-3.5 opacity-40" />
                   </Link>
                 </nav>
               </AccordionContent>
@@ -360,15 +355,17 @@ export default function SettingsPage() {
                     <div className="flex items-start gap-3">
                       <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest">Headquarters</p>
-                        <p className="text-[11px] font-medium text-muted-foreground">Petediano Tech Office<br/>Dzenje Village, Mulanje, Malawi</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary">Global HQ (Roots)</p>
+                        <p className="text-[11px] font-medium text-muted-foreground">Petediano Tech • Dzenje Village<br/>Mulanje, Malawi</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Globe className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <Heart className="h-4 w-4 text-primary shrink-0 mt-0.5 fill-primary/10" />
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest">Serving Globally</p>
-                        <p className="text-[11px] font-medium text-muted-foreground">United States, United Kingdom, EU, Africa & More</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary">Founder & Developer</p>
+                        <a href="https://peterdamiano.vercel.app" target="_blank" className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1">
+                          Peter Damiano <ExternalLink className="h-3 w-3" />
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -393,17 +390,6 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Managed via {user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Email'}</p>
               </div>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between p-4 rounded-2xl border bg-muted/30">
-            <div className="flex items-center gap-3">
-              <BellRing className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-bold">Push Notifications</p>
-                <p className="text-xs text-muted-foreground">Alerts for verifications and badges</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 rounded-full">ACTIVE</span>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
