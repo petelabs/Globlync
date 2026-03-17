@@ -2,137 +2,127 @@
 "use client";
 
 import { useState } from "react";
-import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, query, where, orderBy, doc, getDoc } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, where, orderBy, limit } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, Users, Loader2, Sparkles, Gift, ArrowRight, UserPlus, Search, Lock, ShieldCheck, Clock, Hammer } from "lucide-react";
+import { MessageSquare, Loader2, Sparkles, Gift, Search, ArrowRight, UserCircle } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useRouter } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
 
 export default function MessagesPage() {
   const { user } = useUser();
   const db = useFirestore();
-  const router = useRouter();
-  const { toast } = useToast();
-  
-  const [connectId, setConnectId] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [isConnectOpen, setIsConnectOpen] = useState(false);
 
-  const workerRef = useMemoFirebase(() => {
+  const chatsRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
-    return doc(db, "workerProfiles", user.uid);
+    return collection(db, "chats");
   }, [db, user?.uid]);
 
-  const { data: profile } = useDoc(workerRef);
+  const chatsQuery = useMemoFirebase(() => {
+    if (!chatsRef || !user?.uid) return null;
+    return query(
+      chatsRef, 
+      where("participants", "array-contains", user.uid),
+      orderBy("lastMessageAt", "desc"),
+      limit(50)
+    );
+  }, [chatsRef, user?.uid]);
 
-  // Note: We keep the UI structure but overlay it with a maintenance message
-  const chats: any[] = []; // Empty for placeholder while in maintenance
-  const isLoading = false;
+  const { data: chats, isLoading } = useCollection(chatsQuery);
 
-  const handleStartChat = async (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({ title: "Coming Soon", description: "Secure messaging is currently being tuned for global scale." });
-  };
-
-  if (!user) return null;
+  if (!user) return (
+    <div className="flex min-h-[60vh] items-center justify-center text-center p-8">
+      <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">Sign in to access secure messages</p>
+    </div>
+  );
 
   return (
-    <div className="relative flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4 min-h-[70vh]">
-      {/* COMING SOON OVERLAY */}
-      <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-background/60 backdrop-blur-[6px] rounded-[3rem] animate-in fade-in duration-700">
-        <Card className="max-w-sm w-full border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] rounded-[2.5rem] overflow-hidden bg-white">
-          <div className="bg-primary p-10 flex flex-col items-center gap-6 text-center text-primary-foreground relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Hammer className="h-32 w-32 -rotate-12" />
-            </div>
-            <div className="bg-white/20 p-6 rounded-[2rem] shadow-xl backdrop-blur-md animate-bounce">
-              <Sparkles className="h-10 w-10 text-secondary fill-secondary" />
-            </div>
-            <div className="space-y-2 relative z-10">
-              <h2 className="text-3xl font-black tracking-tighter">Feature Upgrade.</h2>
-              <p className="text-sm font-medium opacity-90 leading-tight">We are improving our secure messaging engine to handle thousands of global connections.</p>
-            </div>
-          </div>
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                <span>Coming Soon</span>
-                <span>85% Complete</span>
-              </div>
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-primary w-[85%] animate-pulse" />
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground font-medium leading-relaxed italic">
-              "Building trust takes time. We're ensuring every professional conversation is end-to-end encrypted."
-            </p>
-            <Button className="w-full rounded-full h-12 font-black shadow-lg" asChild>
-              <Link href="/profile">Back to My Hub</Link>
-            </Button>
-            <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest text-primary/40">
-              <Clock className="h-3 w-3" /> Global Rollout Coming Soon
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* BLURRED BACKGROUND UI (SO THE FEATURE IS STILL "SHOWN") */}
-      <div className="opacity-30 pointer-events-none filter grayscale">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight">Messages</h1>
-            <p className="text-muted-foreground text-sm font-medium">Private professional conversations.</p>
-          </div>
-          <Button className="rounded-full font-black px-6 shadow-xl gap-2 h-12">
-            <UserPlus className="h-4 w-4" />
-            New Chat
-          </Button>
-        </header>
-
-        <Card className="border-none bg-secondary/10 p-6 rounded-[2rem] mt-6">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="bg-white p-3 rounded-2xl shadow-sm"><Gift className="h-6 w-6 text-secondary" /></div>
-            <div className="flex-1">
-              <h4 className="font-black text-sm uppercase tracking-tight">Invite to Unlock Free VIP</h4>
-              <p className="text-xs text-muted-foreground font-medium">Invite 10 professionals to get 7 days of Pro VIP status!</p>
-            </div>
-          </div>
-        </Card>
-
-        <div className="grid gap-3 mt-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-none shadow-sm rounded-[1.5rem] bg-white opacity-50">
-              <CardContent className="p-4 flex items-center gap-4">
-                <Avatar className="h-14 w-14 border-2 border-muted">
-                  <AvatarFallback className="bg-muted/50 font-black text-lg">P</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-                    <div className="h-3 w-12 bg-muted rounded animate-pulse" />
-                  </div>
-                  <div className="h-3 w-full bg-muted/50 rounded animate-pulse" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+    <div className="flex flex-col gap-6 py-4 max-w-2xl mx-auto px-4 min-h-[70vh]">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight">Messages</h1>
+          <p className="text-muted-foreground text-sm font-medium">End-to-end encrypted professional link.</p>
         </div>
+        <Button variant="outline" className="rounded-full font-black px-6 shadow-sm gap-2 h-12" asChild>
+          <Link href="/search">
+            <Search className="h-4 w-4" />
+            Find Pros
+          </Link>
+        </Button>
+      </header>
+
+      <Card className="border-none bg-secondary/10 p-6 rounded-[2rem]">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="bg-white p-3 rounded-2xl shadow-sm"><Gift className="h-6 w-6 text-secondary" /></div>
+          <div className="flex-1 text-center sm:text-left">
+            <h4 className="font-black text-sm uppercase tracking-tight">Invite to Unlock Free VIP</h4>
+            <p className="text-xs text-muted-foreground font-medium">Build your network and earn Pro status!</p>
+          </div>
+          <Button variant="secondary" size="sm" asChild className="rounded-full font-black px-6">
+            <Link href="/referrals">Invite Now</Link>
+          </Button>
+        </div>
+      </Card>
+
+      <div className="grid gap-3">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary/20" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Syncing Encrypted Inbox...</p>
+          </div>
+        ) : chats && chats.length > 0 ? (
+          chats.map((chat) => {
+            // Find the other participant's ID
+            const otherId = chat.participants.find((id: string) => id !== user.uid);
+            const dateStr = chat.lastMessageAt?.seconds 
+              ? formatDistanceToNow(new Date(chat.lastMessageAt.seconds * 1000), { addSuffix: true })
+              : "";
+
+            return (
+              <Link key={chat.id} href={`/messages/${chat.id}`}>
+                <Card className="border-none shadow-sm hover:shadow-md transition-all rounded-[1.5rem] bg-white group border-l-4 border-l-transparent hover:border-l-primary overflow-hidden">
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <Avatar className="h-14 w-14 border-2 border-primary/5">
+                      <AvatarFallback className="bg-primary/5 font-black text-lg">P</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <h3 className="font-black text-sm truncate uppercase tracking-tight">Secure Professional Link</h3>
+                        <span className="text-[9px] font-bold text-muted-foreground">{dateStr}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-medium truncate italic">
+                        {chat.lastMessage || "Start a conversation..."}
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })
+        ) : (
+          <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed mx-2 flex flex-col items-center gap-4">
+            <div className="bg-white p-6 rounded-3xl shadow-sm mb-2">
+              <MessageSquare className="h-12 w-12 text-muted-foreground/20" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">Your inbox is empty</p>
+              <p className="text-[10px] text-muted-foreground/60 max-w-[200px] mx-auto leading-relaxed">Find a professional in the directory to start a secure conversation.</p>
+            </div>
+            <Button size="sm" className="rounded-full px-8 font-black uppercase text-[10px] mt-2" asChild>
+              <Link href="/search">Open Directory</Link>
+            </Button>
+          </div>
+        )}
       </div>
+
+      <footer className="text-center py-10 opacity-40">
+        <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest">
+          <Sparkles className="h-3 w-3" /> Globlync Secure Messaging v2.1
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -11,23 +12,15 @@ import {
   ShieldCheck, 
   Loader2, 
   X,
-  Zap,
   Globe,
   MessageSquare,
-  Lock,
-  UserPlus,
-  QrCode,
-  TrendingUp,
   MapPin,
-  ChevronRight,
   Users,
   Star
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc, getDoc, query, limit, orderBy } from "firebase/firestore";
-import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SearchPage() {
@@ -37,7 +30,6 @@ export default function SearchPage() {
   
   const { user } = useUser();
   const db = useFirestore();
-  const router = useRouter();
   const { toast } = useToast();
 
   const professionalsRef = useMemoFirebase(() => {
@@ -124,7 +116,7 @@ export default function SearchPage() {
               <h2 className="text-xs font-black uppercase tracking-[0.3em] text-primary">Exact Match Found</h2>
               <Button variant="ghost" size="sm" onClick={() => {setFoundWorker(null); setSearchTerm("");}} className="text-[10px] font-black uppercase"><X className="h-3 w-3 mr-1" /> Clear</Button>
             </div>
-            <ProfessionalCard worker={foundWorker} />
+            <ProfessionalCard worker={foundWorker} currentUserId={user?.uid} />
           </div>
         ) : (
           <div className="space-y-6">
@@ -185,7 +177,9 @@ export default function SearchPage() {
   );
 }
 
-function ProfessionalCard({ worker }: { worker: any }) {
+function ProfessionalCard({ worker, currentUserId }: { worker: any, currentUserId?: string }) {
+  const chatId = currentUserId ? [currentUserId, worker.id].sort().join("_") : null;
+
   return (
     <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-white group hover:scale-[1.01] transition-transform max-w-md mx-auto">
       <div className="h-32 bg-primary/5 flex items-center justify-center relative overflow-hidden">
@@ -208,9 +202,15 @@ function ProfessionalCard({ worker }: { worker: any }) {
           <Button variant="outline" className="rounded-full font-black h-12 border-2" asChild>
             <Link href={`/public/${worker.id}`}>View Portfolio</Link>
           </Button>
-          <Button className="rounded-full font-black h-12 shadow-lg" asChild>
-            <Link href={`/messages/${worker.id}`}><MessageSquare className="mr-2 h-4 w-4" /> Secure Message</Link>
-          </Button>
+          {chatId ? (
+            <Button className="rounded-full font-black h-12 shadow-lg" asChild>
+              <Link href={`/messages/${chatId}`}><MessageSquare className="mr-2 h-4 w-4" /> Secure Message</Link>
+            </Button>
+          ) : (
+            <Button className="rounded-full font-black h-12 shadow-lg" asChild>
+              <Link href="/login"><MessageSquare className="mr-2 h-4 w-4" /> Join to Message</Link>
+            </Button>
+          )}
         </div>
 
         <div className="mt-8 pt-6 border-t flex items-center justify-center gap-6">
