@@ -16,7 +16,8 @@ import {
   Crown,
   Users,
   Search,
-  LayoutGrid
+  LayoutGrid,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -125,7 +126,7 @@ export function Navigation() {
                 <Link href="/notifications" className="relative p-2 hover:bg-muted rounded-full transition-colors flex">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white border-2 border-background">
+                    <span className="absolute right-1.5 top-1.5 flex h-4 w-4.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white border-2 border-background">
                       {unreadCount}
                     </span>
                   )}
@@ -180,6 +181,9 @@ export function Navigation() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-black text-sm text-secondary">
                       <Link href="/rewards"><Gift className="mr-3 h-5 w-5 text-secondary" />Earn Free VIP</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
+                      <Link href="/about"><Info className="mr-3 h-5 w-5 text-primary" />About Globlync</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-3 px-4 font-bold text-sm">
                       <Link href="/settings"><SettingsIcon className="mr-3 h-5 w-5 text-primary" />Settings</Link>

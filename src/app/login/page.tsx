@@ -146,6 +146,17 @@ function LoginContent() {
       const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
       const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
 
+      // FIRST 500 BONUS LOGIC
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+      const earlyBirdBenefit = {
+        type: "First 500 Legacy Pro",
+        expiresAt: expiryDate.toISOString(),
+        amountPaid: 0,
+        paidAt: new Date().toISOString(),
+        isBonusApplied: true
+      };
+
       try {
         await setDoc(profileRef, {
           id: uid,
@@ -159,10 +170,10 @@ function LoginContent() {
           referralCode: newCode,
           invitedBy,
           referralCount: 0,
-          activeBenefits: [],
-          badgeIds: [],
+          activeBenefits: [earlyBirdBenefit],
+          badgeIds: ["early-pioneer"],
           onboardingCompleted: false,
-          isPro: false,
+          isPro: true, // Auto-pro for first 500
           isAvailable: true,
           contactEmail: auth.currentUser?.email || email || (phoneNumber ? `${phoneNumber}@phone.globlync` : ""),
           createdAt: serverTimestamp(),
@@ -175,9 +186,7 @@ function LoginContent() {
         const notifRef = collection(db, "workerProfiles", uid, "notifications");
         addDoc(notifRef, {
           type: "app",
-          message: invitedBy 
-            ? "Welcome! You earned a +10 Trust Score bonus for joining via referral." 
-            : "Welcome to Globlync! Build your evidence-based professional reputation here.",
+          message: "Welcome Pioneer! You've been granted 30 Days of Pro VIP status for being one of the first 500 users.",
           isRead: false,
           createdAt: serverTimestamp()
         }).catch(() => {});
