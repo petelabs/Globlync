@@ -1,33 +1,37 @@
 
 "use client";
 
-import { useParams } from "next/navigation";
-import { useDoc, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
+import { useParams, useRouter } from "next/navigation";
+import { useDoc, useFirestore, useMemoFirebase, useCollection, useUser } from "@/firebase";
 import { doc, collection, query, orderBy } from "firebase/firestore";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, 
   Star, 
+  Clock, 
   MapPin, 
   Briefcase, 
+  MessageSquare, 
   CheckCircle2, 
-  Loader2, 
-  Users, 
-  Globe,
-  MessageSquare,
-  Sparkles,
+  TrendingUp, 
+  Award, 
   ArrowLeft,
-  Lock
+  Loader2,
+  Users,
+  Camera
 } from "lucide-react";
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function PublicProfilePage() {
   const { workerId } = useParams() as { workerId: string };
+  const { user: currentUser } = useUser();
   const db = useFirestore();
+  const router = useRouter();
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !workerId) return null;
@@ -51,7 +55,7 @@ export default function PublicProfilePage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pulling Reputation Data...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Fetching Reputation Data...</p>
       </div>
     );
   }
@@ -63,133 +67,163 @@ export default function PublicProfilePage() {
           <Users className="h-12 w-12 text-destructive" />
         </div>
         <h1 className="text-2xl font-black tracking-tight">Professional Not Found</h1>
-        <p className="text-muted-foreground text-sm max-w-xs mx-auto">This professional profile may have been removed or the ID is incorrect.</p>
-        <Button variant="outline" className="rounded-full mt-4" asChild><Link href="/search">Return to Directory</Link></Button>
+        <p className="text-muted-foreground text-sm max-w-xs mx-auto leading-relaxed font-medium">This professional profile may have been removed or the ID is incorrect.</p>
+        <Button onClick={() => router.back()} variant="outline" className="rounded-full mt-4 border-2">Return to Directory</Button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto px-4 pb-32">
+    <div className="flex flex-col gap-8 py-6 max-w-4xl mx-auto px-4 pb-20 overflow-x-hidden">
       <header className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="rounded-full" asChild>
-          <Link href="/search"><ArrowLeft className="h-5 w-5" /></Link>
+        <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={() => router.back()}>
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
-          <h1 className="text-xl font-black uppercase tracking-tight">Professional Reputation</h1>
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">National Directory Verified</p>
+        <div className="flex-1">
+          <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
+            Professional Profile
+            {worker.isPro && <div className="bg-secondary p-1 rounded-full"><Star className="h-2 w-2 text-secondary-foreground fill-current" /></div>}
+          </h1>
         </div>
       </header>
 
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-1 space-y-6">
-          <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-white">
-            <div className="h-24 bg-primary/5 flex items-center justify-center relative">
-              <div className="absolute inset-0 opacity-5"><Globe className="h-48 w-48 -translate-x-1/2 -translate-y-1/2" /></div>
-              <Avatar className="h-20 w-20 border-4 border-white shadow-xl relative top-8">
-                <AvatarImage src={worker.profilePictureUrl} className="object-cover" />
-                <AvatarFallback className="bg-primary/5 font-black text-xl">{worker.name?.charAt(0)}</AvatarFallback>
-              </Avatar>
+      {/* Hero Profile Card */}
+      <Card className="border-none shadow-2xl overflow-hidden rounded-[3rem] bg-white relative">
+        <div className="h-32 bg-primary/10 w-full relative">
+          <div className="absolute inset-0 opacity-10 bg-[url('https://picsum.photos/seed/bg/800/400')] bg-cover bg-center" />
+        </div>
+        <CardContent className="p-8 pt-0 text-center md:text-left">
+          <div className="flex flex-col md:row items-center md:items-end gap-6 -mt-16 mb-6">
+            <Avatar className="h-32 w-32 border-8 border-white shadow-2xl">
+              <AvatarImage src={worker.profilePictureUrl} className="object-cover" />
+              <AvatarFallback className="text-2xl font-black">{worker.name?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1 text-center md:text-left pb-2">
+              <h2 className="text-3xl font-black tracking-tighter leading-none">{worker.name}</h2>
+              <div className="flex items-center justify-center md:justify-start gap-2 text-primary font-bold text-sm">
+                <span className="uppercase tracking-widest text-[10px]">@{worker.username}</span>
+                <div className="h-1 w-1 rounded-full bg-primary/30" />
+                <span className="text-[10px] uppercase">{worker.tradeSkill || "General Pro"}</span>
+              </div>
             </div>
-            <CardContent className="pt-12 pb-8 text-center px-6">
-              <h2 className="text-2xl font-black">{worker.name}</h2>
-              <p className="text-xs text-primary font-bold uppercase tracking-widest mt-1">@{worker.username}</p>
-              <div className="mt-4 flex flex-col gap-2">
-                <Badge variant="secondary" className="mx-auto bg-primary/5 text-primary border-none font-black uppercase text-[10px] py-1 px-4">{worker.tradeSkill || 'Professional'}</Badge>
-                <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  <span>Based in Malawi</span>
-                </div>
-              </div>
+            <div className="flex gap-3 pb-2">
+              <Button className={cn("rounded-full font-black px-8 h-12 shadow-lg", !currentUser && "opacity-50 cursor-not-allowed")} disabled={!currentUser}>
+                <MessageSquare className="mr-2 h-4 w-4" /> Secure Message
+              </Button>
+            </div>
+          </div>
 
-              <div className="mt-8 grid grid-cols-2 gap-4 border-t pt-6">
-                <div className="text-center">
-                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Trust Score</p>
-                  <p className="text-2xl font-black text-primary">{worker.trustScore || 0}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">Logs Verified</p>
-                  <p className="text-2xl font-black text-primary">{jobs?.filter(j => j.isVerified).length || 0}</p>
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-dashed border-muted">
+            <div className="space-y-1 text-center">
+              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Trust Score</p>
+              <div className="flex items-center justify-center gap-1.5 text-primary">
+                <ShieldCheck className="h-4 w-4" />
+                <p className="text-xl font-black">{worker.trustScore || 0}</p>
               </div>
+            </div>
+            <div className="space-y-1 text-center">
+              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Verified Jobs</p>
+              <div className="flex items-center justify-center gap-1.5 text-primary">
+                <CheckCircle2 className="h-4 w-4" />
+                <p className="text-xl font-black">{jobs?.filter(j => j.isVerified).length || 0}</p>
+              </div>
+            </div>
+            <div className="space-y-1 text-center">
+              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Invites</p>
+              <div className="flex items-center justify-center gap-1.5 text-primary">
+                <TrendingUp className="h-4 w-4" />
+                <p className="text-xl font-black">{worker.referralCount || 0}</p>
+              </div>
+            </div>
+            <div className="space-y-1 text-center">
+              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Status</p>
+              <Badge variant={worker.isAvailable ? "default" : "secondary"} className="h-6 font-black uppercase text-[8px]">
+                {worker.isAvailable ? "Available" : "Busy"}
+              </Badge>
+            </div>
+          </div>
 
-              <div className="mt-8 space-y-3">
-                <Button className="w-full rounded-full h-12 font-black shadow-lg opacity-50 cursor-not-allowed" disabled>
-                  <Lock className="mr-2 h-4 w-4" /> Messaging Locked
-                </Button>
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Direct link coming soon</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="py-8 space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+              <Briefcase className="h-3.5 w-3.5" /> Professional Story
+            </h3>
+            <p className="text-muted-foreground font-medium leading-relaxed italic">
+              "{worker.bio || `Passionate ${worker.tradeSkill || 'professional'} building a verifiable reputation in Malawi.`}"
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Evidence Timeline */}
+      <section className="space-y-6 mt-4">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-lg font-black tracking-tight flex items-center gap-2">
+            Verified Evidence Timeline
+            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 ml-2 font-black">
+              {jobs?.filter(j => j.isVerified).length || 0} LOGS
+            </Badge>
+          </h3>
         </div>
 
-        <div className="md:col-span-2 space-y-8">
-          <section className="space-y-4">
-            <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-              <Star className="h-5 w-5 text-primary fill-primary/20" />
-              Professional Narrative
-            </h3>
-            <Card className="border-none shadow-sm bg-white rounded-[2rem] p-6">
-              <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                {worker.bio || `This professional is a verified specialist in ${worker.tradeSkill || 'their field'} within the Malawian national network.`}
-              </p>
-            </Card>
-          </section>
-
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-primary" />
-                Verified Evidence Logs
-              </h3>
-              <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/20 text-primary">Public View</Badge>
-            </div>
-
-            <div className="grid gap-4">
-              {isJobsLoading ? (
-                [1, 2].map(i => <Card key={i} className="h-32 animate-pulse bg-muted/20 border-none rounded-2xl" />)
-              ) : jobs && jobs.length > 0 ? (
-                jobs.map((job) => (
-                  <Card key={job.id} className="border-none shadow-sm bg-white overflow-hidden group rounded-[1.5rem] border-l-4 border-l-transparent hover:border-l-primary transition-all">
-                    <CardContent className="p-6 flex gap-6 items-start">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-black text-lg leading-none">{job.title}</h4>
-                            <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-widest">
-                              {job.createdAt?.seconds ? formatDistanceToNow(new Date(job.createdAt.seconds * 1000), { addSuffix: true }) : "Recent"}
-                            </p>
-                          </div>
-                          {job.isVerified ? (
-                            <Badge className="bg-green-500 text-white border-none uppercase text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
-                              <CheckCircle2 className="h-2.5 w-2.5" /> Verified Evidence
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="uppercase text-[8px] font-black px-2 py-0.5 rounded-full">Pending Verification</Badge>
-                          )}
+        <div className="grid gap-4 relative pl-4 md:pl-0">
+          <div className="absolute left-0 md:left-1/2 top-4 bottom-4 w-0.5 bg-muted-foreground/10 -translate-x-1/2" />
+          
+          {isJobsLoading ? (
+            [1, 2].map(i => <div key={i} className="h-32 w-full bg-muted/20 animate-pulse rounded-3xl" />)
+          ) : jobs && jobs.filter(j => j.isVerified).length > 0 ? (
+            jobs.filter(j => j.isVerified).map((job, idx) => (
+              <div key={job.id} className={cn(
+                "relative flex flex-col md:flex-row gap-8 items-start md:items-center w-full",
+                idx % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+              )}>
+                <div className="absolute left-[-1.2rem] md:left-1/2 top-2 h-4 w-4 rounded-full bg-primary border-4 border-white shadow-sm z-10 -translate-x-1/2" />
+                
+                <div className="w-full md:w-[calc(50%-2rem)]">
+                  <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-[2rem] overflow-hidden group">
+                    <CardHeader className="bg-muted/30 p-6 pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-black text-primary leading-tight">{job.title}</CardTitle>
+                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                          <ShieldCheck className="h-3 w-3" /> Verified
                         </div>
-                        <p className="text-xs text-muted-foreground font-medium leading-relaxed line-clamp-2 italic">
-                          "{job.description}"
-                        </p>
                       </div>
+                      <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground uppercase mt-1">
+                        <Clock className="h-3 w-3" />
+                        {job.createdAt?.seconds ? formatDistanceToNow(new Date(job.createdAt.seconds * 1000), { addSuffix: true }) : 'Recently'}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6 pt-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{job.description}</p>
                       {job.photoUrl && (
-                        <div className="h-20 w-28 rounded-xl overflow-hidden border-2 border-muted shrink-0 shadow-inner">
-                          <img src={job.photoUrl} alt="Evidence" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div className="mt-4 rounded-2xl overflow-hidden aspect-video border-2 border-white shadow-sm relative group">
+                          <img src={job.photoUrl} alt="Job Proof" className="object-cover w-full h-full transition-transform group-hover:scale-110 duration-700" />
+                          {job.aiVerified && (
+                            <div className="absolute top-2 left-2 bg-primary/90 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                              <Sparkles className="h-2.5 w-2.5" /> AI Proven
+                            </div>
+                          )}
                         </div>
                       )}
                     </CardContent>
                   </Card>
-                ))
-              ) : (
-                <div className="text-center py-16 bg-muted/10 rounded-[2rem] border-2 border-dashed flex flex-col items-center gap-3">
-                  <ShieldCheck className="h-10 w-10 text-muted-foreground/20" />
-                  <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No logs verified yet</p>
                 </div>
-              )}
+                <div className="hidden md:block w-[calc(50%-2rem)]" />
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-20 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted/30 w-full">
+              <Camera className="h-12 w-12 mx-auto text-muted-foreground/20 mb-4" />
+              <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No verified jobs logged yet</p>
             </div>
-          </section>
+          )}
         </div>
-      </div>
+      </section>
+
+      <footer className="text-center py-10 opacity-40">
+        <div className="flex items-center justify-center gap-2 text-[9px] font-black uppercase tracking-widest">
+          <ShieldCheck className="h-3 w-3" /> Verified by Globlync Global Registry
+        </div>
+      </footer>
     </div>
   );
 }

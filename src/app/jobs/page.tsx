@@ -16,7 +16,8 @@ import {
   Languages,
   PlusCircle,
   Sparkles,
-  Award
+  Award,
+  MessageSquare
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { searchJoobleJobs } from "./actions";
@@ -66,6 +67,11 @@ export default function JobsBoardPage() {
     const cleanText = text.replace(/<[^>]*>?/gm, '');
     const translateUrl = `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(cleanText)}&op=translate`;
     window.open(translateUrl, '_blank');
+  };
+
+  const getWhatsAppPostingLink = () => {
+    const text = encodeURIComponent(`Hi Globlync Admin! I want to post a new vacancy on the app. \n\nJob Title: \nCompany: \nLocation: \nRequirements: \n\nPlease let me know the process for Featured Listings (K1000).`);
+    return `https://wa.me/265987066051?text=${text}`;
   };
 
   return (
@@ -120,9 +126,14 @@ export default function JobsBoardPage() {
           </div>
         </form>
 
-        <div className="flex justify-center mt-4 opacity-50 cursor-not-allowed">
-          <Button variant="secondary" className="rounded-full font-black px-10 h-14 shadow-lg border-2 border-primary/10 pointer-events-none" disabled>
-            <PlusCircle className="mr-2 h-5 w-5" /> Local Posting Coming Soon
+        <div className="flex justify-center mt-4">
+          <Button 
+            className="rounded-full font-black px-10 h-16 shadow-[0_20px_40px_-10px_rgba(255,193,7,0.3)] bg-secondary hover:bg-secondary/90 text-secondary-foreground border-4 border-white/20 animate-bounce"
+            asChild
+          >
+            <a href={getWhatsAppPostingLink()} target="_blank">
+              <MessageSquare className="mr-3 h-6 w-6" /> Post a Local Vacancy
+            </a>
           </Button>
         </div>
       </header>
