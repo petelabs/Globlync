@@ -17,7 +17,8 @@ service cloud.firestore {
     }
 
     match /workerProfiles/{workerId} {
-      allow get, list: if true; // Public directory support
+      // Allow public listing and viewing for discovery
+      allow get, list: if true; 
       allow create: if isOwner(workerId);
       allow delete: if isOwner(workerId);
       

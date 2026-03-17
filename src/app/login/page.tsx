@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   Fingerprint,
   Smartphone,
-  Heart
+  Heart,
+  Globe
 } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
@@ -53,7 +54,6 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
-  const [referrerName, setReferrerName] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState({h: 23, m: 59, s: 59});
   
   const auth = useAuth();
@@ -183,7 +183,7 @@ function LoginContent() {
         }).catch(() => {});
 
       } catch (e: any) {
-        console.error("Profile setup hit a blip.");
+        console.error("Profile setup failed.");
       }
     }
 
@@ -291,16 +291,13 @@ function LoginContent() {
             "text-5xl font-black tracking-tighter",
             isReturningUser ? "text-secondary" : "text-primary"
           )}>
-            {isReturningUser ? "Welcome Back!" : "Secured!"}
+            {isReturningUser ? "Welcome Back!" : "Account Secured!"}
           </h2>
           <p className="text-muted-foreground text-xl font-medium uppercase tracking-widest">
-            {isReturningUser ? "Accessing your professional profile" : "Account Created Successfully"}
+            {isReturningUser ? "We missed your insights." : "Welcome to the global network."}
           </p>
         </div>
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-sm font-bold text-muted-foreground animate-pulse">Entering your hub...</p>
-          <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary opacity-30" />
       </div>
     );
   }
@@ -310,10 +307,10 @@ function LoginContent() {
       <div className="w-full text-center mb-10 space-y-4">
         <Logo className="scale-125 mb-4 mx-auto" />
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
-          The <span className="text-primary">Professional</span> Asset.
+          Join <span className="text-primary">500+</span> Professionals.
         </h1>
         <p className="text-muted-foreground font-medium max-w-md mx-auto">
-          Secure your unique handle and claim your stake in the global evidence-based economy.
+          One tap to secure your unique professional handle and start building global trust.
         </p>
       </div>
 
@@ -327,77 +324,73 @@ function LoginContent() {
           {method === "choice" && (
             <div className="grid gap-4">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-black text-sm uppercase tracking-tight">Choose your sign-in method</h3>
+                <h3 className="font-black text-sm uppercase tracking-tight">Quick Sign-Up</h3>
                 <button onClick={() => setIsSignUp(!isSignUp)} className="text-[10px] font-black text-primary underline uppercase">
-                  {isSignUp ? "Already have account?" : "Need an account?"}
+                  {isSignUp ? "Already a pro?" : "Need an ID?"}
                 </button>
               </div>
               
               <Button 
                 variant="outline" 
-                className="h-16 rounded-2xl border-2 border-green-500/20 bg-green-500/5 hover:bg-green-500/10 text-green-700 font-black justify-between px-6"
-                onClick={() => setMethod("phone")}
-              >
-                <div className="flex items-center gap-3">
-                  <Smartphone className="h-5 w-5" />
-                  <span>Phone Number</span>
-                </div>
-                <ArrowRight className="h-4 w-4 opacity-30" />
-              </Button>
-
-              <Button 
-                variant="outline" 
-                className="h-16 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary font-black justify-between px-6"
-                onClick={() => setMethod("email-pass")}
-              >
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5" />
-                  <span>Email & Password</span>
-                </div>
-                <ArrowRight className="h-4 w-4 opacity-30" />
-              </Button>
-
-              <Button 
-                variant="outline" 
-                className="h-16 rounded-2xl border-2 border-secondary/20 bg-secondary/5 hover:bg-secondary/10 text-secondary-foreground font-black justify-between px-6"
-                onClick={() => setMethod("email-link")}
-              >
-                <div className="flex items-center gap-3">
-                  <Fingerprint className="h-5 w-5 text-secondary" />
-                  <span>Magic Email Link</span>
-                </div>
-                <ArrowRight className="h-4 w-4 opacity-30" />
-              </Button>
-
-              <div className="relative flex items-center justify-center my-2">
-                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
-                <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Or social sign-in</span>
-              </div>
-
-              <Button 
-                variant="outline" 
-                className="h-16 rounded-2xl border-2 font-black shadow-sm"
+                className="h-20 rounded-2xl border-2 font-black shadow-sm group hover:border-primary/40 transition-all"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
               >
-                <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Continue with Google
+                <div className="flex items-center gap-4 w-full">
+                  <div className="bg-white p-2 rounded-xl border-2 shrink-0 group-hover:scale-110 transition-transform">
+                    <svg className="h-6 w-6" viewBox="0 0 24 24">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black">Continue with Google</p>
+                    <p className="text-[10px] opacity-60">Verified in one tap</p>
+                  </div>
+                </div>
               </Button>
+
+              <Button 
+                variant="outline" 
+                className="h-20 rounded-2xl border-2 border-green-500/20 bg-green-500/5 hover:bg-green-500/10 text-green-700 font-black"
+                onClick={() => setMethod("phone")}
+              >
+                <div className="flex items-center gap-4 w-full">
+                  <div className="bg-white p-2 rounded-xl border-2 shrink-0">
+                    <Smartphone className="h-6 w-6" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black">Phone Number</p>
+                    <p className="text-[10px] opacity-60">Malawi Local Support</p>
+                  </div>
+                </div>
+              </Button>
+
+              <div className="relative flex items-center justify-center my-4">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
+                <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Other Professional Methods</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="ghost" size="sm" className="h-12 rounded-xl text-[10px] font-black uppercase border border-dashed" onClick={() => setMethod("email-pass")}>
+                  <Mail className="mr-2 h-3.5 w-3.5" /> Email
+                </Button>
+                <Button variant="ghost" size="sm" className="h-12 rounded-xl text-[10px] font-black uppercase border border-dashed" onClick={() => setMethod("email-link")}>
+                  <Fingerprint className="mr-2 h-3.5 w-3.5" /> Magic Link
+                </Button>
+              </div>
             </div>
           )}
 
           {method !== "choice" && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
               <button 
                 onClick={() => setMethod("choice")}
                 className="flex items-center gap-2 text-[10px] font-black uppercase text-primary mb-4"
               >
-                <ChevronLeft className="h-3 w-3" /> Back to all options
+                <ChevronLeft className="h-3 w-3" /> Back to quick options
               </button>
 
               <form onSubmit={method === "email-link" ? handleMagicLink : handleAuth} className="grid gap-4">
@@ -442,18 +435,9 @@ function LoginContent() {
                   </div>
                 )}
 
-                {isSignUp && !urlReferral && (
-                  <div className="grid gap-1">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60 flex items-center gap-1">
-                      <Ticket className="h-3 w-3" /> Referral Code (Optional)
-                    </Label>
-                    <Input placeholder="GL-ABC123" className="h-12 rounded-xl bg-primary/5 border-2 border-dashed border-primary/20 uppercase font-mono text-center" value={manualReferral} onChange={(e) => setManualReferral(e.target.value.toUpperCase())} />
-                  </div>
-                )}
-
                 <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 group" type="submit" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                  {method === "email-link" ? "Send Magic Link" : isSignUp ? "Start My Reputation Free" : "Sign In to My Hub"}
+                  {method === "email-link" ? "Send Magic Link" : isSignUp ? "Finish My Profile" : "Sign In to My Hub"}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>
@@ -463,7 +447,7 @@ function LoginContent() {
         
         <CardFooter className="bg-muted/30 p-6 flex flex-col gap-2">
           <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest">
-            100% Safe Professional Encryption
+            <Globe className="inline h-3 w-3 mr-1" /> Secure Global Entry v2.0
           </p>
         </CardFooter>
       </Card>

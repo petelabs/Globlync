@@ -15,8 +15,10 @@ import {
   Star,
   Zap,
   Gift,
-  MessageSquare,
-  TrendingUp
+  TrendingUp,
+  CheckCircle2,
+  Medal,
+  Briefcase
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
@@ -42,8 +44,6 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
-      
-      // Personalized timer only for signed-in users who registered within the last 24h
       if (user && profile?.createdAt) {
         const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
         const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
@@ -81,7 +81,7 @@ export default function Home() {
                 <Zap className="h-4 w-4 fill-current" />
               </div>
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
-                My Signup Bonus: <span className="underline">+7 FREE PRO DAYS</span>
+                Signup Bonus Active: <span className="underline">+7 FREE PRO DAYS</span>
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -90,13 +90,14 @@ export default function Home() {
                 <span>{String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}</span>
               </div>
               <Button size="sm" variant="secondary" className="h-7 rounded-full text-[9px] font-black uppercase bg-white text-secondary hover:bg-white/90" asChild>
-                <Link href="/pricing">Claim Bonus</Link>
+                <Link href="/pricing">Claim Now</Link>
               </Button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden mt-8">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         
@@ -104,26 +105,61 @@ export default function Home() {
           <Logo className="scale-[2] mb-8" />
         </div>
 
-        <div className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-secondary animate-pulse">
-          <Globe className="h-3 w-3" />
-          <span>The Global Network for Verified Professionals</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+            <Users className="h-3.5 w-3.5" />
+            <span>Trusted by 500+ Professionals Locally & Globally</span>
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
+            Your Reputation <br/>is your <span className="text-primary font-black animate-shimmer-text">Asset.</span>
+          </h1>
         </div>
-
-        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-7xl lg:leading-tight">
-          Your Reputation <br/>is your <span className="text-primary font-black animate-shimmer-text">Network.</span>
-        </h1>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          Connect, log work, and build an evidence-based professional identity. <span className="text-primary font-bold underline decoration-secondary">Verified & Open</span> for everyone everywhere.
+          The global directory for skilled manual workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that clients can verify instantly.
         </p>
 
-        <div className="flex flex-col gap-4 sm:flex-row mt-4">
-          <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black" asChild>
-            <Link href={user ? "/profile" : "/login"}>{user ? "Open My Hub" : "Join Globlync Free"}</Link>
+        <div className="flex flex-col gap-4 sm:flex-row mt-4 w-full max-w-md">
+          <Button size="lg" className="rounded-full px-10 h-16 text-lg shadow-xl hover:scale-105 transition-transform font-black flex-1" asChild>
+            <Link href={user ? "/profile" : "/login"}>{user ? "Open My Hub" : "Start My Reputation Free"}</Link>
           </Button>
-          <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2" asChild>
-            <Link href="/search">Browse Professionals <ArrowRight className="ml-2 h-5 w-5" /></Link>
+          <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-black border-2 flex-1" asChild>
+            <Link href="/search">Browse Directory</Link>
           </Button>
+        </div>
+
+        {/* Dynamic Social Proof Marquee */}
+        <div className="mt-12 w-full overflow-hidden relative">
+          <div className="flex gap-8 animate-marquee whitespace-nowrap py-4">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="flex items-center gap-2 bg-white shadow-sm border px-4 py-2 rounded-full">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-tight text-muted-foreground">New Verification: @pro_worker_{i}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="max-w-screen-xl mx-auto w-full px-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
+            <p className="text-3xl font-black text-primary">500+</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Verified Pros</p>
+          </div>
+          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
+            <p className="text-3xl font-black text-primary">1.2K</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Job Logs</p>
+          </div>
+          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
+            <p className="text-3xl font-black text-primary">28</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Districts Covered</p>
+          </div>
+          <div className="bg-primary/5 p-6 rounded-[2rem] text-center border-2 border-primary/10">
+            <p className="text-3xl font-black text-primary">98%</p>
+            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Trust Score Avg</p>
+          </div>
         </div>
       </section>
 
@@ -160,29 +196,29 @@ export default function Home() {
       <section className="max-w-5xl mx-auto w-full px-4 flex flex-col items-center gap-8 mb-12">
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-black uppercase tracking-widest text-primary">Global Professional Hub</h2>
-          <p className="text-muted-foreground text-sm font-medium">Verified trust for the remote economy.</p>
+          <p className="text-muted-foreground text-sm font-medium">Everything you need to prove your worth.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <TrendingUp className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-black text-lg">Build Trust</h3>
-            <p className="text-xs text-muted-foreground font-medium">Every interaction and verified log grows your global Trust Score.</p>
+            <h3 className="font-black text-lg">Growth Tracking</h3>
+            <p className="text-xs text-muted-foreground font-medium">Every verified job log increases your global Trust Score automatically.</p>
           </Card>
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
-              <Users className="h-8 w-8 text-primary" />
+              <Medal className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-black text-lg">Network Scale</h3>
-            <p className="text-xs text-muted-foreground font-medium">Connect with vetted professionals from Malawi to the United Kingdom.</p>
+            <h3 className="font-black text-lg">Verified Badges</h3>
+            <p className="text-xs text-muted-foreground font-medium">Unlock exclusive badges that prove your reliability to high-paying clients.</p>
           </Card>
           <Card className="border-none bg-muted/30 p-8 rounded-[2rem] text-center space-y-4 group hover:bg-primary/5 transition-colors">
             <div className="bg-white p-4 rounded-2xl shadow-sm w-fit mx-auto group-hover:scale-110 transition-transform">
               <ShieldCheck className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-black text-lg">Verified Identity</h3>
-            <p className="text-xs text-muted-foreground font-medium">Secure your unique @username handle and build a digital footprint that lasts.</p>
+            <h3 className="font-black text-lg">Digital ID</h3>
+            <p className="text-xs text-muted-foreground font-medium">Your @username is your professional brand. Secure it today before others do.</p>
           </Card>
         </div>
       </section>

@@ -15,7 +15,8 @@ import {
   Gift,
   Crown,
   Users,
-  Search
+  Search,
+  LayoutGrid
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -95,9 +96,9 @@ export function Navigation() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Search", href: "/search", icon: Search },
+    { label: "Explore", href: "/search", icon: LayoutGrid },
     { label: "Jobs", href: "/jobs", icon: Briefcase },
-    { label: "Profile", href: "/profile", icon: User, authRequired: true },
+    { label: "My Hub", href: "/profile", icon: User, authRequired: true },
   ];
 
   return (
