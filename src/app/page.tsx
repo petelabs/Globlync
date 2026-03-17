@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,7 +17,8 @@ import {
   CheckCircle2,
   Medal,
   Briefcase,
-  MapPin
+  MapPin,
+  Crown
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
@@ -73,32 +73,36 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
-      {timeLeft && user && (
-        <div className="fixed top-16 left-0 right-0 z-40 bg-secondary text-secondary-foreground py-2 px-4 shadow-lg animate-in slide-in-from-top duration-500">
-          <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="bg-white/20 p-1.5 rounded-lg">
-                <Zap className="h-4 w-4 fill-current" />
+      {/* Promotion Banner */}
+      <section className="max-w-5xl mx-auto w-full px-4">
+        <Card className="border-none bg-secondary/10 border-2 border-secondary/20 rounded-[2.5rem] overflow-hidden relative group shadow-xl">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Crown className="h-32 w-32" />
+          </div>
+          <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8 relative z-10">
+            <div className="bg-secondary p-6 rounded-[2rem] shadow-lg text-white animate-bounce">
+              <Gift className="h-10 w-10" />
+            </div>
+            <div className="space-y-2 flex-1 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <Badge className="bg-secondary text-white font-black text-[9px] uppercase tracking-[0.2em]">Pioneer Bonus Active</Badge>
               </div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-tighter">
-                Pioneer Bonus Active: <span className="underline">+7 FREE PRO DAYS</span>
+              <h2 className="text-3xl font-black tracking-tighter text-foreground leading-tight">
+                15 Days <span className="text-secondary">FREE Pro VIP</span> for First 500 Recruits!
+              </h2>
+              <p className="text-sm text-muted-foreground font-medium max-w-xl">
+                Join the national directory today. Every new account registered in the next 60 days automatically earns 15 days of Pro status to build a verifiable reputation.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 font-mono text-[10px] sm:text-xs font-black bg-black/10 px-2 py-1 rounded">
-                <Timer className="h-3 w-3" />
-                <span>{String(timeLeft.h).padStart(2, '0')}:{String(timeLeft.m).padStart(2, '0')}:{String(timeLeft.s).padStart(2, '0')}</span>
-              </div>
-              <Button size="sm" variant="secondary" className="h-7 rounded-full text-[9px] font-black uppercase bg-white text-secondary hover:bg-white/90" asChild>
-                <Link href="/pricing">Claim Now</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            <Button size="lg" className="rounded-full px-8 bg-secondary hover:bg-secondary/90 text-white font-black h-14" asChild>
+              <Link href="/login">Claim My 15 Days</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Hero Section */}
-      <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden mt-8">
+      <section className="flex flex-col items-center text-center gap-6 py-12 px-4 relative overflow-hidden mt-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         
         <div className="mb-4 animate-in zoom-in duration-700">

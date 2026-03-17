@@ -21,7 +21,9 @@ import {
   Smartphone,
   Heart,
   Globe,
-  MapPin
+  MapPin,
+  User as UserIcon,
+  AlertCircle
 } from "lucide-react";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
@@ -40,7 +42,7 @@ import { Logo } from "@/components/Navigation";
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp, collection, addDoc } from "firebase/firestore";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
-type AuthMethod = "choice" | "phone" | "email-pass" | "email-link" | "google";
+type AuthMethod = "choice" | "phone" | "email-pass" | "email-link" | "google" | "finish-profile";
 
 function LoginContent() {
   const [method, setMethod] = useState<AuthMethod>("choice");
@@ -54,7 +56,7 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({h: 23, m: 59, s: 59});
+  const [pendingUser, setPendingUser] = useState<any>(null);
   
   const auth = useAuth();
   const db = useFirestore();
@@ -63,18 +65,6 @@ function LoginContent() {
   const { toast } = useToast();
 
   const urlReferral = searchParams?.get('ref') || "";
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setTimeLeft({
-        h: 23 - now.getHours(),
-        m: 59 - now.getMinutes(),
-        s: 59 - now.getSeconds()
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (auth && isSignInWithEmailLink(auth, window.location.href)) {
@@ -87,7 +77,7 @@ function LoginContent() {
         signInWithEmailLink(auth, emailForLink, window.location.href)
           .then((result) => {
             window.localStorage.removeItem('emailForSignIn');
-            handlePostAuth(result.user.uid);
+            handlePostAuthCheck(result.user.uid, result.user.displayName || "");
           })
           .catch(() => {
             toast({ variant: "destructive", title: "Link Expired", description: "The magic link is no longer valid." });
@@ -97,113 +87,88 @@ function LoginContent() {
     }
   }, [auth]);
 
-  const handlePostAuth = async (uid: string, manualName?: string, manualUsername?: string) => {
+  const handlePostAuthCheck = async (uid: string, defaultName?: string) => {
     if (!db) return;
-    
     const profileRef = doc(db, "workerProfiles", uid);
     const snap = await getDoc(profileRef);
-    const alreadyExists = snap.exists();
     
-    setIsReturningUser(alreadyExists);
+    if (snap.exists()) {
+      setIsReturningUser(true);
+      setIsSuccess(true);
+      setTimeout(() => router.push("/profile"), 1800);
+    } else {
+      setPendingUser({ uid, name: defaultName || fullName });
+      setMethod("finish-profile");
+      setIsLoading(false);
+    }
+  };
 
-    if (!alreadyExists) {
-      let invitedBy = "";
-      const finalReferral = urlReferral || manualReferral;
+  const handleFinishProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!db || !pendingUser || !desiredUsername) return;
 
-      if (finalReferral) {
-        try {
-          const referralDocRef = doc(db, "referralCodes", finalReferral.trim().toUpperCase());
-          const referralDocSnap = await getDoc(referralDocRef);
-          
-          if (referralDocSnap.exists()) {
-            invitedBy = referralDocSnap.data().uid;
-            const inviterRef = doc(db, "workerProfiles", invitedBy);
-            
-            updateDoc(inviterRef, {
-              referralCount: increment(1),
-              // NO legacy points added anymore, everyone starts at zero
-              updatedAt: serverTimestamp()
-            }).catch(() => {});
+    setIsLoading(true);
+    const cleanUsername = desiredUsername.toLowerCase().trim().replace(/[^a-z0-9_]/g, '');
+    
+    if (cleanUsername.length < 3) {
+      toast({ variant: "destructive", title: "Username Too Short", description: "At least 3 characters required." });
+      setIsLoading(false);
+      return;
+    }
 
-            const inviterNotifRef = collection(db, "workerProfiles", invitedBy, "notifications");
-            addDoc(inviterNotifRef, {
-              type: "profile_update",
-              message: "Referral Success! Someone joined Globlync using your link.",
-              isRead: false,
-              createdAt: serverTimestamp()
-            }).catch(() => {});
-          }
-        } catch (e) {
-          console.warn("Referral propagation failed.");
-        }
+    try {
+      const nameRef = doc(db, "usernames", cleanUsername);
+      const nameSnap = await getDoc(nameRef);
+      if (nameSnap.exists()) {
+        toast({ variant: "destructive", title: "Username Taken", description: "Please pick another." });
+        setIsLoading(false);
+        return;
       }
 
+      const uid = pendingUser.uid;
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "";
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const finalName = manualName || auth.currentUser?.displayName || "New Professional";
       
-      const firstName = finalName.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-      const fallbackUsername = `gl_${firstName}_${uid.substring(0, 4)}`;
-      const finalUsername = (manualUsername || desiredUsername)?.toLowerCase() || fallbackUsername;
-
       const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 30);
-      const earlyBirdBenefit = {
-        type: "First 500 Legacy Pro",
+      expiryDate.setDate(expiryDate.getDate() + 15); // 15 Days Promo
+      
+      const promoBenefit = {
+        type: "Pioneer Launch Pro (15 Days)",
         expiresAt: expiryDate.toISOString(),
         amountPaid: 0,
         paidAt: new Date().toISOString(),
         isBonusApplied: true
       };
 
-      try {
-        await setDoc(profileRef, {
-          id: uid,
-          name: finalName,
-          username: finalUsername,
-          tradeSkill: "",
-          bio: "",
-          profilePictureUrl: yellowAvatar,
-          trustScore: 0, // ALWAYS ZERO START
-          profileViews: 0, // ALWAYS ZERO START
-          referralCode: newCode,
-          invitedBy,
-          referralCount: 0,
-          activeBenefits: [earlyBirdBenefit],
-          badgeIds: ["early-pioneer"],
-          onboardingCompleted: false,
-          isPro: true, 
-          isAvailable: true,
-          contactEmail: auth.currentUser?.email || email || (phoneNumber ? `${phoneNumber}@phone.globlync` : ""),
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-
-        setDoc(doc(db, "usernames", finalUsername), { uid }).catch(() => {});
-        setDoc(doc(db, "referralCodes", newCode), { uid }).catch(() => {});
-
-        const notifRef = collection(db, "workerProfiles", uid, "notifications");
-        addDoc(notifRef, {
-          type: "app",
-          message: "Welcome Pioneer! You've been granted 30 Days of Pro VIP status for joining our early network.",
-          isRead: false,
-          createdAt: serverTimestamp()
-        }).catch(() => {});
-
-      } catch (e: any) {
-        console.error("Profile setup failed.");
-      }
-    }
-
-    setIsSuccess(true);
-    
-    setTimeout(() => {
-      router.push("/profile");
-      toast({ 
-        title: alreadyExists ? "Welcome Back!" : "Account Secured!", 
-        description: alreadyExists ? "Ready to manage your hub." : "Welcome to the national network." 
+      await setDoc(doc(db, "workerProfiles", uid), {
+        id: uid,
+        name: pendingUser.name || "New Professional",
+        username: cleanUsername,
+        tradeSkill: "",
+        bio: "",
+        profilePictureUrl: yellowAvatar,
+        trustScore: 0,
+        profileViews: 0,
+        referralCode: newCode,
+        referralCount: 0,
+        activeBenefits: [promoBenefit],
+        isPro: true, 
+        isAvailable: true,
+        lastUsernameChangeAt: serverTimestamp(),
+        contactEmail: auth.currentUser?.email || email || "",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
-    }, 1800);
+
+      await setDoc(nameRef, { uid });
+      await setDoc(doc(db, "referralCodes", newCode), { uid });
+
+      setIsSuccess(true);
+      setTimeout(() => router.push("/profile"), 1800);
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Setup Failed", description: e.message });
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -211,31 +176,9 @@ function LoginContent() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      await handlePostAuth(result.user.uid);
+      await handlePostAuthCheck(result.user.uid, result.user.displayName || "");
     } catch (error: any) {
       toast({ variant: "destructive", title: "Login Failed", description: "Ensure popups are allowed." });
-      setIsLoading(false);
-    }
-  };
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    setIsLoading(true);
-    
-    const actionCodeSettings = {
-      url: window.location.href,
-      handleCodeInApp: true,
-    };
-
-    try {
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
-      toast({ title: "Check Your Email", description: "We sent a magic link to your inbox." });
-      setMethod("choice");
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Failed", description: error.message });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -244,36 +187,23 @@ function LoginContent() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (isSignUp && (!fullName || !desiredUsername)) {
-      toast({ variant: "destructive", title: "Incomplete", description: "Name and Username are required." });
-      setIsLoading(false);
-      return;
-    }
-
     const finalIdentifier = method === "email-pass" ? email : `${phoneNumber}@phone.globlync`;
 
     try {
       if (isSignUp) {
-        const nameRef = doc(db!, "usernames", desiredUsername.toLowerCase());
-        const nameSnap = await getDoc(nameRef);
-        if (nameSnap.exists()) {
-          toast({ variant: "destructive", title: "Username Taken", description: "Please pick another." });
+        if (!fullName || !desiredUsername) {
+          toast({ variant: "destructive", title: "Missing Details", description: "Name and Username required." });
           setIsLoading(false);
           return;
         }
-
         const result = await createUserWithEmailAndPassword(auth, finalIdentifier, password);
-        await handlePostAuth(result.user.uid, fullName, desiredUsername);
+        await handlePostAuthCheck(result.user.uid, fullName);
       } else {
         const result = await signInWithEmailAndPassword(auth, finalIdentifier, password);
-        await handlePostAuth(result.user.uid);
+        await handlePostAuthCheck(result.user.uid);
       }
     } catch (error: any) {
-      let msg = error.message;
-      if (error.code === 'auth/invalid-credential') msg = "Incorrect details.";
-      if (error.code === 'auth/email-already-in-use') msg = "Email already registered. Try signing in.";
-      
-      toast({ variant: "destructive", title: "Auth Failed", description: msg });
+      toast({ variant: "destructive", title: "Auth Failed", description: error.message });
       setIsLoading(false);
     }
   };
@@ -338,14 +268,9 @@ function LoginContent() {
                 </button>
               </div>
               
-              <Button 
-                variant="outline" 
-                className="h-20 rounded-2xl border-2 font-black shadow-sm group hover:border-primary/40 transition-all"
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
-              >
+              <Button variant="outline" className="h-20 rounded-2xl border-2 font-black" onClick={handleGoogleLogin} disabled={isLoading}>
                 <div className="flex items-center gap-4 w-full">
-                  <div className="bg-white p-2 rounded-xl border-2 shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="bg-white p-2 rounded-xl border-2 shrink-0">
                     <svg className="h-6 w-6" viewBox="0 0 24 24">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -360,48 +285,51 @@ function LoginContent() {
                 </div>
               </Button>
 
-              <Button 
-                variant="outline" 
-                className="h-20 rounded-2xl border-2 border-green-500/20 bg-green-500/5 hover:bg-green-500/10 text-green-700 font-black"
-                onClick={() => setMethod("phone")}
-              >
+              <Button variant="outline" className="h-20 rounded-2xl border-2 border-green-500/20 bg-green-500/5 text-green-700 font-black" onClick={() => setMethod("phone")}>
                 <div className="flex items-center gap-4 w-full">
-                  <div className="bg-white p-2 rounded-xl border-2 shrink-0">
-                    <Smartphone className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black">Phone Number</p>
-                    <p className="text-[10px] opacity-60">Malawi Local Support</p>
-                  </div>
+                  <div className="bg-white p-2 rounded-xl border-2"><Smartphone className="h-6 w-6" /></div>
+                  <div className="text-left"><p className="text-sm font-black">Phone Number</p><p className="text-[10px] opacity-60">Local Support</p></div>
                 </div>
               </Button>
 
               <div className="relative flex items-center justify-center my-4">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-muted" /></div>
-                <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Other Professional Methods</span>
+                <span className="relative bg-white px-4 text-[8px] font-black uppercase text-muted-foreground tracking-widest">Other Methods</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="ghost" size="sm" className="h-12 rounded-xl text-[10px] font-black uppercase border border-dashed" onClick={() => setMethod("email-pass")}>
-                  <Mail className="mr-2 h-3.5 w-3.5" /> Email
-                </Button>
-                <Button variant="ghost" size="sm" className="h-12 rounded-xl text-[10px] font-black uppercase border border-dashed" onClick={() => setMethod("email-link")}>
-                  <Fingerprint className="mr-2 h-3.5 w-3.5" /> Magic Link
-                </Button>
+                <Button variant="ghost" className="h-12 rounded-xl text-[10px] font-black uppercase border border-dashed" onClick={() => setMethod("email-pass")}><Mail className="mr-2 h-3.5 w-3.5" /> Email</Button>
+                <Button variant="ghost" className="h-12 rounded-xl text-[10px] font-black uppercase border border-dashed" onClick={() => setMethod("email-link")}><Fingerprint className="mr-2 h-3.5 w-3.5" /> Magic Link</Button>
               </div>
             </div>
           )}
 
-          {method !== "choice" && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <button 
-                onClick={() => setMethod("choice")}
-                className="flex items-center gap-2 text-[10px] font-black uppercase text-primary mb-4"
-              >
-                <ChevronLeft className="h-3 w-3" /> Back to quick options
-              </button>
+          {method === "finish-profile" && (
+            <form onSubmit={handleFinishProfile} className="space-y-6 animate-in slide-in-from-right-4">
+              <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                <p className="text-xs font-bold text-primary mb-1">One last step!</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">Pick a username to represent your brand in Malawi.</p>
+              </div>
+              <div className="grid gap-4">
+                <div className="grid gap-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Desired @Username</Label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="e.g. john_pro" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
+                  </div>
+                </div>
+                <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl" type="submit" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+                  Finish Profile <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
+            </form>
+          )}
 
-              <form onSubmit={method === "email-link" ? handleMagicLink : handleAuth} className="grid gap-4">
+          {method !== "choice" && method !== "finish-profile" && (
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+              <button onClick={() => setMethod("choice")} className="flex items-center gap-2 text-[10px] font-black uppercase text-primary mb-4"><ChevronLeft className="h-3 w-3" /> Back</button>
+              <form onSubmit={handleAuth} className="grid gap-4">
                 {isSignUp && (
                   <>
                     <div className="grid gap-1">
@@ -414,49 +342,31 @@ function LoginContent() {
                     </div>
                   </>
                 )}
-
                 {method === "phone" ? (
                   <div className="grid gap-1">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Malawi Phone Number</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                      <Input type="tel" placeholder="0989999999" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
-                    </div>
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Malawi Phone</Label>
+                    <div className="relative"><Phone className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><Input type="tel" placeholder="0989999999" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required /></div>
                   </div>
                 ) : (
                   <div className="grid gap-1">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                      <Input type="email" placeholder="email@example.com" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    </div>
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Email</Label>
+                    <div className="relative"><Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><Input type="email" placeholder="email@example.com" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
                   </div>
                 )}
-
-                {method !== "email-link" && (
-                  <div className="grid gap-1">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                      <Input type="password" placeholder="••••••••" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                    </div>
-                  </div>
-                )}
-
-                <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl mt-2 group" type="submit" disabled={isLoading}>
+                <div className="grid gap-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Password</Label>
+                  <div className="relative"><Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><Input type="password" placeholder="••••••••" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+                </div>
+                <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl" type="submit" disabled={isLoading}>
                   {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                  {method === "email-link" ? "Send Magic Link" : isSignUp ? "Finish My Profile" : "Sign In to My Hub"}
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  {isSignUp ? "Create Account" : "Sign In"}
                 </Button>
               </form>
             </div>
           )}
         </CardContent>
-        
         <CardFooter className="bg-muted/30 p-6 flex flex-col gap-2">
-          <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest">
-            <Globe className="inline h-3 w-3 mr-1" /> Secure National Gateway v2.0
-          </p>
+          <p className="text-[9px] font-bold text-center text-muted-foreground uppercase tracking-widest"><Globe className="inline h-3 w-3 mr-1" /> Secure National Gateway v2.1</p>
         </CardFooter>
       </Card>
     </div>
@@ -465,12 +375,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-[80vh] items-center justify-center flex-col gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="font-black text-[10px] uppercase tracking-widest animate-pulse">Initializing Secure Gateway...</p>
-      </div>
-    }>
+    <Suspense fallback={<div className="flex min-h-[80vh] items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
       <LoginContent />
     </Suspense>
   );
