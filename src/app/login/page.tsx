@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -125,6 +126,17 @@ function LoginContent() {
         return;
       }
 
+      // Handle Referral logic
+      let referrerUid = null;
+      const refToTry = manualReferral || urlReferral;
+      if (refToTry) {
+        const refRef = doc(db, "referralCodes", refToTry.toUpperCase());
+        const refSnap = await getDoc(refRef);
+        if (refSnap.exists()) {
+          referrerUid = refSnap.data().uid;
+        }
+      }
+
       const uid = pendingUser.uid;
       const yellowAvatar = PlaceHolderImages.find(img => img.id === 'avatar-default-yellow')?.imageUrl || "";
       const newCode = `GL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -151,6 +163,7 @@ function LoginContent() {
         profileViews: 0,
         referralCode: newCode,
         referralCount: 0,
+        invitedBy: referrerUid || "",
         activeBenefits: [promoBenefit],
         isPro: true, 
         isAvailable: true,
@@ -162,6 +175,15 @@ function LoginContent() {
 
       await setDoc(nameRef, { uid });
       await setDoc(doc(db, "referralCodes", newCode), { uid });
+
+      // Reward the referrer
+      if (referrerUid) {
+        const referrerProfileRef = doc(db, "workerProfiles", referrerUid);
+        await updateDoc(referrerProfileRef, {
+          referralCount: increment(1),
+          updatedAt: serverTimestamp()
+        });
+      }
 
       setIsSuccess(true);
       setTimeout(() => router.push("/profile"), 1800);
@@ -243,7 +265,7 @@ function LoginContent() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] py-12 px-4 max-w-4xl mx-auto">
       <div className="w-full text-center mb-10 space-y-4">
-        <Logo className="scale-125 mb-4 mx-auto" />
+        <Logo size="lg" className="mb-4 mx-auto" />
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none">
           Claim Your <span className="text-primary">Professional</span> Handle.
         </h1>
@@ -308,7 +330,7 @@ function LoginContent() {
             <form onSubmit={handleFinishProfile} className="space-y-6 animate-in slide-in-from-right-4">
               <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
                 <p className="text-xs font-bold text-primary mb-1">One last step!</p>
-                <p className="text-[10px] text-muted-foreground leading-tight">Pick a username to represent your brand in Malawi.</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">Pick a username and enter an optional referral code to finalize setup.</p>
               </div>
               <div className="grid gap-4">
                 <div className="grid gap-1">
@@ -316,6 +338,13 @@ function LoginContent() {
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="e.g. john_pro" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={desiredUsername} onChange={(e) => setDesiredUsername(e.target.value)} required />
+                  </div>
+                </div>
+                <div className="grid gap-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Referral Code (Optional)</Label>
+                  <div className="relative">
+                    <Ticket className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="e.g. GL-ABC123" className="h-12 pl-10 rounded-xl bg-muted/10 border-2" value={manualReferral} onChange={(e) => setManualReferral(e.target.value)} />
                   </div>
                 </div>
                 <Button className="w-full h-16 rounded-full font-black text-lg shadow-xl" type="submit" disabled={isLoading}>

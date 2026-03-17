@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -23,7 +24,10 @@ import {
   Crown,
   TrendingUp,
   Star,
-  Clock
+  Clock,
+  Gift,
+  Copy,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -175,6 +179,17 @@ export default function ProfilePage() {
     }
   };
 
+  const copyInviteLink = () => {
+    const link = `${window.location.origin}/login?ref=${profile?.referralCode}`;
+    navigator.clipboard.writeText(link);
+    toast({ title: "Invite Link Copied", description: "Share this to build your reputation." });
+  };
+
+  const copyReferralCode = () => {
+    navigator.clipboard.writeText(profile?.referralCode || "");
+    toast({ title: "Code Copied" });
+  };
+
   if (!user || isProfileLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -205,13 +220,19 @@ export default function ProfilePage() {
             <div><p className="text-[10px] font-black uppercase text-muted-foreground">Rewards</p><p className="text-xl font-black">{profile?.rewardCredits || 0} Cr</p></div>
           </div>
         </Card>
+        <Card className="border-none shadow-sm bg-secondary/10 p-4 rounded-3xl col-span-2 md:col-span-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary/10 rounded-xl text-secondary"><Users className="h-4 w-4" /></div>
+            <div><p className="text-[10px] font-black uppercase text-muted-foreground">Invites</p><p className="text-xl font-black">{profile?.referralCount || 0}</p></div>
+          </div>
+        </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-1 space-y-6">
           <Card className="border-none shadow-sm text-center pt-6 overflow-hidden">
             <CardContent className="flex flex-col items-center gap-4">
-              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <div className="relative group cursor-pointer" id="profile-camera-btn" onClick={() => fileInputRef.current?.click()}>
                 <Avatar className="h-32 w-32 border-4 border-primary shadow-xl">
                   <AvatarImage src={newProfilePic || profile?.profilePictureUrl || ""} className="object-cover" />
                   <AvatarFallback className="text-2xl font-black">{profile?.name?.charAt(0)}</AvatarFallback>
@@ -247,6 +268,29 @@ export default function ProfilePage() {
                 <p className="text-lg font-black break-all">@{username}</p>
               </div>
             </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-lg bg-secondary/10 p-6 rounded-[2.5rem] border-2 border-secondary/20">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Gift className="h-5 w-5 text-secondary" />
+                <h3 className="font-black text-sm uppercase tracking-tight">Invite & Earn</h3>
+              </div>
+              <Button variant="ghost" size="sm" asChild className="h-8 text-[9px] font-black uppercase tracking-widest"><Link href="/referrals">Roadmap</Link></Button>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <code className="text-xs font-mono bg-white px-3 py-2.5 rounded-xl border-2 border-secondary/20 flex-1 text-center font-black text-primary uppercase tracking-tighter">
+                  {profile?.referralCode || "LOADING..."}
+                </code>
+                <Button size="icon" variant="secondary" className="h-11 w-11 shrink-0 rounded-xl shadow-sm" onClick={copyReferralCode}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button variant="secondary" className="w-full h-12 rounded-xl font-black text-[10px] uppercase tracking-[0.1em] shadow-md" onClick={copyInviteLink}>
+                Copy Professional Invite Link
+              </Button>
+            </div>
           </Card>
         </div>
 
@@ -297,7 +341,7 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
               <CardFooter className="bg-muted/10 border-t">
-                <Button type="submit" disabled={isSaving || usernameStatus === "taken"} className="w-full rounded-full py-6 text-lg font-black shadow-lg">
+                <Button type="submit" id="profile-save-btn" disabled={isSaving || usernameStatus === "taken"} className="w-full rounded-full py-6 text-lg font-black shadow-lg">
                   {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}Update Profile
                 </Button>
               </CardFooter>

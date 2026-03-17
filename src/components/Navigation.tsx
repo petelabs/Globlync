@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from "react";
@@ -36,19 +37,20 @@ import { getMessaging, onMessage } from "firebase/messaging";
 import { useToast } from "@/hooks/use-toast";
 import { collection, query, where, doc } from "firebase/firestore";
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({ className, size = "sm" }: { className?: string, size?: "sm" | "lg" }) {
+  const isLarge = size === "lg";
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-3 w-fit", className)}>
       <Image 
         src="/logo.png" 
         alt="Globlync Logo" 
-        width={32} 
-        height={32} 
+        width={isLarge ? 48 : 32} 
+        height={isLarge ? 48 : 32} 
         className="rounded-xl shadow-lg shrink-0"
       />
       <div className="flex flex-col -space-y-1 text-left">
-        <span className="text-xl font-black tracking-tighter text-primary">Globlync</span>
-        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-secondary">Global Network</span>
+        <span className={cn("font-black tracking-tighter text-primary leading-none", isLarge ? "text-3xl" : "text-xl")}>Globlync</span>
+        <span className={cn("font-black uppercase tracking-[0.2em] text-secondary", isLarge ? "text-[10px]" : "text-[8px]")}>Global Network</span>
       </div>
     </div>
   );
