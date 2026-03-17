@@ -1,6 +1,6 @@
-
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -20,7 +20,7 @@ import {
   Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
+import { useUser, useAuth, useFirebaseApp, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu, 
@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { signOut } from "firebase/auth";
+import { getMessaging, onMessage } from "firebase/messaging";
 import { useToast } from "@/hooks/use-toast";
 import { collection, query, where, doc } from "firebase/firestore";
 
@@ -59,7 +60,28 @@ export function Navigation() {
   const { user } = useUser();
   const db = useFirestore();
   const auth = useAuth();
+  const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
+
+  const isHomePage = pathname === "/" || pathname === "/home";
+
+  // Listen for foreground cloud messages
+  useEffect(() => {
+    if (typeof window !== "undefined" && firebaseApp) {
+      try {
+        const messaging = getMessaging(firebaseApp);
+        onMessage(messaging, (payload) => {
+          console.log('Message received. ', payload);
+          toast({
+            title: payload.notification?.title || "Professional Alert",
+            description: payload.notification?.body || "You have a new message from Globlync.",
+          });
+        });
+      } catch (err) {
+        // Messaging might not be supported in all browsers
+      }
+    }
+  }, [firebaseApp]);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -196,9 +218,11 @@ export function Navigation() {
                 </DropdownMenu>
               </>
             ) : (
-              <Button asChild className="rounded-full shadow-lg font-black px-4 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm whitespace-nowrap" size="sm">
-                <Link href="/login">Join Now</Link>
-              </Button>
+              !isHomePage && (
+                <Button asChild className="rounded-full shadow-lg font-black px-4 sm:px-8 h-9 sm:h-11 text-[10px] sm:text-sm whitespace-nowrap" size="sm">
+                  <Link href="/login">Join Now</Link>
+                </Button>
+              )
             )}
           </div>
         </div>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,8 +16,8 @@
     --secondary-foreground: 0 0% 10%;
     --muted: 173 10% 95%;
     --muted-foreground: 173 20% 40%;
-    --accent: 43 100% 95%;
-    --accent-foreground: 173 100% 24%;
+    --accent: 160 84% 39%; /* Malawi Mint Accent */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 173 20% 90%;
@@ -45,7 +44,7 @@
     --secondary-foreground: 173 100% 5%;
     --muted: 173 30% 15%;
     --muted-foreground: 173 10% 65%;
-    --accent: 173 30% 15%;
+    --accent: 160 84% 45%;
     --accent-foreground: 173 10% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 173 10% 98%;
@@ -89,7 +88,7 @@
     background: linear-gradient(
       to right, 
       hsl(var(--primary)) 20%, 
-      hsl(var(--secondary)) 40%, 
+      hsl(var(--accent)) 40%, 
       hsl(var(--secondary)) 60%, 
       hsl(var(--primary)) 80%
     );
@@ -99,6 +98,19 @@
     background-clip: text;
     animation: shimmer 6s ease-in-out infinite;
     display: inline-block;
+  }
+
+  .animate-button-shimmer {
+    background: linear-gradient(
+      45deg, 
+      hsl(var(--primary)) 0%, 
+      hsl(var(--primary)) 40%, 
+      hsl(var(--accent)) 50%, 
+      hsl(var(--primary)) 60%, 
+      hsl(var(--primary)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
   }
 
   @keyframes bounce-subtle {
@@ -111,8 +123,8 @@
   }
 
   @keyframes pulse-soft {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
-    50% { transform: scale(1.02); box-shadow: 0 0 20px 5px rgba(255, 193, 7, 0.2); }
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    50% { transform: scale(1.02); box-shadow: 0 0 30px 10px rgba(16, 185, 129, 0.3); }
   }
 
   .animate-pulse-cta {

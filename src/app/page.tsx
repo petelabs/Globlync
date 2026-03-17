@@ -75,26 +75,26 @@ export default function Home() {
     <div className="flex flex-col gap-16 py-6 overflow-x-hidden">
       {/* Promotion Banner */}
       <section className="max-w-5xl mx-auto w-full px-4">
-        <Card className="border-none bg-secondary/10 border-2 border-secondary/20 rounded-[2.5rem] overflow-hidden relative group shadow-xl">
+        <Card className="border-none bg-accent/10 border-2 border-accent/20 rounded-[2.5rem] overflow-hidden relative group shadow-xl">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Crown className="h-32 w-32" />
           </div>
           <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8 relative z-10">
-            <div className="bg-secondary p-6 rounded-[2rem] shadow-lg text-white animate-bounce">
+            <div className="bg-accent p-6 rounded-[2rem] shadow-lg text-white animate-bounce">
               <Gift className="h-10 w-10" />
             </div>
             <div className="space-y-2 flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2">
-                <Badge className="bg-secondary text-white font-black text-[9px] uppercase tracking-[0.2em]">Pioneer Bonus Active</Badge>
+                <Badge className="bg-accent text-white font-black text-[9px] uppercase tracking-[0.2em]">Pioneer Bonus Active</Badge>
               </div>
               <h2 className="text-3xl font-black tracking-tighter text-foreground leading-tight">
-                15 Days <span className="text-secondary">FREE Pro VIP</span> for First 500 Recruits!
+                15 Days <span className="text-accent">FREE Pro VIP</span> for First 500 Recruits!
               </h2>
               <p className="text-sm text-muted-foreground font-medium max-w-xl">
                 Join the national directory today. Every new account registered in the next 60 days automatically earns 15 days of Pro status to build a verifiable reputation.
               </p>
             </div>
-            <Button size="lg" className="rounded-full px-8 bg-secondary hover:bg-secondary/90 text-white font-black h-14" asChild>
+            <Button size="lg" className="rounded-full px-8 bg-accent hover:bg-accent/90 text-white font-black h-14" asChild>
               <Link href="/login">Claim My 15 Days</Link>
             </Button>
           </CardContent>
@@ -120,20 +120,20 @@ export default function Home() {
         </div>
         
         <p className="max-w-[800px] text-lg text-muted-foreground sm:text-xl font-medium leading-relaxed">
-          The national directory for Malawian skilled workers and remote pros. Build an <span className="text-primary font-bold underline decoration-secondary">Evidence-Based Profile</span> that employers can verify instantly.
+          The national directory for Malawian skilled workers and remote pros. Build an <span className="text-primary font-bold underline decoration-accent">Evidence-Based Profile</span> that employers can verify instantly.
         </p>
 
-        <div className="flex flex-col gap-6 sm:flex-row mt-10 w-full max-w-xl">
+        <div className="flex flex-col gap-6 sm:flex-row mt-10 w-full max-w-2xl">
           {user ? (
-            <Button size="lg" className="rounded-full px-10 h-24 text-2xl shadow-2xl hover:scale-105 transition-transform font-black flex-1 animate-pulse-cta" asChild>
-              <Link href="/profile">Open My Hub <ArrowRight className="ml-2 h-8 w-8" /></Link>
+            <Button size="lg" className="rounded-full px-10 h-28 text-3xl shadow-2xl hover:scale-105 transition-all font-black flex-1 animate-pulse-cta border-4 border-accent/20 bg-accent text-white" asChild>
+              <Link href="/profile">OPEN MY HUB <ArrowRight className="ml-3 h-10 w-10" /></Link>
             </Button>
           ) : (
             <>
-              <Button size="lg" className="rounded-full px-12 h-24 text-2xl shadow-[0_20px_50px_-12px_rgba(0,121,107,0.4)] hover:scale-105 transition-transform font-black flex-1 bg-primary animate-pulse-cta" asChild>
+              <Button size="lg" className="rounded-full px-12 h-32 text-3xl shadow-[0_32px_64px_-12px_rgba(16,185,129,0.4)] hover:scale-105 transition-all font-black flex-1 animate-pulse-cta animate-button-shimmer text-white border-4 border-white/20" asChild>
                 <Link href="/login">CREATE MY ACCOUNT</Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-full px-10 h-24 text-2xl font-black border-4 flex-1 hover:bg-muted/50 transition-all" asChild>
+              <Button size="lg" variant="outline" className="rounded-full px-10 h-32 text-3xl font-black border-4 flex-1 hover:bg-muted/50 transition-all" asChild>
                 <Link href="/login">SIGN IN</Link>
               </Button>
             </>
@@ -145,7 +145,7 @@ export default function Home() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap py-4">
             {[1,2,3,4,5,6].map(i => (
               <div key={i} className="flex items-center gap-2 bg-white shadow-sm border px-4 py-2 rounded-full">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
                 <span className="text-[10px] font-black uppercase tracking-tight text-muted-foreground">Recent Evidence Verified in Malawi: @pro_member_{i}</span>
               </div>
             ))}
