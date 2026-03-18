@@ -49,7 +49,7 @@ service cloud.firestore {
       }
     }
 
-    // Community Job Board: LOW FRICTION (Like Ratings logic requested)
+    // Community Job Board: LOW FRICTION (Open like Ratings as requested)
     match /communityJobs/{jobId} {
       allow read, write: if true;
     }

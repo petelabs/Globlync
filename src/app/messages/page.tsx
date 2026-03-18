@@ -20,7 +20,7 @@ export default function MessagesPage() {
         </div>
         <h1 className="text-4xl font-black tracking-tighter">Secure <span className="text-primary">Messaging.</span></h1>
         <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed font-medium">
-          We are finalizing the end-to-end encryption for the Malawian professional network. Direct links between professionals will be active shortly.
+          We are finalizing the identity-locked channels for the Malawian professional directory. Direct secure links will be active shortly.
         </p>
       </div>
 
@@ -30,14 +30,14 @@ export default function MessagesPage() {
             <div className="bg-white p-2 rounded-xl shadow-sm"><ShieldCheck className="h-5 w-5 text-primary" /></div>
             <div>
               <h4 className="text-xs font-black uppercase">Verified Privacy</h4>
-              <p className="text-[10px] text-muted-foreground leading-tight">Identity-locked channels for secure business inquiries.</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">Identity-locked channels for secure business inquiries across Malawi.</p>
             </div>
           </div>
           <div className="flex items-start gap-4 text-left">
             <div className="bg-white p-2 rounded-xl shadow-sm"><Sparkles className="h-5 w-5 text-secondary" /></div>
             <div>
               <h4 className="text-xs font-black uppercase">Reputation Linked</h4>
-              <p className="text-[10px] text-muted-foreground leading-tight">See trust scores directly inside the chat window.</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">See trust scores directly inside the chat window before you hire.</p>
             </div>
           </div>
         </div>

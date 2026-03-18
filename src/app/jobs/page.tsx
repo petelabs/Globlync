@@ -19,7 +19,8 @@ import {
   MessageSquare,
   AlertCircle,
   CheckCircle2,
-  Trophy
+  Trophy,
+  ArrowRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -35,6 +36,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function JobsBoardPage() {
   const { user } = useUser();
@@ -51,7 +53,7 @@ export default function JobsBoardPage() {
     applyLink: "",
   });
 
-  // Query only community-posted jobs (Low friction rules allow this list call)
+  // Query community jobs from Firestore - OPEN RULES prevent errors
   const jobsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "communityJobs"), orderBy("createdAt", "desc"));
@@ -101,7 +103,7 @@ export default function JobsBoardPage() {
             Malawi <span className="text-primary">Opportunities.</span>
           </h1>
           <p className="text-muted-foreground text-lg font-medium max-w-2xl mx-auto">
-            A community-driven board for Malawian professionals. Post a vacancy or find your next professional milestone instantly.
+            The national board for community-verified vacancies. Post roles directly or find your next milestone.
           </p>
         </div>
 
@@ -117,42 +119,42 @@ export default function JobsBoardPage() {
                 <DialogHeader className="p-8 bg-primary text-primary-foreground">
                   <DialogTitle className="text-2xl font-black tracking-tight">Post Local Vacancy</DialogTitle>
                   <DialogDescription className="text-primary-foreground/70 font-medium">
-                    Your listing will go live instantly to the Malawian community.
+                    Your listing will go live instantly to the Malawian professional network.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handlePostJob} className="p-8 space-y-4">
                   <div className="grid gap-2">
                     <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest ml-1">Job Title</Label>
-                    <Input id="title" placeholder="e.g. Senior Accountant" required value={newJob.title} onChange={e => setNewJob({...newJob, title: e.target.value})} className="h-12 rounded-xl" />
+                    <Input id="title" placeholder="e.g. Senior Masonry Expert" required value={newJob.title} onChange={e => setNewJob({...newJob, title: e.target.value})} className="h-12 rounded-xl" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="company" className="text-[10px] font-black uppercase tracking-widest ml-1">Company</Label>
+                      <Label htmlFor="company" className="text-[10px] font-black uppercase tracking-widest ml-1">Company / Entity</Label>
                       <Input id="company" placeholder="Local Enterprise" required value={newJob.company} onChange={e => setNewJob({...newJob, company: e.target.value})} className="h-12 rounded-xl" />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="location" className="text-[10px] font-black uppercase tracking-widest ml-1">Location</Label>
-                      <Input id="location" placeholder="Lilongwe, MWA" required value={newJob.location} onChange={e => setNewJob({...newJob, location: e.target.value})} className="h-12 rounded-xl" />
+                      <Input id="location" placeholder="Mulanje, MWA" required value={newJob.location} onChange={e => setNewJob({...newJob, location: e.target.value})} className="h-12 rounded-xl" />
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="desc" className="text-[10px] font-black uppercase tracking-widest ml-1">Description & Requirements</Label>
+                    <Label htmlFor="desc" className="text-[10px] font-black uppercase tracking-widest ml-1">Requirements & Details</Label>
                     <Textarea id="desc" placeholder="Describe the role..." required value={newJob.description} onChange={e => setNewJob({...newJob, description: e.target.value})} className="min-h-[100px] rounded-xl" />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="apply" className="text-[10px] font-black uppercase tracking-widest ml-1">How to Apply (Email/Link)</Label>
+                    <Label htmlFor="apply" className="text-[10px] font-black uppercase tracking-widest ml-1">How to Apply (Email or Link)</Label>
                     <Input id="apply" placeholder="jobs@example.mw" required value={newJob.applyLink} onChange={e => setNewJob({...newJob, applyLink: e.target.value})} className="h-12 rounded-xl" />
                   </div>
                   <Button type="submit" className="w-full h-14 rounded-full font-black text-lg mt-4 shadow-xl" disabled={isPosting}>
                     {isPosting ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
-                    Post Vacancy Now
+                    Confirm & Post Vacancy
                   </Button>
                 </form>
               </DialogContent>
             </Dialog>
           ) : (
-            <Button variant="outline" className="rounded-full font-black px-10 h-16 border-4" onClick={() => window.location.href='/login'}>
-              Sign In to Post Jobs
+            <Button variant="outline" className="rounded-full font-black px-10 h-16 border-4" asChild>
+              <Link href="/login">Sign In to Post Jobs</Link>
             </Button>
           )}
 
@@ -162,7 +164,7 @@ export default function JobsBoardPage() {
             asChild
           >
             <a href="https://wa.me/265987066051" target="_blank">
-              <MessageSquare className="mr-3 h-6 w-6" /> Featured Listing (K1000)
+              <MessageSquare className="mr-3 h-6 w-6" /> WhatsApp Support
             </a>
           </Button>
         </div>
@@ -175,14 +177,14 @@ export default function JobsBoardPage() {
             <Trophy className="h-10 w-10 text-primary" />
           </div>
           <div className="space-y-2">
-            <DialogTitle className="text-3xl font-black tracking-tight">Job Posted!</DialogTitle>
+            <DialogTitle className="text-3xl font-black tracking-tight">Vacancy Live!</DialogTitle>
             <DialogDescription className="font-medium text-muted-foreground">
-              Your vacancy is now visible to thousands of Malawian professionals. 
+              Your community vacancy is now visible to professionals across Malawi.
             </DialogDescription>
           </div>
           <Card className="border-none bg-secondary/10 p-6 rounded-3xl text-left border-2 border-secondary/20">
             <h4 className="font-black text-secondary text-sm flex items-center gap-2 mb-2 uppercase">
-              <Sparkles className="h-4 w-4" /> Want 10x More Reach?
+              <Sparkles className="h-4 w-4" /> Reach 10x More Pros
             </h4>
             <p className="text-xs font-bold leading-tight mb-4">Feature this job at the top of the board for 2 weeks for only <span className="text-primary font-black">K1000</span>.</p>
             <Button className="w-full rounded-full bg-secondary text-secondary-foreground font-black shadow-lg" asChild>
@@ -190,7 +192,7 @@ export default function JobsBoardPage() {
             </Button>
           </Card>
           <Button variant="ghost" className="w-full text-xs font-bold uppercase tracking-widest" onClick={() => setIsSuccessOpen(false)}>
-            Maybe Later
+            Close & View Board
           </Button>
         </DialogContent>
       </Dialog>
@@ -198,7 +200,7 @@ export default function JobsBoardPage() {
       <section className="grid gap-6 w-full max-w-4xl mx-auto pb-20">
         <div className="flex items-center justify-between px-4 mb-4">
           <h2 className="text-lg font-black uppercase tracking-[0.2em] text-primary">
-            Latest National Vacancies
+            Latest National Listings
           </h2>
           {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
         </div>
@@ -241,11 +243,11 @@ export default function JobsBoardPage() {
               </CardContent>
               <CardFooter className="bg-muted/30 p-6 flex justify-between items-center px-8">
                 <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                  <AlertCircle className="h-3.5 w-3.5 opacity-40" /> Verify employer legacy before applying
+                  <AlertCircle className="h-3.5 w-3.5 opacity-40" /> Apply using your verified profile link
                 </div>
                 <Button className="rounded-full font-black px-8 h-12 uppercase shadow-lg group-hover:scale-105 transition-transform" asChild>
                   <a href={job.applyLink.includes('@') ? `mailto:${job.applyLink}` : job.applyLink} target="_blank">
-                    Quick Apply <ChevronRight className="ml-2 h-4 w-4" />
+                    Quick Apply <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
               </CardFooter>
@@ -255,7 +257,7 @@ export default function JobsBoardPage() {
           <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed mx-2 flex flex-col items-center gap-6">
             <Briefcase className="h-16 w-16 text-muted-foreground/20" />
             <p className="text-muted-foreground font-black text-2xl">No vacancies posted yet.</p>
-            <p className="text-muted-foreground text-sm font-medium -mt-4">Be the first to post a community vacancy!</p>
+            <p className="text-muted-foreground text-sm font-medium -mt-4">Help Malawian pros find work by posting your first community vacancy!</p>
           </div>
         ) : (
           <div className="space-y-6 w-full">
