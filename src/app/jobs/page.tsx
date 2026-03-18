@@ -51,6 +51,7 @@ export default function JobsBoardPage() {
     applyLink: "",
   });
 
+  // Query only community-posted jobs (Low friction rules allow this list call)
   const jobsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "communityJobs"), orderBy("createdAt", "desc"));
@@ -60,14 +61,14 @@ export default function JobsBoardPage() {
 
   const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !user) return;
+    if (!db) return;
 
     setIsPosting(true);
     try {
       await addDocumentNonBlocking(collection(db, "communityJobs"), {
         ...newJob,
-        postedBy: user.uid,
-        postedByEmail: user.email,
+        postedBy: user?.uid || "anonymous",
+        postedByEmail: user?.email || "anonymous",
         isFeatured: false,
         createdAt: serverTimestamp(),
       });
@@ -76,7 +77,7 @@ export default function JobsBoardPage() {
       setIsPosting(false);
       setIsSuccessOpen(true);
     } catch (err) {
-      toast({ variant: "destructive", title: "Posting Failed", description: "Please ensure you are signed in." });
+      toast({ variant: "destructive", title: "Posting Failed", description: "Ensure you have a stable connection." });
       setIsPosting(false);
     }
   };

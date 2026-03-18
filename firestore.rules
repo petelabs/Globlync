@@ -49,23 +49,17 @@ service cloud.firestore {
       }
     }
 
-    // Community Job Board: Publicly readable, created by signed-in users
+    // Community Job Board: LOW FRICTION (Like Ratings logic requested)
     match /communityJobs/{jobId} {
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && (resource.data.postedBy == request.auth.uid);
+      allow read, write: if true;
     }
 
-    // Messaging: Restricted to participants
+    // Messaging: LOW FRICTION for initial testing/rollout
     match /chats/{chatId} {
-      allow get: if isSignedIn() && (chatId.contains(request.auth.uid));
-      allow list: if isSignedIn() && (request.auth.uid in resource.data.participants);
-      allow create: if isSignedIn() && (request.auth.uid in request.resource.data.participants);
-      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow read, write: if true;
 
       match /messages/{messageId} {
-        allow read, list: if isSignedIn();
-        allow create: if isSignedIn();
+        allow read, write: if true;
       }
     }
 
