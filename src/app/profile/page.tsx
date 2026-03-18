@@ -26,7 +26,10 @@ import {
   Clock,
   Gift,
   Copy,
-  Users
+  Users,
+  Download,
+  Palette,
+  Check
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -35,12 +38,17 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocki
 import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, addDays, isAfter } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toPng } from 'html-to-image';
+
+type CardTheme = "teal" | "amber" | "cosmic" | "midnight";
 
 export default function ProfilePage() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -61,6 +69,8 @@ export default function ProfilePage() {
   const [newProfilePic, setNewProfilePic] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [profileUrl, setProfileUrl] = useState("");
+  const [cardTheme, setCardTheme] = useState<CardTheme>("teal");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && user?.uid) {
@@ -189,12 +199,36 @@ export default function ProfilePage() {
     toast({ title: "Code Copied" });
   };
 
+  const downloadIDCard = async () => {
+    if (!cardRef.current) return;
+    setIsDownloading(true);
+    try {
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, quality: 1 });
+      const link = document.createElement('a');
+      link.download = `globlync-id-${profile?.username || 'pro'}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast({ title: "ID Card Saved!", description: "Share your professional status with the world." });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Download Failed", description: "Could not generate ID card image." });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (!user || isProfileLoading) return (
     <div className="flex min-h-[60vh] items-center justify-center flex-col gap-4">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Syncing Hub...</p>
     </div>
   );
+
+  const themeConfig = {
+    teal: "bg-primary text-white",
+    amber: "bg-[#FFC107] text-[#0f172a]",
+    cosmic: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white",
+    midnight: "bg-[#0f172a] text-emerald-400 border-2 border-emerald-500/20",
+  };
 
   return (
     <div className="flex flex-col gap-6 py-4 max-w-4xl mx-auto px-2 pb-32">
@@ -257,17 +291,108 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          <Card className="border-none shadow-xl rounded-[2rem] bg-primary text-primary-foreground overflow-hidden">
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-black uppercase flex items-center gap-2"><QrCode className="h-4 w-4" /> Professional ID</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-white p-4 rounded-3xl flex justify-center shadow-inner">
-                {profileUrl ? <QRCodeSVG value={profileUrl} size={140} level="H" className="rounded-sm" /> : <div className="h-[140px] w-[140px] bg-muted animate-pulse" />}
+          {/* CUSTOMIZABLE QR ID CARD DIALOG */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="w-full rounded-3xl h-24 text-lg font-black shadow-xl bg-primary text-white border-4 border-white/20 hover:scale-[1.02] transition-transform">
+                <QrCode className="mr-3 h-8 w-8" /> Customize My Digital ID
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md p-0 overflow-hidden rounded-[3rem] border-none shadow-2xl">
+              <DialogHeader className="p-8 bg-muted/30">
+                <DialogTitle className="text-2xl font-black tracking-tighter">Share Your Reputation</DialogTitle>
+                <DialogDescription className="font-medium">Download your professional card to share on social media.</DialogDescription>
+              </DialogHeader>
+              
+              <div className="p-8 space-y-8">
+                {/* THE CARD PREVIEW */}
+                <div 
+                  ref={cardRef}
+                  className={cn(
+                    "relative aspect-[4/5] rounded-[2.5rem] p-8 flex flex-col items-center justify-between shadow-2xl overflow-hidden",
+                    themeConfig[cardTheme]
+                  )}
+                >
+                  {/* Watermark Logo */}
+                  <div className="absolute top-8 left-8 opacity-40 flex items-center gap-2">
+                    <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-md">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <span className="text-[10px] font-black tracking-widest uppercase">Globlync Pro</span>
+                  </div>
+
+                  <div className="flex flex-col items-center mt-10 gap-4 text-center">
+                    <Avatar className="h-24 w-24 border-4 border-white/30 shadow-2xl">
+                      <AvatarImage src={profile?.profilePictureUrl || ""} className="object-cover" />
+                      <AvatarFallback className="font-black text-xl">{profile?.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-2xl font-black tracking-tight">{profile?.name}</h3>
+                      <p className={cn(
+                        "text-xs font-bold uppercase tracking-[0.2em] opacity-80",
+                        cardTheme === "midnight" ? "text-emerald-400" : ""
+                      )}>
+                        @{profile?.username}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* QR CODE CONTAINER */}
+                  <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl border-4 border-black/5 rotate-3 hover:rotate-0 transition-transform duration-500">
+                    {profileUrl ? (
+                      <QRCodeSVG 
+                        value={profileUrl} 
+                        size={160} 
+                        level="H" 
+                        includeMargin={false}
+                        fgColor={cardTheme === "midnight" ? "#0f172a" : "#000000"}
+                      />
+                    ) : <div className="h-[160px] w-[160px] animate-pulse bg-muted rounded-xl" />}
+                  </div>
+
+                  <div className="w-full text-center space-y-2 mb-4">
+                    <div className="inline-flex items-center gap-2 bg-black/10 px-4 py-1.5 rounded-full backdrop-blur-md">
+                      <ShieldCheck className="h-4 w-4" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">{profile?.trustScore} Verified Trust Score</span>
+                    </div>
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Build Your Reputation • Malawi Global Network</p>
+                  </div>
+                </div>
+
+                {/* THEME SELECTOR */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-4 w-4 text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Select Card Theme</span>
+                  </div>
+                  <div className="flex gap-3">
+                    {(Object.keys(themeConfig) as CardTheme[]).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setCardTheme(t)}
+                        className={cn(
+                          "h-12 w-12 rounded-2xl flex items-center justify-center transition-all shadow-sm border-2",
+                          cardTheme === t ? "border-primary scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100",
+                          themeConfig[t]
+                        )}
+                      >
+                        {cardTheme === t && <Check className="h-5 w-5" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full h-16 rounded-full font-black text-lg shadow-xl"
+                  onClick={downloadIDCard}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <Download className="mr-2 h-5 w-5" />}
+                  Download Pro ID Card
+                </Button>
               </div>
-              <div className="bg-black/20 p-4 rounded-2xl border border-white/10 text-center">
-                <p className="text-lg font-black break-all">@{username}</p>
-              </div>
-            </CardContent>
-          </Card>
+            </DialogContent>
+          </Dialog>
 
           <Card className="border-none shadow-lg bg-secondary/10 p-6 rounded-[2.5rem] border-2 border-secondary/20">
             <div className="flex items-center justify-between mb-4">
