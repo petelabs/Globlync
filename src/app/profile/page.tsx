@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -38,7 +37,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocki
 import { doc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, addDays, isAfter } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { toPng } from 'html-to-image';
 
 type CardTheme = "teal" | "amber" | "cosmic" | "midnight";
@@ -301,7 +300,7 @@ export default function ProfilePage() {
             <DialogContent className="max-w-md p-0 overflow-hidden rounded-[3rem] border-none shadow-2xl">
               <DialogHeader className="p-8 bg-muted/30">
                 <DialogTitle className="text-2xl font-black tracking-tighter">Share Your Reputation</DialogTitle>
-                <DialogDescription className="font-medium">Download your professional card to share on social media.</DialogDescription>
+                <DialogDescription className="font-medium text-sm pt-2">Download your professional card to share on social media.</DialogDescription>
               </DialogHeader>
               
               <div className="p-8 space-y-8">
@@ -437,13 +436,16 @@ export default function ProfilePage() {
                   </div>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input 
+                    <input 
                       id="username" 
                       placeholder="e.g. john_pro" 
                       value={username} 
                       onChange={(e) => { setUsername(e.target.value); checkUsername(e.target.value); }} 
                       disabled={!canChangeUsername}
-                      className={cn("pl-10 h-12 rounded-xl", !canChangeUsername && "opacity-50 cursor-not-allowed")}
+                      className={cn(
+                        "flex h-12 w-full rounded-xl border-2 bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                        !canChangeUsername && "opacity-50 cursor-not-allowed"
+                      )}
                     />
                     <div className="absolute right-3 top-3.5">
                       {usernameStatus === "checking" && <Loader2 className="h-4 w-4 animate-spin" />}
