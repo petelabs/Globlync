@@ -28,7 +28,8 @@ import {
   Users,
   Download,
   Palette,
-  Check
+  Check,
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -92,7 +93,7 @@ export default function ProfilePage() {
   const canChangeUsername = useMemo(() => {
     if (!profile?.lastUsernameChangeAt) return true;
     const lastChange = profile.lastUsernameChangeAt.toDate ? profile.lastUsernameChangeAt.toDate() : new Date(profile.lastUsernameChangeAt);
-    const cooldownEnd = addDays(lastChange, 14); // 14-day integrity cooldown
+    const cooldownEnd = addDays(lastChange, 14); 
     return isAfter(new Date(), cooldownEnd);
   }, [profile?.lastUsernameChangeAt]);
 
@@ -290,7 +291,6 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          {/* CUSTOMIZABLE QR ID CARD DIALOG */}
           <Dialog>
             <DialogTrigger asChild>
               <Button className="w-full rounded-3xl h-24 text-lg font-black shadow-xl bg-primary text-white border-4 border-white/20 hover:scale-[1.02] transition-transform">
@@ -304,7 +304,6 @@ export default function ProfilePage() {
               </DialogHeader>
               
               <div className="p-8 space-y-8">
-                {/* THE CARD PREVIEW */}
                 <div 
                   ref={cardRef}
                   className={cn(
@@ -312,7 +311,6 @@ export default function ProfilePage() {
                     themeConfig[cardTheme]
                   )}
                 >
-                  {/* Watermark Logo */}
                   <div className="absolute top-8 left-8 opacity-40 flex items-center gap-2">
                     <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-md">
                       <Sparkles className="h-4 w-4" />
@@ -336,7 +334,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* QR CODE CONTAINER */}
                   <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl border-4 border-black/5 rotate-3 hover:rotate-0 transition-transform duration-500">
                     {profileUrl ? (
                       <QRCodeSVG 
@@ -358,7 +355,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* THEME SELECTOR */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Palette className="h-4 w-4 text-primary" />
