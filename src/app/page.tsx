@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +21,8 @@ import {
   MapPin,
   Crown,
   MessageSquare,
-  Star
+  Star,
+  Smartphone
 } from "lucide-react";
 import Link from "next/link";
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
@@ -35,7 +37,16 @@ export default function Home() {
   const { user } = useUser();
   const db = useFirestore();
   const [globalTip, setGlobalTip] = useState<Motivation | null>(null);
-  const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    
+    const now = new Date();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const tipIndex = dayOfYear % MOTIVATIONAL_QUOTES.length;
+    setGlobalTip(MOTIVATIONAL_QUOTES[tipIndex]);
+  }, []);
 
   const workerRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -44,41 +55,32 @@ export default function Home() {
 
   const { data: profile } = useDoc(workerRef);
 
-  // Check if user is Pro
   const isPro = profile?.isPro || profile?.activeBenefits?.some((b: any) => new Date(b.expiresAt) > new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      if (user && profile?.createdAt) {
-        const signupDate = profile.createdAt?.toDate ? profile.createdAt.toDate() : new Date(profile.createdAt);
-        const expiryDate = new Date(signupDate.getTime() + 24 * 60 * 60 * 1000);
-        const diff = expiryDate.getTime() - now.getTime();
-
-        if (diff > 0) {
-          setTimeLeft({ 
-            h: Math.floor(diff / (1000 * 60 * 60)), 
-            m: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)), 
-            s: Math.floor((diff % (1000 * 60)) / 1000) 
-          });
-        } else {
-          setTimeLeft(null);
-        }
-      } else {
-        setTimeLeft(null);
-      }
-    }, 1000);
-
-    const now = new Date();
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    const tipIndex = dayOfYear % MOTIVATIONAL_QUOTES.length;
-    setGlobalTip(MOTIVATIONAL_QUOTES[tipIndex]);
-
-    return () => clearInterval(timer);
-  }, [profile, user]);
 
   return (
     <div className="flex flex-col gap-12 py-6 overflow-x-hidden">
+      {/* Installation Banner for Mobile */}
+      {isMobile && (
+        <section className="max-w-5xl mx-auto w-full px-4 animate-in slide-in-from-top-4 duration-500">
+          <Card className="bg-primary border-none text-white rounded-3xl overflow-hidden shadow-2xl">
+            <CardContent className="p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-xl">
+                  <Smartphone className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-tight">App Experience Ready</p>
+                  <p className="text-[10px] opacity-80 font-medium">Install Globlync for instant reputation tracking.</p>
+                </div>
+              </div>
+              <Button size="sm" variant="secondary" className="rounded-full font-black text-[9px] uppercase px-4 h-8 shadow-lg">
+                Install App
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
       {/* Promotion or Signed-In Dashboard */}
       <section className="max-w-5xl mx-auto w-full px-4">
         {!user ? (

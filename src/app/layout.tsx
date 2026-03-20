@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   title: 'Globlync | Global Evidence-Based Reputation',
   description: 'Globlync helps professionals build a digital, evidence-based reputation with AI-verified job logs and verified ratings. Headquartered in Malawi, serving the globe.',
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Globlync',
+  },
   icons: {
     icon: '/logo.png',
     apple: '/logo.png',
@@ -59,6 +64,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Globlync" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
