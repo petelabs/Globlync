@@ -28,18 +28,17 @@ jobs:
 
       - name: Build APK via Bubblewrap
         run: |
-          # 1. Pre-configure Bubblewrap to avoid interactive setup of SDK paths
-          # This specifically fixes the 'Do you want Bubblewrap to install the JDK' error
+          # 1. Pre-configure Bubblewrap to avoid interactive setup
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
           
-          # 2. Run init non-interactively using 'yes' to accept defaults from your manifest
+          # 2. Run init using the LOCAL manifest file to avoid URL fetch errors
           mkdir build-android
           cd build-android
-          yes | bubblewrap init --manifest=https://globlync.vercel.app/manifest.json
+          yes | bubblewrap init --manifest=../public/manifest.json
           
-          # 3. Build the APK. Bubblewrap build usually generates a debug key if none exists.
-          # We use 'yes' to handle any final confirmation prompts.
+          # 3. Build the APK without signing (for testing/debug)
+          # We use 'yes' to handle any final confirmation prompts
           yes | bubblewrap build --skipSigning
         continue-on-error: true
 

@@ -1,0 +1,43 @@
+{
+  "name": "Globlync | Global Evidence-Based Reputation",
+  "short_name": "Globlync",
+  "description": "Build your digital, evidence-based professional reputation. Headquartered in Malawi, serving the globe.",
+  "start_url": "/",
+  "id": "com.globlync.app.v1",
+  "display": "standalone",
+  "background_color": "#00796B",
+  "theme_color": "#00796B",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["business", "productivity", "social"],
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/globlync-icon/192/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://picsum.photos/seed/globlync-icon/512/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Professional Hub",
+      "short_name": "My Hub",
+      "description": "Manage your trust score and ID card",
+      "url": "/profile",
+      "icons": [{ "src": "https://picsum.photos/seed/globlync-icon/192/192", "sizes": "192x192" }]
+    },
+    {
+      "name": "Search Professionals",
+      "short_name": "Directory",
+      "description": "Find verified pros in Malawi",
+      "url": "/search",
+      "icons": [{ "src": "https://picsum.photos/seed/globlync-icon/192/192", "sizes": "192x192" }]
+    }
+  ]
+}
