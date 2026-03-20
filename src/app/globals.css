@@ -71,6 +71,10 @@
     transition: none !important;
   }
 
+  .paused-animation {
+    animation-play-state: paused !important;
+  }
+
   .safe-top {
     padding-top: env(safe-area-inset-top);
   }
@@ -129,6 +133,17 @@
 
   .animate-pulse-cta {
     animation: pulse-soft 2s infinite ease-in-out;
+  }
+
+  @keyframes snow-fall {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(100vw, 100vh) rotate(360deg); opacity: 0; }
+  }
+
+  .animate-snow {
+    animation: snow-fall linear infinite;
   }
 
   .scrollbar-hide::-webkit-scrollbar {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -32,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/AdBanner";
 import { MOTIVATIONAL_QUOTES, type Motivation } from "@/lib/motivational-quotes";
 import { cn } from "@/lib/utils";
+import { WinterFanDecoration } from "@/components/WinterFanDecoration";
 
 export default function Home() {
   const { user } = useUser();
@@ -58,7 +58,10 @@ export default function Home() {
   const isPro = profile?.isPro || profile?.activeBenefits?.some((b: any) => new Date(b.expiresAt) > new Date());
 
   return (
-    <div className="flex flex-col gap-12 py-6 overflow-x-hidden">
+    <div className="flex flex-col gap-12 py-6 overflow-x-hidden relative">
+      {/* Visual Effects */}
+      <WinterFanDecoration />
+
       {/* Installation Banner for Mobile */}
       {isMobile && (
         <section className="max-w-5xl mx-auto w-full px-4 animate-in slide-in-from-top-4 duration-500">
@@ -99,9 +102,9 @@ export default function Home() {
                 <h2 className="text-3xl font-black tracking-tighter text-foreground leading-tight">
                   15 Days <span className="text-accent">FREE Pro VIP</span> for New Recruits!
                 </h2>
-                <p className="text-sm text-muted-foreground font-medium max-w-xl">
+                <h2 className="text-sm text-muted-foreground font-medium max-w-xl">
                   Join the national directory today. Every new account registered in the next 60 days automatically earns 15 days of Pro status.
-                </p>
+                </h2>
               </div>
               <Button size="lg" className="rounded-full px-8 bg-accent hover:bg-accent/90 text-white font-black h-14" asChild>
                 <Link href="/login">Claim My 15 Days</Link>
