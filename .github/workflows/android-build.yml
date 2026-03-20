@@ -27,14 +27,20 @@ jobs:
           java-version: '17'
 
       - name: Build APK via Bubblewrap
-        # Note: This uses a simplified initialization for TWAs.
-        # In a real production scenario, you would provide a signing key secret.
-        # For this student project, we generate a debug-signed APK.
         run: |
+          # 1. Pre-configure Bubblewrap to avoid interactive setup of SDK paths
+          # This specifically fixes the 'Do you want Bubblewrap to install the JDK' error
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+          
+          # 2. Run init non-interactively using 'yes' to accept defaults from your manifest
           mkdir build-android
           cd build-android
-          bubblewrap init --manifest=https://globlync.vercel.app/manifest.json
-          bubblewrap build --skipSigning
+          yes | bubblewrap init --manifest=https://globlync.vercel.app/manifest.json
+          
+          # 3. Build the APK. Bubblewrap build usually generates a debug key if none exists.
+          # We use 'yes' to handle any final confirmation prompts.
+          yes | bubblewrap build --skipSigning
         continue-on-error: true
 
       - name: Upload APK Artifact
