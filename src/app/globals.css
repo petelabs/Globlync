@@ -136,14 +136,32 @@
   }
 
   @keyframes snow-fall {
-    0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translate(100vw, 100vh) rotate(360deg); opacity: 0; }
+    0% { 
+      transform: translate(0, -10px) scale(0); 
+      opacity: 0; 
+    }
+    10% { 
+      opacity: 0.8; 
+      transform: translate(10px, 20px) scale(1); 
+    }
+    100% { 
+      transform: translate(100vw, 100vh) rotate(360deg) scale(0.5); 
+      opacity: 0; 
+    }
   }
 
   .animate-snow {
     animation: snow-fall linear infinite;
+  }
+
+  @keyframes fun-spin {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .animate-fun-spin {
+    animation: fun-spin 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
 
   .scrollbar-hide::-webkit-scrollbar {

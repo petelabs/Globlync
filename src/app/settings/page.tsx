@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -278,8 +277,8 @@ export default function SettingsPage() {
                 {animationsDisabled ? <ZapOff className="h-5 w-5 text-primary" /> : <Zap className="h-5 w-5 text-primary" />}
               </div>
               <div className="space-y-0.5">
-                <Label htmlFor="animations" className="text-sm font-bold">Reduce Animations</Label>
-                <p className="text-xs text-muted-foreground">Turn off visual motion effects.</p>
+                <Label htmlFor="animations" className="text-sm font-bold">Global Visual FX</Label>
+                <p className="text-xs text-muted-foreground">Turn off fans, snow, and motion effects.</p>
               </div>
             </div>
             <Switch id="animations" checked={animationsDisabled} onCheckedChange={toggleAnimations} />
