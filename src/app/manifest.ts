@@ -7,6 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Globlync',
     description: 'Build your digital, evidence-based professional reputation. Headquartered in Malawi, serving the globe.',
     start_url: '/',
+    id: '/',
     display: 'standalone',
     background_color: '#FDFDFD',
     theme_color: '#00796B',
